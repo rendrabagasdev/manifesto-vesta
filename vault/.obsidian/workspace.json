@@ -11,14 +11,16 @@
             "id": "aefbd595902ba19d",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "kanban",
               "state": {
-                "file": "02-Fitur/🌍 Impact Ledger.md",
-                "mode": "source",
-                "source": false
+                "file": "05-Timeline/📋 Kanban Board.md",
+                "kanbanViewState": {
+                  "kanban-plugin": "board",
+                  "list-collapse": []
+                }
               },
-              "icon": "lucide-file",
-              "title": "🌍 Impact Ledger"
+              "icon": "lucide-trello",
+              "title": "📋 Kanban Board"
             }
           }
         ]
@@ -99,7 +101,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "02-Fitur/🌍 Impact Ledger.md",
+                "file": "05-Timeline/📋 Kanban Board.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -118,7 +120,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "02-Fitur/🌍 Impact Ledger.md",
+                "file": "05-Timeline/📋 Kanban Board.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
@@ -161,7 +163,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "02-Fitur/🌍 Impact Ledger.md",
+                "file": "05-Timeline/📋 Kanban Board.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -185,11 +187,13 @@
       "daily-notes:Open today's daily note": false,
       "templates:Insert template": false,
       "command-palette:Open command palette": false,
-      "bases:Create new base": false
+      "bases:Create new base": false,
+      "obsidian-kanban:Create new board": false
     }
   },
   "active": "aefbd595902ba19d",
   "lastOpenFiles": [
+    "02-Fitur/🌍 Impact Ledger.md",
     "02-Fitur/🏅 Loyalty Tier System.md",
     "01-Overview/👥 Peran Pengguna.md",
     "01-Overview/🎯 Scope & Non-Goals.md",
@@ -200,7 +204,6 @@
     "04-Database/🗄 Database Schema.md",
     "04-Database/🔌 API Endpoints.md",
     "03-Tech-Stack/🏗 Arsitektur & Tech Stack.md",
-    "02-Fitur/🌍 Impact Ledger.md",
     "08-Templates/📝 Template Daily Note.md",
     "06-Demo-Strategy/🎭 Strategi Demo.md",
     "06-Demo-Strategy/⚠️ Risiko & Mitigasi.md",

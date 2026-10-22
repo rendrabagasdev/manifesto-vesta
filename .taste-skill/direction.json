@@ -1,511 +1,179 @@
 {
  "version": 1,
- "at": "2026-10-22T17:08:17.105Z",
- "seed": 1008243177,
- "redraws": 0,
+ "kind": "app",
+ "at": "2026-10-22T19:00:47.910Z",
+ "seed": 451106828,
  "input": {
-  "brief": "Vesta Freshness Cascade Platform maintenance status page with system health and cascade engine updates",
-  "sector": "ecommerce",
-  "tone": "technical",
-  "have": [],
-  "keep": [],
-  "avoid": [],
-  "sections": [
-   "intro",
-   "proof",
-   "contact"
+  "kind": "commerce",
+  "brief": "Vesta freshness cascade batch inventory for producers and warehouse staff",
+  "theme": null,
+  "screens": [
+   "list",
+   "detail"
   ],
-  "direction": "split-stage"
+  "keep": [
+   "palette",
+   "type"
+  ],
+  "style": "framed-sheet"
  },
- "imagery": "no-product-photo",
- "allow": [],
- "direction": {
-  "id": "split-stage",
-  "name": "The split stage",
-  "sectors": [
-   "restaurant",
-   "hospitality",
-   "personal-portfolio",
-   "physical-product",
-   "fashion",
-   "real-estate",
-   "health",
-   "culture",
-   "ecommerce",
-   "saas",
-   "consumer-app"
+ "style": {
+  "id": "framed-sheet",
+  "name": "Framed sheet",
+  "theme": "light",
+  "basis": "6 screens: a developer platform overview, an analytics overview, an events analytics tab, a list detail, a reports dashboard, a flow builder",
+  "suits": [
+   "analytics",
+   "devtools",
+   "builder",
+   "smb-admin",
+   "support",
+   "commerce",
+   "report"
   ],
-  "tones": [
-   "warm",
-   "quiet",
-   "editorial"
-  ],
-  "needs": [],
-  "idea": "Half the screen never moves. One side is a fixed photograph (or object, or product view) that stays in place for the whole visit; the other side is a calm scrolling column with everything you need to read. The fixed half keeps the feeling present while the reader gets on with the facts, like sitting in the room while reading the menu. As sections pass, the fixed image may quietly change to the one that matches.",
-  "composition": "Desktop: a two-column page, 50/50 or 45/55. One column is `position: sticky; top: 0; height: 100svh` and holds a single photograph filling it edge to edge, or the object centred on a flat field. The other column scrolls and holds all content in a single narrow measure (max 46ch) with comfortable padding (48–72px): name and one-line description first, then sections separated by generous space, then contact and footer. Headings in the scrolling column are modest (32–44px). The column grounds differ: photograph on one side, flat paper colour on the other, meeting at a clean vertical edge. On a phone the fixed half becomes a 60svh image at the top that stays sticky behind the first section, then releases.",
-  "typography": "A text-first setting: a readable serif or a calm sans at 17–19px, with one display size for the name. Left-aligned throughout.",
-  "typeClasses": [
-   "serif-text",
-   "serif-display",
-   "grotesk-light",
-   "slab"
-  ],
-  "colour": "The paper colour of the reading column is chosen against the photograph: a tone taken from its shadows or its lightest area. One ink, optionally one accent ink for links and the action.",
-  "paletteTags": [
-   "two-tone",
-   "earth",
-   "light-neutral",
-   "photographic-neutral"
-  ],
-  "imagery": "One excellent portrait-orientation photograph for the fixed half, plus three or four more that crossfade in as their sections arrive. Small inline photographs in the reading column are optional and should be few.",
-  "sectionTags": [
-   "quiet",
-   "photo-led",
-   "type-led"
-  ],
-  "motion": "slow-crossfade",
-  "richness": "A full-height photograph always in view, against a quiet, well-set column of text.",
-  "pitfalls": "The reading column must be genuinely well typeset, since it is half the page. Do not put cards or grids in it. Check that the fixed image crops well at short viewport heights. In blind tests the commonest complaint was monotony: several screens of the same split with only the text changing. Change what the reading half holds from section to section (a list, a large figure, a table, a full-colour panel, a drawing) and let at least one section break the split and run full width.",
-  "seenIn": [
-   "opl-le-petit-bleu",
-   "opl-rafael-derolez-2026",
-   "opl-flowjam-2",
-   "opl-devonshire"
-  ],
-  "allow": []
- },
- "hero": {
-  "id": "striped-card-beside-room",
-  "name": "Striped card beside the room",
-  "archetype": "split",
-  "directions": [
-   "one-motif",
-   "page-is-the-object",
-   "split-stage"
-  ],
-  "needs": [],
-  "blueprint": "The viewport is split 50/50 with a 12px gap and 12px outer margins. The right half is one full-height photograph of the room, corners radiused 16px, `position: sticky` so it stays in view while the left half scrolls. The left half is a printed card: a flat paper-colour panel with the same 16px radius, and the subject's stripe (from its awning, label or ribbon) as the only ornament. Across the card's top runs a band 56px tall made of alternating bars of the single ink colour and paper, each bar 28px wide, built as a flex row of filled blocks. The same stripe returns as an 8px band above the footer and inside the button on hover. Under the band, centred: the wordmark about 300px wide, then a two-line headline in a light serif at clamp(40px, 3.6vw, 56px) in the ink colour, one supporting sentence at 17px held to 36ch, and the single action as a solid rectangular button. Three text links sit in one centred row at 15px, 28px above the card's bottom edge. One ink on paper; the photograph supplies every other colour.",
-  "mobile": "The photograph comes first at full width inside 12px margins, 48svh tall, with the 16px radius. The card follows and overlaps the photograph's bottom edge by 24px using a negative margin. Its striped band is 40px tall; below it the wordmark at 56% width, the headline at 8vw on two lines, the sentence and the button, all centred. The links wrap into the card's foot.",
-  "headline": "A warm two-line welcome of three to six words, up to about 18 characters per line at 3.6vw.",
-  "motion": "slow-crossfade",
-  "seenIn": [
-   "opl-le-petit-bleu",
-   "opl-zara-webb"
-  ]
- },
- "type": {
-  "id": "literata-book",
-  "name": "Literata",
-  "class": "serif-text",
-  "display": {
-   "family": "Literata",
-   "source": "google",
-   "weights": [
-    500
+  "idea": "The app chrome is one tinted L-shaped frame; the work sits on a white sheet with a hairline edge and soft corners, so depth comes from a single tone step and no shadow.",
+  "colourBudget": "under 3%; the brand shrinks to the logo and a 2px tab underline, the data carries the chroma",
+  "tokens": {
+   "ground": "#f9fbfc",
+   "surface": "#ffffff",
+   "raised": "#f4f6f8",
+   "active": "#ebedee",
+   "border": "#e8eaec",
+   "rule": "#f0f1f2",
+   "control": "#cdced1",
+   "text": "#131416",
+   "muted": "#5d5f60",
+   "accent": "#1b6c80",
+   "positive": "#1e7b4f",
+   "negative": "#c4242a",
+   "warning": "#92400e",
+   "chart": [
+    "#1b6c80",
+    "#2f70bb",
+    "#a86f0c"
    ],
-   "italic": false,
-   "settings": "weight 500 with optical sizing on · tracking -0.02em · leading 1.05 · sentence case",
-   "css": "<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n<link href=\"https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap\" rel=\"stylesheet\">"
+   "pills": {
+    "positive": [
+     "#dcfae5",
+     "#04250e"
+    ],
+    "negative": [
+     "#ffedea",
+     "#831c1e"
+    ],
+    "warning": [
+     "#fffbeb",
+     "#92400e"
+    ],
+    "neutral": [
+     "#ebedee",
+     "#353736"
+    ]
+   },
+   "radius": {
+    "card": 8,
+    "control": 6,
+    "sheet": 16
+   },
+   "sheetInset": 8,
+   "font": {
+    "family": "IBM Plex Sans",
+    "second": "IBM Plex Mono, for IDs and keys only",
+    "fallback": "Inter, system-ui, sans-serif",
+    "sizes": {
+     "title": 22,
+     "section": 16,
+     "kpi": 28,
+     "body": 14,
+     "small": 12
+    },
+    "weights": [
+     400,
+     500,
+     600
+    ],
+    "note": "KPI values at 400; the semibold goes on the label and the active tab."
+   },
+   "density": "medium",
+   "rowHeight": 48,
+   "sidebarWidth": 228,
+   "gap": 24,
+   "pad": 24,
+   "controlHeight": 32
   },
-  "text": {
-   "family": "Literata",
-   "source": "google",
-   "weights": [
-    400,
-    600
-   ],
-   "italic": true,
-   "settings": "400 for body, 600 for emphasis, italic for titles · leading 1.6 · tracking 0",
-   "css": "<link rel=\"preconnect\" href=\"https://fonts.googleapis.com\">\n<link rel=\"preconnect\" href=\"https://fonts.gstatic.com\" crossorigin>\n<link href=\"https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap\" rel=\"stylesheet\">"
-  },
-  "standsInFor": [
-   "Albra Book",
-   "Signifier",
-   "Domaine Text"
+  "shell": "framed-sheet",
+  "shellAlternatives": [],
+  "signature": "One tinted frame holds the sidebar and the 48px top bar with no rule between them; the page is a white sheet inset 8px from the window's right and bottom edges, with a 1px edge, 16px corners and no shadow. The active tab is a 2px underline in ink or the accent; everything else in the chrome is grey.",
+  "identity": [
+   "The frame tinted from the product's colour in place of #f9fbfc: one low-chroma step of its hue (a green-grey for a climate or farm tool, a blue-grey for an observability tool, a stone for a print shop). The sheet stays white.",
+   "The brand's own hue from the brief as --chart-1 in place of the dealt teal, on the main series and the one selected state, at 3:1 or more on white, never violet or indigo.",
+   "IBM Plex Mono for IDs, keys and the figures in tables (one job): its figures have their own drawing, and a developer reads them as the product's."
   ],
-  "note": "A sturdy screen-reading serif with a large x-height; headings are simply the text face at medium weight and a larger size. Suits essays, reports, newsletters and knowledge products.",
-  "seenIn": [
-   "opl-the-new-industrials",
-   "aww-mosbys-files",
-   "opl-monte"
+  "avoid": [
+   "a border between the sidebar and the top bar",
+   "a shadow under the sheet",
+   "cards whose border is heavier than the sheet's (#cdcfcf on cards read as heavy in the study)",
+   "a fourth nesting level: frame, sheet and card are enough",
+   "different gutters for the KPI row and the chart row (20 against 24 was flagged)"
   ],
-  "links": [
-   "https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,400;0,500;0,600;1,400;1,500;1,600&display=swap"
-  ],
-  "scale": {
-   "step-small": "clamp(0.8125rem, 0.79rem + 0.1vw, 0.875rem)",
-   "step-body": "clamp(1.125rem, 1.05rem + 0.3vw, 1.3125rem)",
-   "step-lead": "clamp(1.25rem, 1.1rem + 0.7vw, 1.625rem)",
-   "step-head": "clamp(2rem, 1.3rem + 3.2vw, 4rem)"
-  }
+  "notes": "The study's second data hue in this style was an orange (#e88e46) that falls inside the house terracotta range; the third chart colour here is an amber moved out of that range and darkened to 3:1 on white."
  },
- "palette": {
-  "id": "blush-aubergine",
-  "name": "Blush and aubergine",
-  "tags": [
-   "two-tone"
+ "shell": {
+  "id": "framed-sheet",
+  "name": "Tinted frame, white sheet",
+  "basis": "8 of 23 screens, in three variants",
+  "suits": [
+   "analytics",
+   "devtools",
+   "builder",
+   "smb-admin",
+   "support"
   ],
-  "bg": "#edccbe",
-  "surface": "#e8c2b2",
-  "ink": "#351a2b",
-  "muted": "#6c4857",
-  "accent": "#351a2b",
-  "accentInk": "#edccbe",
-  "fields": [
-   {
-    "bg": "#351a2b",
-    "ink": "#edccbe"
+  "numbers": {
+   "chrome": "#f6f6f6-#f9fbfc (a warm #f7f6f2 once)",
+   "sheetInset": "8px from the window's right and bottom edges (12 and 16 once each)",
+   "sheetRadius": "10-16, median 16",
+   "sheetEdge": "1px #eaeaea-#ededed, no shadow",
+   "sidebarWidth": "220-263 (228 on two screens)",
+   "topBar": "48px on the chrome ground with no rule; search 548x32 centred on the window with a shortcut hint",
+   "contentPadding": 24,
+   "floatingVariant": "both panels inset 12px with a 12px gutter, radius 10"
+  },
+  "blueprint": "Sidebar and top bar share one tinted ground with no rule between them, forming an L; the page lives on a white sheet. Variant one: the sheet butts against the sidebar and the top bar and is inset 8px from the right and bottom edges, 16px radius, 1px edge. Variant two: a flush L-frame with no inset, the frame marked by one rule. Variant three: sidebar and content are two floating panels inset 12px from every edge with a 12px gutter. The top bar, when present, is 48px and holds a centred search, the account button and a help or AI icon. Inside the sheet the content has 24px padding and starts with the breadcrumb or title row.",
+  "phone": "The frame disappears: the sheet becomes the screen, with a 48px top bar (menu button, title, one action) on the chrome tint. The search moves into the menu sheet or behind an icon."
+ },
+ "screens": [
+  {
+   "name": "list",
+   "pattern": {
+    "id": "count-cards-filter",
+    "name": "Count cards that filter",
+    "screen": "list",
+    "kinds": [
+     "community",
+     "commerce",
+     "support"
+    ],
+    "basis": "an events back office",
+    "blueprint": "Above a list, 3-5 equal count cards (61px tall, 12px padding, a 13px grey label over a 16/600 value, 8px gap) are the type filter: the selected card gets a 1.5px accent border and a pale accent fill, and the list below shows that type only. Zero counts print as '0' in the same style; no deltas, no icons. This is one place where a row of identical small cards is right: the cards are peers and each one does work.",
+    "phone": "The count cards become a horizontally scrolling row of chips with the count inside each, or a select above the list."
    }
-  ],
-  "note": "Blush pink and dark aubergine alternate as full fields and serve as each other's text colour, in roughly equal shares. There is no third colour: the button is a solid block of whichever of the two is not the ground.",
-  "seenIn": [
-   "aww-house-of-honey-1",
-   "opl-sarah-matt-wedding"
-  ]
- },
- "photos": {
-  "set": "architecture",
-  "title": "Architecture",
-  "note": "structure, lines, bridges, facades and building interiors",
-  "treatment": null,
-  "others": [
-   "hands-and-making",
-   "field-and-farm",
-   "interior-and-table",
-   "object-still"
-  ],
-  "photos": [
-   {
-    "id": 954,
-    "alt": "Narrow opening in a white wall revealing a white staircase",
-    "tone": "light",
-    "colours": [
-     "off-white",
-     "pale beige"
+  },
+  {
+   "name": "detail",
+   "pattern": {
+    "id": "object-detail-header-grid",
+    "name": "Object header and a six-column grid",
+    "screen": "detail",
+    "kinds": [
+     "community",
+     "commerce",
+     "analytics"
     ],
-    "mono": false,
-    "calm": "left",
-    "quality": 5,
-    "ratio": 1.52,
-    "by": "Todd Quackenbush",
-    "page": "https://unsplash.com/photos/JJB_K8aCPU4"
-   },
-   {
-    "id": 855,
-    "alt": "Small figure walking past a huge bright yellow wall",
-    "tone": "light",
-    "colours": [
-     "bright yellow",
-     "black"
-    ],
-    "mono": false,
-    "calm": "left",
-    "quality": 5,
-    "ratio": 1.5,
-    "by": "Rodion Kutsaev",
-    "page": "https://unsplash.com/photos/IJ25m7fXqtk"
-   },
-   {
-    "id": 1081,
-    "alt": "Stepped white modern building corner rising into a pale blue sky",
-    "tone": "light",
-    "colours": [
-     "white",
-     "pale blue",
-     "soft grey"
-    ],
-    "mono": false,
-    "calm": "top",
-    "quality": 5,
-    "ratio": 1.49,
-    "by": "Julien Moreau",
-    "page": "https://unsplash.com/photos/688Fna1pwOQ"
-   },
-   {
-    "id": 618,
-    "alt": "Curving glass and steel lattice roof in black and white",
-    "tone": "light",
-    "colours": [
-     "white",
-     "grey",
-     "black"
-    ],
-    "mono": true,
-    "calm": "none",
-    "quality": 5,
-    "ratio": 1.5,
-    "by": "Mika Ruusunen",
-    "page": "https://unsplash.com/photos/ypVM8PnygUo"
-   },
-   {
-    "id": 508,
-    "alt": "Tall pointed vaults and pale columns of a church interior",
-    "tone": "light",
-    "colours": [
-     "cream",
-     "warm grey",
-     "soft orange"
-    ],
-    "mono": false,
-    "calm": "none",
-    "quality": 5,
-    "ratio": 0.76,
-    "by": "Jeff Sheldon",
-    "page": "https://unsplash.com/photos/u3gES0SUsnI"
-   },
-   {
-    "id": 887,
-    "alt": "White apartment block facade with repeating balconies and windows",
-    "tone": "light",
-    "colours": [
-     "white",
-     "pale grey",
-     "soft red"
-    ],
-    "mono": false,
-    "calm": "none",
-    "quality": 5,
-    "ratio": 1.5,
-    "by": "Roman Kraft",
-    "page": "https://unsplash.com/photos/7sMHTVJ0OTA"
-   },
-   {
-    "id": 620,
-    "alt": "White arched bridge spanning grey water under a pale sky",
-    "tone": "light",
-    "colours": [
-     "white",
-     "pale grey",
-     "charcoal"
-    ],
-    "mono": true,
-    "calm": "bottom",
-    "quality": 5,
-    "ratio": 1.5,
-    "by": "Matthew Wiebe",
-    "page": "https://unsplash.com/photos/HeVd38MWnw4"
-   },
-   {
-    "id": 942,
-    "alt": "White angular concrete building against a black sky",
-    "tone": "dark",
-    "colours": [
-     "black",
-     "white",
-     "pale grey"
-    ],
-    "mono": true,
-    "calm": "top",
-    "quality": 5,
-    "ratio": 1.5,
-    "by": "Carl Nenzen Loven",
-    "page": "https://unsplash.com/photos/busqfOj6i80"
+    "basis": "an event's analytics tab",
+    "blueprint": "The page header is the object itself: one card (88px, 14px padding) holding a 50x62 cover, the 18/600 name with 28px icon buttons beside it (open, copy, share), a 13px grey meta line (date, time, place) and outlined 36px actions on the right. Under it, underline tabs on a full-width 1px rule, then a 36px row with a segmented time range on the left and a refresh button on the right. The body is one 6-column grid with one gutter (14px) in both directions whose spans change by row while every edge lands on the same lines: 3 KPI tiles of 2 columns, the main chart in 4 columns beside a side chart in 2, two progress cards of 3, a full-width trend of 6. Give the widest card to the screen's question, and do not give 824px to one ring and one legend row (flagged).",
+    "phone": "The header card keeps cover, name and meta, with actions in a kebab; every grid item takes the full width in the same order."
    }
-  ]
- },
- "motion": {
-  "id": "slow-crossfade",
-  "name": "Slow crossfade",
-  "description": "The principal photograph quietly changes: three or four images of the same framing crossfade over about 1.6 seconds, holding five to six seconds each, or the fixed image changes when its matching section arrives. It should feel like light shifting in a room. Pause when the tab is hidden; under reduced motion show only the first image."
- },
- "sections": [
-  {
-   "id": "intro-narrow-column",
-   "role": "intro",
-   "name": "Narrow column, empty field",
-   "shape": "stack",
-   "tags": [
-    "quiet",
-    "type-led"
-   ],
-   "directions": [
-    "quiet-instrument",
-    "split-stage",
-    "hero-object",
-    "name-as-monument",
-    "contact-sheet",
-    "product-performs"
-   ],
-   "needs": [],
-   "blueprint": "A single text column 300–340px wide, its left edge at 15% of the viewport width, starting 64px below the section top. It holds four or five short paragraphs at 15–16px with leading 1.5 and one blank line between them; the first paragraph is in medium weight and full ink, the rest in regular weight and the soft ink. No heading, no image, no button; one underlined text link may end the last paragraph. The remaining three-quarters of the 1440 screen is untouched ground, and the section is only as tall as the text plus 160px of padding below. The column's left edge must match a line used elsewhere on the page (the wordmark's left edge or a later column). Where the page has a large object or a fixed photograph, this column is the small text beside it. Holds 90–150 words comfortably.",
-   "mobile": "The column becomes 78% of the width, left-aligned at the 20px margin, so a strip of empty ground remains on the right as a deliberate margin. Text stays at 15–16px with the first paragraph in medium weight. Padding is 72px above and 96px below.",
-   "seenIn": [
-    "opl-when-you-wish-upon-a-starboy",
-    "opl-deeo-studio-2",
-    "aww-vero-new-york"
-   ]
-  },
-  {
-   "id": "proof-plain-columns",
-   "role": "proof",
-   "name": "Plain names in columns",
-   "shape": "list",
-   "tags": [
-    "quiet",
-    "type-led"
-   ],
-   "directions": [
-    "quiet-instrument",
-    "contact-sheet",
-    "editorial-report",
-    "split-stage",
-    "uneven-photographs",
-    "place-carries-it"
-   ],
-   "needs": [],
-   "blueprint": "A typographic list with no logos. The heading, two or three words at 28–32px, sits in columns 1–3 and stays top-aligned with the first row of names. Columns 5–12 hold the names in three or four text columns (`columns: 4; column-gap: 32px`), each name on its own line at 20–22px with leading 1.5, sentence case, in the full ink. Where names fall into kinds (clients, press, partners), each kind starts a new column and its first line names the kind in the softer ink at the same size, so no small labels are needed. Columns are of unequal length and are not balanced; ragged bottoms are intended. Twelve to thirty names work best. There are no boxes, bullets or separators: the column edges and the shared baseline do the organising. Leave 120px above and below.",
-   "mobile": "The heading leads at 26px. Names follow in two columns at 17px with a 20px gap; each kind begins after a 32px break with its name in the softer ink on the first line. Long names wrap inside their column rather than shrinking.",
-   "seenIn": [
-    "opl-ayush-halder-portfolio"
-   ]
-  },
-  {
-   "id": "contact-email-display",
-   "role": "contact",
-   "name": "The email as display type",
-   "shape": "statement",
-   "tags": [
-    "type-led",
-    "poster"
-   ],
-   "directions": [
-    "name-as-monument",
-    "type-only-statement",
-    "dark-room",
-    "pinned-poster",
-    "sentence-as-layout"
-   ],
-   "needs": [],
-   "blueprint": "The section is 100svh in the inverse of the page's colours. A single email address is set as one line of display type spanning the content width: the font-size is fitted so the address runs from margin to margin (about 7–9vw for 20 characters; break after the @ onto two lines if it is longer than 26), light or regular weight, tight tracking, sitting on a baseline 12vh above the bottom edge. It is a `mailto:` link; on hover the whole line takes the accent ink. In the top-left corner, a sentence of up to 12 words at 20–22px says what to write about. In the two bottom corners at 14px: phone and city at the left, two or three social links at the right. No heading and no form. For a pinned ending, make the section `position: sticky; bottom: 0` beneath the page so the previous section lifts off it.",
-   "mobile": "The address breaks after the @ onto two lines at 11.5vw, left-aligned, sitting at 55% of an 86svh screen. The sentence sits at the top-left at 18px. Phone, city and social links stack at the bottom-left at 15px with 12px between them.",
-   "seenIn": [
-    "aww-bleibtgleich26"
-   ]
   }
- ],
- "references": [
-  {
-   "id": "opl-flowjam-2",
-   "name": "Flowjam",
-   "url": "https://flowjam.com",
-   "source": "One Page Love",
-   "kind": "agency",
-   "score": 6.8,
-   "idea": "A persistent frosted sidebar card holds the pitch and buttons while a soft-serif content column scrolls past it; beyond that there is no idea stronger than proof by logos and videos.",
-   "mood": [
-    "soft",
-    "friendly",
-    "grainy",
-    "startup"
-   ],
-   "archetype": "other: sticky-sidebar-statement",
-   "hero": "Grainy off-white page. A tall rounded card about 26% of the viewport wide is pinned at the left and runs off the bottom; frosted over blurred pink and yellow flowers, it holds the logo, a two-line serif tagline, a short blurb and two pill buttons in hot pink and charcoal. The main column starts 32% from the left: a hot-pink pill badge, a three-line serif headline at 4.2vw, then a paragraph whose first sentence is grey and the rest black. A lone charcoal pill button floats far right at mid-height. Below: a heart icon with a proof line, then the top of a four-column logo grid with dotted borders.",
-   "type": "Gelica throughout: a soft, slightly bulbous serif at regular weight, 60px headline with tight -0.05em tracking, 16 to 19px body, down to about 9px in the sidebar. One family for everything including buttons keeps the tone warm but flattens the difference between labels and prose.",
-   "colour": "#f8f8f6 #e7e8e4 #1c0f1f #ff4fe0 #0c0c0c #7b3ff2 — Warm paper white with grain, near-black aubergine text and one hot-pink accent used for the badge and primary button; a purple heart appears once. The footer flips to black.",
-   "imagery": "Rounded-corner video thumbnails of founders talking to camera and product UI clips, each with a small round play button bottom-left; monochrome client logos in a dotted-line grid; blurred floral blobs behind the frosted sidebar.",
-   "layout": "A fixed 26% sidebar card at left for the whole scroll; content occupies one column to its right, split into two for video tiles and four for logos. Sections are separated by whitespace only. The footer is a rounded black panel that still leaves the sidebar in place.",
-   "sections": [
-    {
-     "role": "proof",
-     "description": "Four-column grid of client logos drawn with faint dotted cell borders, each cell roughly 240px wide and 115px tall with the logo centred in dark grey monochrome. Sixteen or more logos over four rows, no captions. Above it, a centred line with a purple heart glyph and a sentence whose first word is black and the rest grey serves as the heading."
-    },
-    {
-     "role": "work",
-     "description": "Two-column grid of video cards. Each card has a header row with the client name in 14px serif and a one-line result in tiny grey beneath it at left, and a small outlined pill link at right; then a 16:9 thumbnail with about 10px radius and a round play button over its bottom-left corner. Cards are divided by hairlines rather than boxes, and some thumbnails are flat type frames instead of photos."
-    },
-    {
-     "role": "footer",
-     "description": "A rounded black panel inset from the page edges, sitting right of the sidebar. Its background is a short phrase repeated in dark-grey serif at about 5vw, rows offset so the words tile like wallpaper. Centred over it: a two-line white serif headline at about 2.5vw and a small stat line. The lower third holds the logo at left and four narrow columns of tiny text."
-    }
-   ],
-   "steal": [
-    "Pin a narrow card with logo, one-line pitch and both actions beside the scrolling content, so the call to action never leaves the screen and no top nav is needed.",
-    "Set one sentence of a paragraph in grey and the rest in black to rank two claims without changing size or weight.",
-    "Tile a short phrase as dark-on-black wallpaper behind the footer headline."
-   ]
-  },
-  {
-   "id": "opl-rafael-derolez-2026",
-   "name": "Rafael Derolez",
-   "url": "https://derolez.dev/",
-   "source": "One Page Love",
-   "kind": "personal-portfolio",
-   "score": 7.3,
-   "idea": "A portfolio as a phone carousel: a fixed text rail on the left narrates whichever phone-shaped screen is centred on the right.",
-   "mood": [
-    "compact",
-    "dark",
-    "friendly",
-    "app-like"
-   ],
-   "archetype": "split-text-media",
-   "hero": "Dark charcoal page split by a vertical hairline at 30% width. Left rail: a 55px header row with name, slash and current section as a breadcrumb in 16px sans, plus a small cobalt ticket-shaped hire button with a perforated divider and arrow; below a hairline, four short paragraphs of 16px grey text with white links, top-aligned, leaving the lower 40% of the rail empty. Right 70%: three phone-proportioned frames with large rounded corners in a row; the centre one upright, full brightness and about 680px tall, the outer two smaller, dimmed and rotated in perspective toward the centre.",
-   "type": "Suisse at a single 16px size, weight 400, for everything; hierarchy comes only from grey versus white and from the breadcrumb. The one larger setting is a bold two-word line inside the blue contact card. No display type at all.",
-   "colour": "#18181b #030303 #969696 #173ded #ffffff — Zinc-black field with grey text and white for links and the active breadcrumb. Cobalt blue appears only on the hire button and contact card; all other colour comes from the app screenshots.",
-   "imagery": "Phone-shaped frames with large corner radius holding app screens, a selfie and short videos; side frames are dimmed to about 40% and tilted in 3D like a cover-flow.",
-   "layout": "Single viewport, no page scroll: a fixed 432px text rail with 32px padding and a media stage filling the rest. Scrolling advances the carousel and replaces the rail's text; hairlines separate rail, header and stage. On mobile the stage stacks above the rail.",
-   "sections": [
-    {
-     "role": "work",
-     "description": "Same two-part frame. The breadcrumb's last word changes to the project name; under the header sit three tiny grey meta tags (employer, platform), then two paragraphs. On the stage the centred phone shows the product screen at full brightness while neighbours show the previous and next items dimmed and tilted, so the carousel works as both navigation and preview."
-    },
-    {
-     "role": "about",
-     "description": "In the rail, a cobalt card shaped like a ticket with notched sides: tiny labels top-left and top-right, a large bold two-word heading, name and local time in small text, then a perforated lower strip with email at left and a copy button at right. Under it, a career list: company in white with dates in small grey on one line, role on the next, and a small arrow at the far right of each row."
-    }
-   ],
-   "steal": [
-    "Use a breadcrumb (name / current item) as the only heading and update its last word as the content changes.",
-    "Show work in device-shaped frames arranged as a cover-flow, with neighbours dimmed and tilted so the next item is always previewed.",
-    "Shape the contact card like a ticket with notches and a perforated strip so the one accent-colour element feels like an object."
-   ]
-  },
-  {
-   "id": "aww-aardvark-book-club",
-   "name": "Aardvark Book Club",
-   "url": "https://aardvarkbookclub.com",
-   "source": "Awwwards Site of the Day",
-   "kind": "ecommerce",
-   "score": 7.7,
-   "idea": "A book club dressed as a sweet shop: fat black type, tumbling 3D books and boxes on wavy colour fields, annotated with handwritten asides.",
-   "mood": [
-    "playful",
-    "loud",
-    "bookish",
-    "warm"
-   ],
-   "archetype": "split-text-media",
-   "hero": "A saturated yellow field with two large wavy blobs, pale yellow then orange, rising from the bottom. A three-line headline in Champ Bold, black, at about 8.3vw with leading under 0.85, is flush to a 15px left margin and reaches 60% across. Beneath it: a four-line paragraph 310px wide and a magenta split button (label plus arrow square). Right of centre a 3D hardback in navy and pink tilts 20 degrees, 600px tall; another book is cropped by the top-left corner, a third by the bottom edge. A purple handwritten note sits rotated at far right. Nav: pale-yellow pill links centred, an orange login button, black round social icons.",
-   "type": "Champ Bold, an ultra-heavy wide sans with a looped g, for headings at 120px with tight tracking and leading; Degular for 18px body and pill labels; a purple handwritten script (Hello Organichand) for rotated margin notes and step labels. Three distinct voices.",
-   "colour": "#ffd249 #faed8f #f9a21f #ffdbfd #a4f6f8 #fd48f2 — Each section owns one flat candy colour: yellow hero, white shelf, pink steps, cyan unboxing, deep violet footer. Type stays black; buttons are magenta.",
-   "imagery": "3D-rendered hardbacks and a patterned shipping box, cut out and tilted, floating over flat wavy vector shapes; real book covers on tilted coloured cards; black line drawings of figures on step cards. Nothing sits square to the grid.",
-   "layout": "Sections are full-width panels with roughly 80px corner radius inset about 20px from the viewport, each a different colour. Headings alternate left and centre; cards overlap and rotate a few degrees; handwritten notes are tucked beside headings at an angle.",
-   "sections": [
-    {
-     "role": "showcase",
-     "description": "White band. A centred black heading at 5.5vw over a two-line subline, with a rotated handwritten note at its upper left. Below, a horizontal row of book covers, each on a rounded colour-matched card with a small tag pill at top-left; cards tilt alternately by 3 degrees at staggered heights, the last cropped by the right edge, with two round arrow buttons above at right. Later, covers give way to same-coloured info cards with genre pills, heavy title and blurb."
-    },
-    {
-     "role": "how-it-works",
-     "description": "A pale-pink rounded panel with lighter wavy shapes inside. Heavy black heading at left with a handwritten aside beside it; a small round logo stamp and a magenta split button at right. Along the bottom, four portrait cards about 250px wide in cyan, magenta, yellow and violet overlap like a fanned hand, each rotated a few degrees, with a handwritten step label at top, a black line drawing in the middle and a heavy caption at the foot."
-    },
-    {
-     "role": "other",
-     "description": "A full-viewport cyan rounded panel containing only a 3D shipping box wrapped in a wavy magenta, violet and black pattern, centred. Across the scroll it goes from closed and tilted to lid open, growing to about 57% of the viewport width, with a single handwritten note at its right. No heading and no button."
-    },
-    {
-     "role": "footer",
-     "description": "The preceding white section ends in large rounded bottom corners over a deep violet footer. Left: white logo, two store badges, two magenta round social icons. Centre: the patterned box again, cropped by the bottom edge. Right: a small heavy heading, a white rounded email field and a magenta split button. A black legal strip closes the page."
-    }
-   ],
-   "steal": [
-    "Give each section one flat saturated colour inside a large-radius inset panel and keep the type black across all of them.",
-    "Add rotated handwritten margin notes beside headings to carry secondary facts in a second voice.",
-    "Fan step cards so they overlap and tilt instead of sitting in an even grid."
-   ],
-   "media": "About 60% of the first screen is picture: a 3D book and cropped book corners over a full-bleed illustrated wave field. Below come a sticky image-sequence of a box opening inside a rounded panel, a slider of tilted cards bleeding off the right edge, covers fanned like a hand of cards, a sticker collage round a circular badge and a cut-out box rising out of the footer: 37 images and two scroll-scrubbed canvases, no video.",
-   "motion": "An indigo transition panel wipes away by 1.2s while the headline arrives word by word (515 split characters), and Lenis then drives the scrubbed scenes: the hero book turns through an image sequence, a sticky stage scrubs the box opening over 2745px, a headline slides along a curved path at scrub 0.5, and the footer is uncovered from under the rounded page. Buttons squash to 0.955 by 0.925 in 0.15s on press, the main ease is cubic-bezier(0.32,0.72,0,1), and the bounce overshoots are ones the house motion layer does not use, though the site ships 32 reduced-motion rules."
-  }
- ],
- "scenes": []
+ ]
 }

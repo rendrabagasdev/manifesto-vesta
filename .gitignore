@@ -44,4 +44,4 @@ node_modules/
 dist/
 .env
 
-.taste-skill
+.taste-skill/*
