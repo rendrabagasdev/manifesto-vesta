@@ -57,20 +57,31 @@ jobs:
         run: |
           echo "IMAGE_NAME=${GITHUB_REPOSITORY,,}" >> ${GITHUB_ENV}
 
-      - name: Login, Pull, and Update Container
+      - name: Setup SSH Agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add Server to Known Hosts
         run: |
-          # Login ke GHCR
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
 
-          # Pull image terbaru
-          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-
-          # Hentikan dan hapus container lama jika ada
-          docker stop vesta-app || true
-          docker rm vesta-app || true
-
-          # Pastikan network vesta-network ada
-          docker network create vesta-network || true
+      - name: SSH to Fedora and Update Container
+        run: |
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
+            # Login ke GHCR
+            echo '${{ secrets.GITHUB_TOKEN }}' | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
+            
+            # Pull image versi terbaru
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            
+            # Hentikan container lama jika ada
+            docker stop vesta-app || true
+            docker rm vesta-app || true
+            
+            # Pastikan vesta-network sudah ada
+            docker network create vesta-network || true
 
           # Jalankan container baru
           docker run -d \
