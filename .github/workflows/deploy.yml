@@ -3,12 +3,10 @@ name: Deploy Next.js Docker to Fedora
 on:
   push:
     branches:
-      - main # Ganti jika nama branch utama Anda berbeda
+      - main
 
 env:
   REGISTRY: ghcr.io
-  # Menggunakan nama repositori versi huruf kecil otomatis untuk Docker Image
-  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build-and-push:
@@ -20,6 +18,10 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+
+      - name: Downcase Image Name
+        run: |
+          echo "IMAGE_NAME=${GITHUB_REPOSITORY,,}" >> ${GITHUB_ENV}
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
@@ -49,6 +51,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Downcase Image Name
+        run: |
+          echo "IMAGE_NAME=${GITHUB_REPOSITORY,,}" >> ${GITHUB_ENV}
+
       - name: Setup SSH Agent
         uses: webfactory/ssh-agent@v8
         with:
@@ -62,23 +68,28 @@ jobs:
       - name: SSH to Fedora and Update Container
         run: |
           ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
-            # Login ke GHCR di dalam server Fedora menggunakan GitHub Token sementara
+            # Login ke GHCR
             echo '${{ secrets.GITHUB_TOKEN }}' | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
             
             # Pull image versi terbaru
             docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
             
-            # Hentikan dan hapus container lama jika sedang berjalan
-            docker stop nextjs-app || true
-            docker rm nextjs-app || true
+            # Hentikan container lama jika ada
+            docker stop vesta-app || true
+            docker rm vesta-app || true
             
-            # Jalankan container baru di port 3000 (sesuaikan jika mau port lain di server, misal 80:3000)
+            # Pastikan vesta-network sudah ada
+            docker network create vesta-network || true
+
+            # Jalankan container dengan vesta-network dan file .env server
             docker run -d \
-              --name nextjs-app \
-              --restart always \
-              -p 3000:3000 \
+              --name vesta-app \
+              --restart unless-stopped \
+              --network vesta-network \
+              --env-file /var/www/vesta/.env \
+              -p 127.0.0.1:3000:3000 \
               ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
               
-            # Bersihkan image lama yang tidak terpakai agar disk tidak penuh
+            # Bersihkan image lama
             docker image prune -f
           "
