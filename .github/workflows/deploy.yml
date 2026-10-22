@@ -1,4 +1,4 @@
-name: Deploy Next.js Docker to Fedora
+name: Deploy Next.js Docker to Fedora (Self-Hosted)
 
 on:
   push:
@@ -9,6 +9,7 @@ env:
   REGISTRY: ghcr.io
 
 jobs:
+  # 1. Build & Push image dilakukan di cloud GitHub (hemat CPU & RAM server Fedora Anda)
   build-and-push:
     runs-on: ubuntu-latest
     permissions:
@@ -46,50 +47,39 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
 
+  # 2. Deploy dijalankan langsung di server Fedora via Self-Hosted Runner (tanpa SSH & tanpa IP publik!)
   deploy:
     needs: build-and-push
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
 
     steps:
       - name: Downcase Image Name
         run: |
           echo "IMAGE_NAME=${GITHUB_REPOSITORY,,}" >> ${GITHUB_ENV}
 
-      - name: Setup SSH Agent
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: Add Server to Known Hosts
+      - name: Login, Pull, and Update Container
         run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+          # Login ke GHCR
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
 
-      - name: SSH to Fedora and Update Container
-        run: |
-          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
-            # Login ke GHCR
-            echo '${{ secrets.GITHUB_TOKEN }}' | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
-            
-            # Pull image versi terbaru
-            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-            
-            # Hentikan container lama jika ada
-            docker stop vesta-app || true
-            docker rm vesta-app || true
-            
-            # Pastikan vesta-network sudah ada
-            docker network create vesta-network || true
+          # Pull image terbaru
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
-            # Jalankan container dengan vesta-network dan file .env server
-            docker run -d \
-              --name vesta-app \
-              --restart unless-stopped \
-              --network vesta-network \
-              --env-file /var/www/vesta/.env \
-              -p 127.0.0.1:3000:3000 \
-              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-              
-            # Bersihkan image lama
-            docker image prune -f
-          "
+          # Hentikan dan hapus container lama jika ada
+          docker stop vesta-app || true
+          docker rm vesta-app || true
+
+          # Pastikan network vesta-network ada
+          docker network create vesta-network || true
+
+          # Jalankan container baru
+          docker run -d \
+            --name vesta-app \
+            --restart unless-stopped \
+            --network vesta-network \
+            --env-file /var/www/vesta/.env \
+            -p 127.0.0.1:3000:3000 \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+          # Bersihkan image lama
+          docker image prune -f
