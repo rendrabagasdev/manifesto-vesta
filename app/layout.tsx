@@ -3,9 +3,9 @@ import { Geist, Geist_Mono, Raleway, Nunito_Sans } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
-const nunitoSansHeading = Nunito_Sans({subsets:['latin'],variable:'--font-heading'});
+const nunitoSansHeading = Nunito_Sans({subsets:['latin'],variable:'--font-nunito'});
 
-const raleway = Raleway({subsets:['latin'],variable:'--font-sans'});
+const raleway = Raleway({subsets:['latin'],variable:'--font-raleway'});
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
