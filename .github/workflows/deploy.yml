@@ -1,0 +1,84 @@
+name: Deploy Next.js Docker to Fedora
+
+on:
+  push:
+    branches:
+      - main # Ganti jika nama branch utama Anda berbeda
+
+env:
+  REGISTRY: ghcr.io
+  # Menggunakan nama repositori versi huruf kecil otomatis untuk Docker Image
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract Metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup SSH Agent
+        uses: webfactory/ssh-agent@v8
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add Server to Known Hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+
+      - name: SSH to Fedora and Update Container
+        run: |
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "
+            # Login ke GHCR di dalam server Fedora menggunakan GitHub Token sementara
+            echo '${{ secrets.GITHUB_TOKEN }}' | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
+            
+            # Pull image versi terbaru
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+            
+            # Hentikan dan hapus container lama jika sedang berjalan
+            docker stop nextjs-app || true
+            docker rm nextjs-app || true
+            
+            # Jalankan container baru di port 3000 (sesuaikan jika mau port lain di server, misal 80:3000)
+            docker run -d \
+              --name nextjs-app \
+              --restart always \
+              -p 3000:3000 \
+              ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+              
+            # Bersihkan image lama yang tidak terpakai agar disk tidak penuh
+            docker image prune -f
+          "
