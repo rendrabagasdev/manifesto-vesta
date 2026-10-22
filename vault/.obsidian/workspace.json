@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "00-MOC/🏠 Home.md",
+                "file": "02-Fitur/🌍 Impact Ledger.md",
                 "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "🏠 Home"
+              "title": "🌍 Impact Ledger"
             }
           }
         ]
@@ -99,7 +99,7 @@
             "state": {
               "type": "backlink",
               "state": {
-                "file": "00-MOC/🏠 Home.md",
+                "file": "02-Fitur/🌍 Impact Ledger.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -118,7 +118,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
-                "file": "00-MOC/🏠 Home.md",
+                "file": "02-Fitur/🌍 Impact Ledger.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
@@ -161,7 +161,7 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "00-MOC/🏠 Home.md",
+                "file": "02-Fitur/🌍 Impact Ledger.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -190,6 +190,12 @@
   },
   "active": "aefbd595902ba19d",
   "lastOpenFiles": [
+    "02-Fitur/🏅 Loyalty Tier System.md",
+    "02-Fitur/🌍 Impact Ledger.md",
+    "01-Overview/📋 Ringkasan Produk.md",
+    "01-Overview/👥 Peran Pengguna.md",
+    "01-Overview/🎯 Scope & Non-Goals.md",
+    "00-MOC/🏠 Home.md",
     "08-Templates/📝 Template Daily Note.md",
     "06-Demo-Strategy/🎭 Strategi Demo.md",
     "06-Demo-Strategy/⚠️ Risiko & Mitigasi.md",
@@ -201,12 +207,6 @@
     "02-Fitur/🧪 Freshness Score.md",
     "02-Fitur/🔄 Cascade State Machine.md",
     "02-Fitur/💰 Dynamic Rescue Pricing.md",
-    "02-Fitur/🏅 Loyalty Tier System.md",
-    "02-Fitur/🌍 Impact Ledger.md",
-    "01-Overview/📋 Ringkasan Produk.md",
-    "01-Overview/👥 Peran Pengguna.md",
-    "01-Overview/🎯 Scope & Non-Goals.md",
-    "00-MOC/🏠 Home.md",
     "08-Templates",
     "06-Demo-Strategy",
     "05-Timeline",
