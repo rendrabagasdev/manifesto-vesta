@@ -1,20 +1,16 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Raleway, Nunito_Sans } from "next/font/google";
+import { Nunito_Sans, Raleway } from "next/font/google";
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
-const nunitoSansHeading = Nunito_Sans({subsets:['latin'],variable:'--font-nunito'});
-
-const raleway = Raleway({subsets:['latin'],variable:'--font-raleway'});
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const raleway = Raleway({
   subsets: ["latin"],
+  variable: "--font-raleway",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const nunitoSans = Nunito_Sans({
   subsets: ["latin"],
+  variable: "--font-nunito",
 });
 
 export const metadata: Metadata = {
@@ -25,10 +21,14 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
-      lang="en"
-      className={cn("h-full", "antialiased", geistSans.variable, geistMono.variable, "font-sans", raleway.variable, nunitoSansHeading.variable)}
+      lang="id"
+      className={cn(
+        "h-full font-sans antialiased",
+        raleway.variable,
+        nunitoSans.variable,
+      )}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">{children}</body>
     </html>
   );
 }

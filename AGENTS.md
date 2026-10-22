@@ -29,7 +29,7 @@ Dibangun untuk **Lomba Web Development UNIC** — tema Ekosistem Digital / Food 
 | UI         | Tailwind CSS v4 + shadcn/ui                |
 | Database   | PostgreSQL (Supabase / Neon)               |
 | ORM        | Prisma                                     |
-| Auth       | Supabase Auth / NextAuth.js (RBAC 7 peran) |
+| Auth       | Supabase Auth / NextAuth.js (RBAC 5 peran) |
 | PDF        | @react-pdf/renderer                        |
 | QR Code    | qrcode.react                               |
 | Payment    | Midtrans Sandbox                           |
@@ -75,6 +75,7 @@ vesta/
 - Gunakan **Server Components** secara default. Tambahkan `"use client"` hanya jika komponen butuh interaktivitas browser.
 - Gunakan **Server Actions** untuk mutasi data, bukan API routes (kecuali untuk endpoint publik / webhook).
 - Styling menggunakan **Tailwind CSS** — jangan buat file CSS terpisah kecuali untuk konfigurasi global.
+- **Jangan hardcode warna** di komponen. Semua warna memakai token semantik di `app/globals.css` (mis. `bg-surface`, `text-ink`, `bg-brand`); ikuti arahan skill `design-taste-frontend`.
 - Komponen UI menggunakan **shadcn/ui** — jangan buat komponen kustom untuk hal yang sudah tersedia di shadcn.
 
 ### Database & ORM
@@ -99,17 +100,15 @@ vesta/
 
 ---
 
-## 7 Peran Pengguna (RBAC)
+## 5 Peran Pengguna (RBAC)
 
-| Role            | Akses                                                     |
-| --------------- | --------------------------------------------------------- |
-| `PRODUCER`      | Input stok, tanggal panen, harga dasar, pantau pembayaran |
-| `WAREHOUSE`     | Cek kualitas, catat suhu, update status batch             |
-| `BUYER_B2C`     | Marketplace normal, Rescue Deal sesuai tier               |
-| `BUYER_B2B`     | Order besar, pre-order, Rescue Deal, sertifikat dampak    |
-| `BUYER_FEED`    | Beli batch tahap FEED (pakan ternak)                      |
-| `BUYER_RESIDUE` | Beli batch tahap RESIDUE (pupuk/biogas)                   |
-| `ADMIN`         | Kelola tier, harga dasar, monitoring cascade, konfigurasi |
+| Role        | Akses                                                                 |
+| ----------- | --------------------------------------------------------------------- |
+| `ADMIN`     | Kelola tier, harga dasar, monitoring cascade, konfigurasi             |
+| `PRODUCER`  | Input stok, tanggal panen, harga dasar, pantau pembayaran             |
+| `WAREHOUSE` | Cek kualitas, catat suhu, update status batch                         |
+| `CONSUMER`  | Marketplace normal, Rescue Deal sesuai tier                           |
+| `BUSINESS`  | Order besar, pre-order, pakan, residu, sertifikat dampak              |
 
 ---
 

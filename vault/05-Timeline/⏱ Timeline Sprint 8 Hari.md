@@ -50,7 +50,7 @@ flowchart LR
 ## Detail per Hari
 
 ### H-8 & H-7: Fondasi & Database
-- [ ] Setup Next.js App Router + TypeScript + Tailwind + shadcn/ui
+- [x] Setup Next.js App Router + TypeScript + Tailwind + shadcn/ui
 - [ ] Inisialisasi Prisma ORM Schema (15+ tabel)
 - [ ] Setup Auth & Role Seeding (7 peran)
 - [ ] Mock Data Seeding (komoditas, shelf life, pasokan awal)

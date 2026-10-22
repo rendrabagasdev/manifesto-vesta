@@ -1,13 +1,80 @@
 // use prisma-8
 
+enum UserRole {
+  @@type("pg/text@1")
+
+  ADMIN    = "ADMIN"
+  PRODUCER = "PRODUCER"
+  WAREHOUSE = "WAREHOUSE"
+  CONSUMER = "CONSUMER"
+  BUSINESS = "BUSINESS"
+}
+
+enum BatchStatus {
+  @@type("pg/text@1")
+
+  FRESH    = "FRESH"
+  RESCUE   = "RESCUE"
+  FEED     = "FEED"
+  RESIDUE  = "RESIDUE"
+  DISPOSED = "DISPOSED"
+}
+
+enum ProductCategory {
+  @@type("pg/text@1")
+
+  VEGETABLE = "VEGETABLE"
+  FRUIT     = "FRUIT"
+  PROTEIN   = "PROTEIN"
+  STAPLE    = "STAPLE"
+  HERB      = "HERB"
+  OTHER     = "OTHER"
+}
+
+enum TierName {
+  @@type("pg/text@1")
+
+  STARTER  = "STARTER"
+  SILVER   = "SILVER"
+  GOLD     = "GOLD"
+  PLATINUM = "PLATINUM"
+}
+
+enum LedgerType {
+  @@type("pg/text@1")
+
+  EARN   = "EARN"
+  REDEEM = "REDEEM"
+  ADJUST = "ADJUST"
+}
+
+enum OrderStatus {
+  @@type("pg/text@1")
+
+  PENDING   = "PENDING"
+  PAID      = "PAID"
+  SHIPPED   = "SHIPPED"
+  COMPLETED = "COMPLETED"
+  CANCELLED = "CANCELLED"
+}
+
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  username  String?
-  name      String?
-  posts     Post[]
-  createdAt TimestamptzString @default(now())
-  updatedAt temporal.updatedAtString()
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  username     String?
+  name         String?
+  passwordHash String
+  role         UserRole
+  posts        Post[]
+  producer     Producer?
+  warehouses   Warehouse[]
+  buyerTier    BuyerTier?
+  orders       Order[]
+  loyaltyLedger LoyaltyLedger[]
+  rescueQuotaUsages RescueQuotaUsage[]
+  cascadeEvents CascadeEvent[]
+  createdAt    TimestamptzString @default(now())
+  updatedAt    temporal.updatedAtString()
 }
 
 model Post {
@@ -18,4 +85,254 @@ model Post {
   authorId  Int
   createdAt TimestamptzString @default(now())
   updatedAt temporal.updatedAtString()
+}
+
+model Producer {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  farmName  String
+  address   String?
+  phone     String?
+  products  Product[]
+  createdAt TimestamptzString @default(now())
+  updatedAt temporal.updatedAtString()
+}
+
+model Warehouse {
+  id         Int      @id @default(autoincrement())
+  name       String
+  address    String?
+  city       String?
+  capacityKg Float
+  managerId  Int?
+  manager    User?    @relation(fields: [managerId], references: [id])
+  batches    Batch[]
+  createdAt  TimestamptzString @default(now())
+  updatedAt  temporal.updatedAtString()
+
+  @@index([managerId])
+}
+
+model Product {
+  id             Int             @id @default(autoincrement())
+  producerId     Int
+  producer       Producer        @relation(fields: [producerId], references: [id], onDelete: Cascade)
+  name           String
+  category       ProductCategory
+  unit           String          @default("kg")
+  shelfLifeDays  Int
+  idealTempC     Float
+  basePricePerKg Int
+  description    String?
+  imageUrl       String?
+  batches        Batch[]
+  createdAt      TimestamptzString @default(now())
+  updatedAt      temporal.updatedAtString()
+
+  @@index([producerId])
+  @@index([category])
+}
+
+model Batch {
+  id                Int           @id @default(autoincrement())
+  code              String        @unique
+  productId         Int
+  product           Product       @relation(fields: [productId], references: [id])
+  warehouseId       Int
+  warehouse         Warehouse     @relation(fields: [warehouseId], references: [id])
+  harvestDate       DateString
+  receivedAt        TimestamptzString @default(now())
+  storageTempC      Float
+  quantityKg        Float
+  reservedKg        Float         @default(0)
+  freshnessScore    Float         @default(100)
+  status            BatchStatus   @default(FRESH)
+  qualityNote       String?
+  isManuallyAdjusted Boolean      @default(false)
+  priceBreakdown    PriceBreakdown?
+  cascadeEvents     CascadeEvent[]
+  rescueDeal        RescueDeal?
+  feedListing       FeedListing?
+  residueListing    ResidueListing?
+  orderItems        OrderItem[]
+  impactLogs        ImpactLog[]
+  createdAt         TimestamptzString @default(now())
+  updatedAt         temporal.updatedAtString()
+
+  @@index([productId])
+  @@index([warehouseId])
+  @@index([status])
+}
+
+model PriceBreakdown {
+  id                 Int      @id @default(autoincrement())
+  batchId            Int      @unique
+  batch              Batch    @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  basePricePerKg     Int
+  warehouseCostPerKg Int      @default(0)
+  logisticsCostPerKg Int      @default(0)
+  marginPerKg        Int      @default(0)
+  rescueDiscountPct  Float    @default(0)
+  finalPricePerKg    Int
+  createdAt          TimestamptzString @default(now())
+  updatedAt          temporal.updatedAtString()
+}
+
+model CascadeEvent {
+  id             Int          @id @default(autoincrement())
+  batchId        Int
+  batch          Batch        @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  fromStatus     BatchStatus?
+  toStatus       BatchStatus
+  freshnessScore Float
+  reason         String?
+  actorId        Int?
+  actor          User?        @relation(fields: [actorId], references: [id])
+  impactLogs     ImpactLog[]
+  createdAt      TimestamptzString @default(now())
+
+  @@index([batchId])
+}
+
+model BuyerTier {
+  id                 Int       @id @default(autoincrement())
+  userId             Int       @unique
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier               TierName  @default(STARTER)
+  totalSpend30d      Int       @default(0)
+  points             Int       @default(0)
+  rescueQuotaPerWeek Int       @default(2)
+  earlyAccessHours   Int       @default(0)
+  createdAt          TimestamptzString @default(now())
+  updatedAt          temporal.updatedAtString()
+
+  @@index([tier])
+}
+
+model LoyaltyLedger {
+  id          Int        @id @default(autoincrement())
+  userId      Int
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orderId     Int?
+  order       Order?     @relation(fields: [orderId], references: [id])
+  type        LedgerType
+  amount      Int
+  pointsDelta Int        @default(0)
+  description String?
+  createdAt   TimestamptzString @default(now())
+
+  @@index([userId])
+}
+
+model RescueQuotaUsage {
+  id        Int    @id @default(autoincrement())
+  userId    Int
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  weekStart DateString
+  used      Int    @default(0)
+  createdAt TimestamptzString @default(now())
+  updatedAt temporal.updatedAtString()
+
+  @@unique([userId, weekStart])
+}
+
+model RescueDeal {
+  id               Int      @id @default(autoincrement())
+  batchId          Int      @unique
+  batch            Batch    @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  discountPct      Float
+  rescuePricePerKg Int
+  startsAt         TimestamptzString
+  endsAt           TimestamptzString
+  earlyAccessHours Int      @default(0)
+  isActive         Boolean  @default(true)
+  createdAt        TimestamptzString @default(now())
+  updatedAt        temporal.updatedAtString()
+
+  @@index([isActive])
+}
+
+model FeedListing {
+  id          Int      @id @default(autoincrement())
+  batchId     Int      @unique
+  batch       Batch    @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  pricePerKg  Int
+  availableKg Float
+  suitableFor String?
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   TimestamptzString @default(now())
+  updatedAt   temporal.updatedAtString()
+
+  @@index([isActive])
+}
+
+model ResidueListing {
+  id             Int      @id @default(autoincrement())
+  batchId        Int      @unique
+  batch          Batch    @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  pricePerKg     Int
+  availableKg    Float
+  processingType String?
+  description    String?
+  isActive       Boolean  @default(true)
+  createdAt      TimestamptzString @default(now())
+  updatedAt      temporal.updatedAtString()
+
+  @@index([isActive])
+}
+
+model Order {
+  id              Int         @id @default(autoincrement())
+  code            String      @unique
+  buyerId         Int
+  buyer           User        @relation(fields: [buyerId], references: [id])
+  status          OrderStatus @default(PENDING)
+  subtotal        Int
+  discount        Int         @default(0)
+  total           Int
+  tierAtPurchase  TierName    @default(STARTER)
+  deliveryAddress String?
+  items           OrderItem[]
+  loyaltyLedger   LoyaltyLedger[]
+  impactLogs      ImpactLog[]
+  createdAt       TimestamptzString @default(now())
+  updatedAt       temporal.updatedAtString()
+
+  @@index([buyerId])
+  @@index([status])
+}
+
+model OrderItem {
+  id         Int         @id @default(autoincrement())
+  orderId    Int
+  order      Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  batchId    Int
+  batch      Batch       @relation(fields: [batchId], references: [id])
+  quantityKg Float
+  pricePerKg Int
+  lineTotal  Int
+  stage      BatchStatus
+  createdAt  TimestamptzString @default(now())
+
+  @@unique([orderId, batchId])
+  @@index([batchId])
+}
+
+model ImpactLog {
+  id               Int           @id @default(autoincrement())
+  batchId          Int?
+  batch            Batch?        @relation(fields: [batchId], references: [id])
+  orderId          Int?
+  order            Order?        @relation(fields: [orderId], references: [id])
+  cascadeEventId   Int?
+  cascadeEvent     CascadeEvent? @relation(fields: [cascadeEventId], references: [id])
+  rescuedKg        Float         @default(0)
+  co2eSavedKg      Float         @default(0)
+  waterSavedLiters Float         @default(0)
+  wasteDivertedKg  Float         @default(0)
+  createdAt        TimestamptzString @default(now())
+
+  @@index([batchId])
 }

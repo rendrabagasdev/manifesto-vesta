@@ -5,6 +5,12 @@ import type { NextRequest } from "next/server";
  * Next.js 16 Proxy Convention (replaces middleware.ts)
  * Menangani otomatis redirect ke halaman /maintenance saat MAINTENANCE_MODE aktif.
  */
+function readEnv(name: string) {
+  const value = process.env[name]?.trim();
+  if (!value) return undefined;
+  return value.replace(/^["']|["']$/g, "");
+}
+
 export function proxy(request: NextRequest) {
   const { pathname, searchParams } = request.nextUrl;
 
@@ -20,7 +26,7 @@ export function proxy(request: NextRequest) {
 
   // 2. Cek apakah pengguna melakukan bypass via query param (misal: ?bypass=vesta2026)
   const bypassParam = searchParams.get("bypass");
-  const bypassSecret = process.env.MAINTENANCE_BYPASS_KEY || "vesta2026";
+  const bypassSecret = readEnv("MAINTENANCE_BYPASS_KEY") || "vesta2026";
 
   if (bypassParam === bypassSecret) {
     const response = NextResponse.redirect(new URL("/", request.url));
@@ -42,7 +48,7 @@ export function proxy(request: NextRequest) {
 
   // 4. Periksa apakah sistem sedang dalam mode maintenance
   // Default aktif jika MAINTENANCE_MODE="true", atau jika di-trigger oleh header/env
-  const isMaintenance = process.env.MAINTENANCE_MODE === "true";
+  const isMaintenance = readEnv("MAINTENANCE_MODE") === "true";
 
   if (isMaintenance) {
     // Jika sudah di halaman /maintenance, jangan redirect berulang (loop)
