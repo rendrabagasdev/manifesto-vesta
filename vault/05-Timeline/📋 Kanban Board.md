@@ -1,21 +1,19 @@
 ---
-tags: [timeline, kanban, tasks]
-kanban-plugin: basic
----
 
-# 📋 Kanban Board
-
-> [!TIP]
-> Install plugin **Kanban** di Obsidian untuk melihat file ini sebagai board visual. Tanpa plugin, file ini tetap bisa dibaca sebagai checklist biasa.
+tags:
+  - timeline
+  - kanban
+  - tasks
+kanban-plugin: board
 
 ---
+
+## 📋 Kanban Board
+
+
 
 ## 📥 Backlog
 
-- [x] Setup Next.js App Router + TypeScript + Tailwind + shadcn/ui
-- [ ] Inisialisasi Prisma Schema (15+ tabel)
-- [ ] Setup Auth & Role Seeding (7 peran)
-- [ ] Mock Data Seeding
 - [ ] CRUD Batch Pasokan & Gudang
 - [ ] Algoritma Freshness Score
 - [ ] Dynamic Rescue Pricing Engine
@@ -36,14 +34,29 @@ kanban-plugin: basic
 - [ ] Skenario Presentasi Demo
 - [ ] Freeze Code
 
+
 ## 🔨 In Progress
+
 
 
 ## ✅ Done
 
+- [x] Setup Next.js App Router + TypeScript + Tailwind + shadcn/ui
+- [ ] Inisialisasi Prisma Schema (15+ tabel)
+- [ ] Mock Data Seeding
+- [ ] Setup Auth & Role Seeding (5 peran)
 
----
 
 ## Lihat Juga
-- [[⏱ Timeline Sprint 8 Hari]]
-- [[🏠 Home]]
+
+- [ ] [[⏱ Timeline Sprint 8 Hari]]
+- [ ] [[🏠 Home]]
+
+
+
+
+%% kanban:settings
+```
+{"kanban-plugin":"board"}
+```
+%%

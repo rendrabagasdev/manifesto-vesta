@@ -36,3 +36,28 @@ export const ROLE_MODULES: Record<UserRole, readonly string[]> = {
   CONSUMER: ["Marketplace segar", "Rescue Deal", "Riwayat pesanan"],
   BUSINESS: ["Katalog grosir", "Pakan & residu", "Sertifikat dampak"],
 };
+
+export const BATCH_VIEW_ROLES: readonly UserRole[] = [
+  "ADMIN",
+  "PRODUCER",
+  "WAREHOUSE",
+];
+
+export const BATCH_CREATE_ROLES: readonly UserRole[] = [
+  "ADMIN",
+  "PRODUCER",
+];
+
+export const BATCH_UPDATE_ROLES: readonly UserRole[] = ["ADMIN", "WAREHOUSE"];
+
+export const BATCH_DELETE_ROLES: readonly UserRole[] = [
+  "ADMIN",
+  "PRODUCER",
+];
+
+export function hasRole(
+  role: UserRole,
+  roles: readonly UserRole[],
+): boolean {
+  return roles.includes(role);
+}
