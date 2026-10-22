@@ -1,6 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Vesta — Freshness Cascade Platform
 
-## Getting Started
+Marketplace bahan pokok segar yang menghubungkan produsen → gudang → konsumen tanpa tengkulak dengan sistem cascade 5 tahap (*FRESH → RESCUE → FEED → RESIDUE → DISPOSED*).
+
+---
+
+## 🐳 Menjalankan dengan Docker
+
+Pastikan Docker & Docker Compose sudah terpasang.
+
+### 1. Siapkan Environment Variables
+```bash
+cp .env.example .env
+```
+
+### 2. Jalankan Container (Next.js + PostgreSQL)
+```bash
+docker compose up --build -d
+```
+
+- **Web App**: [http://localhost:3000](http://localhost:3000)
+- **PostgreSQL Database**: `localhost:5432`
+  - User: `postgres`
+  - Password: `postgres`
+  - Database: `vesta`
+
+### 3. Menghentikan Container
+```bash
+docker compose down
+```
+*(Tambahkan `-v` jika ingin menghapus volume database: `docker compose down -v`)*
+
+---
+
+## 💻 Menjalankan secara Lokal (Tanpa Docker)
 
 First, run the development server:
 
