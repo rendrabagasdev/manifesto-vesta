@@ -11,10 +11,14 @@
             "id": "aefbd595902ba19d",
             "type": "leaf",
             "state": {
-              "type": "graph",
-              "state": {},
-              "icon": "lucide-git-fork",
-              "title": "Graph view"
+              "type": "markdown",
+              "state": {
+                "file": "00-MOC/🏠 Home.md",
+                "mode": "preview",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "🏠 Home"
             }
           }
         ]
@@ -95,6 +99,7 @@
             "state": {
               "type": "backlink",
               "state": {
+                "file": "00-MOC/🏠 Home.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -113,6 +118,7 @@
             "state": {
               "type": "outgoing-link",
               "state": {
+                "file": "00-MOC/🏠 Home.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
@@ -155,6 +161,7 @@
             "state": {
               "type": "outline",
               "state": {
+                "file": "00-MOC/🏠 Home.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
@@ -183,7 +190,30 @@
   },
   "active": "aefbd595902ba19d",
   "lastOpenFiles": [
+    "08-Templates/📝 Template Daily Note.md",
+    "06-Demo-Strategy/🎭 Strategi Demo.md",
+    "06-Demo-Strategy/⚠️ Risiko & Mitigasi.md",
+    "05-Timeline/📋 Kanban Board.md",
+    "05-Timeline/⏱ Timeline Sprint 8 Hari.md",
+    "04-Database/🗄 Database Schema.md",
+    "04-Database/🔌 API Endpoints.md",
+    "03-Tech-Stack/🏗 Arsitektur & Tech Stack.md",
+    "02-Fitur/🧪 Freshness Score.md",
+    "02-Fitur/🔄 Cascade State Machine.md",
+    "02-Fitur/💰 Dynamic Rescue Pricing.md",
+    "02-Fitur/🏅 Loyalty Tier System.md",
+    "02-Fitur/🌍 Impact Ledger.md",
+    "01-Overview/📋 Ringkasan Produk.md",
+    "01-Overview/👥 Peran Pengguna.md",
     "01-Overview/🎯 Scope & Non-Goals.md",
-    "01-Overview/👥 Peran Pengguna.md"
+    "00-MOC/🏠 Home.md",
+    "08-Templates",
+    "06-Demo-Strategy",
+    "05-Timeline",
+    "04-Database",
+    "03-Tech-Stack",
+    "02-Fitur",
+    "01-Overview",
+    "00-MOC"
   ]
 }
