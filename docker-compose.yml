@@ -4,38 +4,14 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: vesta-app
-    restart: always
+    restart: unless-stopped
     ports:
       - "3000:3000"
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    networks:
+      - vesta-network
     env_file:
       - .env
-    environment:
-      - NODE_ENV=production
-      # Fallback jika DATABASE_URL tidak di-set di .env
-      - DATABASE_URL=${DATABASE_URL:-postgresql://manifesto:51d39cb775abfa83d9efc1a6c8eb7ba7d4ec45bac31a96a930ab3657610d@host.docker.internal:5432/appdb?schema=public}
 
-  # Service database bawaan (opsional, hanya aktif jika dipanggil: docker compose --profile with-db up)
-  db:
-    image: postgres:16-alpine
-    container_name: vesta-postgres
-    profiles:
-      - with-db
-    restart: always
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: vesta
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d vesta"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-volumes:
-  postgres_data:
+networks:
+  vesta-network:
+    external: true
