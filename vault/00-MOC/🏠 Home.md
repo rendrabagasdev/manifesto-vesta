@@ -13,7 +13,7 @@ aliases: [Home, Dashboard]
 
 ### 📖 Pemahaman Produk
 - [[📋 Ringkasan Produk]] — Pitch, masalah, tujuan
-- [[👥 Peran Pengguna]] — 7 peran dalam ekosistem
+- [[👥 Peran Pengguna]] — 5 peran dalam ekosistem
 - [[🎯 Scope & Non-Goals]] — Apa yang masuk MVP dan apa yang tidak
 
 ### ⚙️ Fitur Utama

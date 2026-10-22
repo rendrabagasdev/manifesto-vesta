@@ -12,7 +12,7 @@ kanban-plugin: basic
 
 ## 📥 Backlog
 
-- [ ] Setup Next.js App Router + TypeScript + Tailwind + shadcn/ui
+- [x] Setup Next.js App Router + TypeScript + Tailwind + shadcn/ui
 - [ ] Inisialisasi Prisma Schema (15+ tabel)
 - [ ] Setup Auth & Role Seeding (7 peran)
 - [ ] Mock Data Seeding

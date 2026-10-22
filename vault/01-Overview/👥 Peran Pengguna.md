@@ -6,15 +6,13 @@ tags: [overview, peran, rbac]
 
 Sistem melayani **tujuh peran** dalam satu ekosistem data:
 
-| # | Peran | Aktivitas Utama | Kebutuhan Utama |
-|---|-------|----------------|-----------------|
-| 1 | **Produsen** (petani/supplier) | Input stok, tanggal panen, harga dasar; pantau pembayaran | Harga adil, kepastian penjualan |
-| 2 | **Gudang** | Cek kualitas, catat suhu, update status batch | Data kesegaran akurat |
-| 3 | **Konsumen B2C** | Beli harga normal, ikut Rescue Deal sesuai tier | Harga terjangkau, bahan segar |
-| 4 | **Mitra B2B** (resto, hotel, katering) | Order besar, pre-order, ikut Rescue Deal | Harga stabil, sertifikat dampak |
-| 5 | **Buyer Pakan Ternak** | Beli batch tahap FEED | Pasokan murah dan terjadwal |
-| 6 | **Buyer Residue** (pupuk, kompos, biogas, maggot BSF) | Beli batch tahap RESIDUE | Bahan baku organik murah |
-| 7 | **Admin Platform** | Kelola tier, harga dasar, monitoring cascade | Kontrol dan audit |
+| #   | Peran                                  | Aktivitas Utama                                           | Kebutuhan Utama                 |
+| --- | -------------------------------------- | --------------------------------------------------------- | ------------------------------- |
+| 1   | **Produsen** (petani/supplier)         | Input stok, tanggal panen, harga dasar; pantau pembayaran | Harga adil, kepastian penjualan |
+| 2   | **Gudang**                             | Cek kualitas, catat suhu, update status batch             | Data kesegaran akurat           |
+| 3   | **Konsumen B2C**                       | Beli harga normal, ikut Rescue Deal sesuai tier           | Harga terjangkau, bahan segar   |
+| 4   | **Mitra B2B** (resto, hotel, katering) | Order besar, pre-order, ikut Rescue Deal                  | Harga stabil, sertifikat dampak |
+| 5   | **Admin Platform**                     | Kelola tier, harga dasar, monitoring cascade              | Kontrol dan audit               |
 
 ## Dashboard per Peran
 
@@ -24,8 +22,8 @@ flowchart LR
     G[Gudang] --> DG["Dashboard Gudang<br/>Penerimaan, suhu, Freshness Score"]
     B2C[Konsumen B2C] --> MP["Marketplace<br/>Katalog, price breakdown, Rescue Deal"]
     B2B[Mitra B2B] --> MP
-    PT[Buyer Pakan] --> MF["Marketplace Pakan & Residue<br/>Listing, harga per kg"]
-    BR[Buyer Residue] --> MF
+    PT[Buyer Pakan] --> MP
+    BR[Buyer Residue] --> MP
     A[Admin] --> DA["Dashboard Admin<br/>Monitoring cascade, konfigurasi"]
 ```
 
