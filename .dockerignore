@@ -10,3 +10,14 @@ README.md
 .env
 vault
 *.pdf
+docs/
+.github/
+*.md
+!README.md
+.taste-skill/
+.opencode/
+.agents/
+skills-lock.json
+prisma-8.md
+tech_stack_recommendation_unic_competition.md
+PRD*.pdf

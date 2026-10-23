@@ -1,0 +1,47 @@
+# Production Docker Compose untuk Fedora Server
+# Gunakan: docker-compose -f docker-compose.prod.yml up -d
+# Image di-pull dari GHCR (sudah di-build oleh GitHub Actions)
+
+services:
+  app:
+    image: ghcr.io/${GITHUB_REPOSITORY_OWNER}/${GITHUB_REPOSITORY,,}:latest
+    container_name: vesta-app
+    restart: unless-stopped
+    networks:
+      - vesta-network
+    env_file:
+      - /var/www/vesta/.env
+    ports:
+      - "127.0.0.1:3001:3000"  # Hanya localhost, diakses via Nginx reverse proxy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Optional: PostgreSQL jika tidak pakai external DB
+  # postgres:
+  #   image: postgres:16-alpine
+  #   container_name: vesta-postgres
+  #   restart: unless-stopped
+  #   environment:
+  #     POSTGRES_DB: appdb
+  #     POSTGRES_USER: manifesto
+  #     POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+  #   volumes:
+  #     - postgres-data:/var/lib/postgresql/data
+  #   networks:
+  #     - vesta-network
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U manifesto -d appdb"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+
+networks:
+  vesta-network:
+    external: true
+
+# volumes:
+#   postgres-data:
