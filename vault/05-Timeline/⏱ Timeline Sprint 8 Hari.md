@@ -53,7 +53,7 @@ flowchart LR
 
 - [x] Setup Next.js App Router + TypeScript + Tailwind + shadcn/ui
 - [x] Inisialisasi Prisma ORM Schema (15+ tabel)
-- [x] Setup Auth & Role Seeding (5 peran)
+- [x] Setup Auth & Role Seeding (7 peran)
 - [x] Mock Data Seeding (komoditas, shelf life, pasokan awal)
 
 ### H-6 & H-5: Logik Inti & Engine

@@ -42,17 +42,17 @@ function DealCard({ deal, earlyAccessHours }: { deal: RescueDealView; earlyAcces
     <article className="flex h-full flex-col rounded-xl border border-line bg-surface p-4">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="text-[11px] font-medium uppercase tracking-wide text-ink-muted">
+          <p className="text-xs font-medium text-ink-muted">
             {deal.discountLabel}
           </p>
-          <h3 className="mt-0.5 truncate text-sm font-semibold text-ink">{deal.productName}</h3>
+          <h2 className="mt-0.5 truncate text-sm font-semibold text-ink">{deal.productName}</h2>
         </div>
         <p className="shrink-0 rounded-lg bg-stage-rescue/25 px-2 py-1 text-sm font-bold tabular-nums text-ink">
           −{formatNumber(deal.discountPct)}%
         </p>
       </div>
 
-      <p className="mt-1.5 truncate text-xs text-ink-muted">
+      <p className="mt-1.5 truncate text-[13px] text-ink-muted">
         {deal.warehouseName}
         {deal.warehouseCity ? `, ${deal.warehouseCity}` : ""} · {deal.batchCode}
       </p>
@@ -182,6 +182,41 @@ export default async function RescueDealsPage() {
             {quota.used} terpakai minggu ini · tier {quota.tierLabel} · kuota tidak
             bisa ditumpuk antar minggu.
           </p>
+
+          <ul
+            className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-4"
+            aria-label="Kuota rescue per tier"
+          >
+            {TIER_ORDER.map((tier) => {
+              const benefit = TIER_BENEFITS[tier];
+              const current = tier === quota.tier;
+
+              return (
+                <li
+                  key={tier}
+                  className={current ? "bg-brand-soft p-2.5" : "bg-surface p-2.5"}
+                >
+                  <p
+                    className={
+                      current
+                        ? "text-xs font-semibold text-brand-strong"
+                        : "text-xs font-medium text-ink-muted"
+                    }
+                  >
+                    {benefit.label}
+                    {current ? " · Anda" : ""}
+                  </p>
+                  <p className="mt-0.5 text-sm font-semibold tabular-nums text-ink">
+                    {benefit.rescueQuotaPerWeek}
+                    <span className="text-xs font-normal text-ink-muted">
+                      {" "}
+                      /minggu
+                    </span>
+                  </p>
+                </li>
+              );
+            })}
+          </ul>
         </section>
 
         <section aria-labelledby="tier-heading" className="rounded-xl border border-line bg-surface p-4">

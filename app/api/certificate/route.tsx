@@ -11,8 +11,8 @@ import { requireApiUser } from "@/src/lib/api/http";
 import { getImpactSummaryFor } from "@/src/lib/marketplace/queries";
 import { formatInteger, formatNumber } from "@/src/lib/batches/format";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
+// Route handlers run at request time by default under cacheComponents;
+// the session read below keeps this handler dynamic.
 
 const styles = StyleSheet.create({
   page: {

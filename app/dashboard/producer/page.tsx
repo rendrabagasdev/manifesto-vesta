@@ -40,6 +40,12 @@ const ORDER_STATUS_LABELS: Record<string, string> = {
   CANCELLED: "Dibatalkan",
 };
 
+const PRODUCER_ONBOARDING = [
+  "Mencatat panen baru — skor kesegaran dan harga dihitung otomatis.",
+  "Memantau batch Anda melewati tahap cascade secara real-time.",
+  "Melacak pembayaran dari setiap penjualan batch.",
+] as const;
+
 export default async function ProducerDashboardPage() {
   await connection();
   const user = await requireRole(["PRODUCER", "ADMIN"]);
@@ -47,10 +53,44 @@ export default async function ProducerDashboardPage() {
   const producer = await getProducerForUser(user.id);
   if (!producer) {
     return (
-      <EmptyState
-        title="Profil produsen belum dibuat"
-        description="Hubungi admin untuk mengaitkan akun Anda dengan profil kebun."
-      />
+      <div>
+        <header className="max-w-xl">
+          <h1 className="font-heading text-2xl font-bold tracking-tight text-ink">
+            Dashboard produsen
+          </h1>
+          <p className="mt-1 text-sm text-ink-muted">{user.email}</p>
+        </header>
+        <div className="mt-6 max-w-xl">
+          <EmptyState
+            title="Profil produsen belum dibuat"
+            description="Hubungi admin untuk mengaitkan akun Anda dengan profil kebun."
+          />
+          <section
+            aria-labelledby="producer-onboarding-heading"
+            className="mt-4 rounded-xl border border-line bg-surface p-5"
+          >
+            <h2
+              id="producer-onboarding-heading"
+              className="text-sm font-semibold text-ink"
+            >
+              Setelah akun terkait, Anda bisa
+            </h2>
+            <ul className="mt-3 space-y-3">
+              {PRODUCER_ONBOARDING.map((item) => (
+                <li key={item} className="flex items-start gap-2.5">
+                  <span
+                    className="mt-1.5 size-1.5 shrink-0 rounded-full bg-brand-soft ring-1 ring-brand/30"
+                    aria-hidden="true"
+                  />
+                  <span className="text-sm leading-relaxed text-ink-muted">
+                    {item}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        </div>
+      </div>
     );
   }
 

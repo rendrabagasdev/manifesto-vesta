@@ -1,9 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/src/prisma/db";
-import { calculateFreshnessScore, calculateDynamicPricing, getCommodityProfile } from "@/src/lib/batches/engine";
-import { BatchStatus } from "@/src/prisma/contract";
-
-const DAY_MS = 24 * 60 * 60 * 1000;
+import { calculateFreshnessScore, calculateDynamicPricing } from "@/src/lib/batches/engine";
 
 export async function POST(request: NextRequest) {
   try {
@@ -58,7 +55,7 @@ export async function POST(request: NextRequest) {
         storageTempC: batch.storageTempC,
         idealTempC: batch.product.idealTempC,
         shelfLifeDays: batch.product.shelfLifeDays,
-        category: batch.product.category as any,
+        category: batch.product.category,
         now: advancedNow,
       });
 
@@ -68,14 +65,14 @@ export async function POST(request: NextRequest) {
       // Update batch with new freshness score and status
       await db.orm.public.Batch.where({ id: batch.id }).update({
         freshnessScore: freshnessResult.score,
-        status: newStatus as any,
+        status: newStatus,
       });
 
       // Calculate new dynamic pricing
       const pricing = calculateDynamicPricing({
         basePricePerKg: batch.product.basePricePerKg,
         status: newStatus,
-        category: batch.product.category as any,
+        category: batch.product.category,
         warehouseCostPerKg: batch.priceBreakdown.warehouseCostPerKg,
         logisticsCostPerKg: batch.priceBreakdown.logisticsCostPerKg,
         marginPerKg: batch.priceBreakdown.marginPerKg,
@@ -94,8 +91,8 @@ export async function POST(request: NextRequest) {
         // Create cascade event
         await db.orm.public.CascadeEvent.create({
           batchId: batch.id,
-          fromStatus: previousStatus as any,
-          toStatus: newStatus as any,
+          fromStatus: previousStatus,
+          toStatus: newStatus,
           freshnessScore: freshnessResult.score,
           reason: `Simulasi waktu: skor berubah dari ${previousStatus} ke ${newStatus}`,
         });

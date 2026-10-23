@@ -50,7 +50,7 @@ export async function createBatchAction(
     harvestDate: formData.get("harvestDate"),
     quantityKg: formData.get("quantityKg"),
     storageTempC: formData.get("storageTempC"),
-    qualityNote: formData.get("qualityNote"),
+    qualityNote: formData.get("qualityNote") ?? undefined,
   });
 
   if (!parsed.success) {
@@ -160,7 +160,7 @@ export async function updateBatchAction(
   const parsed = updateBatchSchema.safeParse({
     batchId: formData.get("batchId"),
     storageTempC: formData.get("storageTempC"),
-    qualityNote: formData.get("qualityNote"),
+    qualityNote: formData.get("qualityNote") ?? undefined,
   });
 
   if (!parsed.success) {

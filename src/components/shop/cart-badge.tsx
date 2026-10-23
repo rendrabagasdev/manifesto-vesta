@@ -15,7 +15,7 @@ export function CartBadge() {
     >
       <ShoppingCart className="size-[18px]" aria-hidden="true" />
       {ready && count > 0 ? (
-        <span className="absolute -right-0.5 -top-0.5 flex min-w-4 items-center justify-center rounded-full bg-brand-strong px-1 text-[10px] font-bold leading-4 text-on-brand">
+        <span className="absolute -right-0.5 -top-0.5 flex min-w-4 items-center justify-center rounded-full bg-brand-strong px-1 text-[11px] font-bold leading-4 text-on-brand">
           {count}
         </span>
       ) : null}

@@ -14,8 +14,8 @@ kanban-plugin: board
 
 ## 📥 Backlog
 
-- [ ] CRUD Batch Pasokan & Gudang
 - [ ] Algoritma Freshness Score
+- [ ] CRUD Batch Pasokan & Gudang
 - [ ] Dynamic Rescue Pricing Engine
 - [ ] Simulate Time API (`/api/demo/simulate-tick`)
 - [ ] Marketplace Katalog B2C & B2B

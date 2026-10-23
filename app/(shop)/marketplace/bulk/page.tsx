@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { FileBadge, Info } from "lucide-react";
+import { FileBadge } from "lucide-react";
 import { requireRole } from "@/src/lib/auth/session";
 import { getFreshListings, getImpactSummaryFor } from "@/src/lib/marketplace/queries";
 import { dateInputValue, formatInteger, formatNumber } from "@/src/lib/batches/format";
@@ -13,6 +13,12 @@ export const metadata: Metadata = {
   title: "Pesanan grosir — Vesta",
   description: "Pre-order jumlah besar, pesanan berulang, dan sertifikat dampak untuk mitra B2B.",
 };
+
+const BULK_FLOW = [
+  "Pilih batch segar, jumlah, dan jadwal pengiriman pertama.",
+  "Gudang mengonfirmasi ketersediaan sebelum invoice terbit.",
+  "Pesanan berulang disimpan sebagai catatan — gudang menyiapkan stok sesuai frekuensi yang dipilih.",
+] as const;
 
 export default async function BulkMarketplacePage() {
   await connection();
@@ -99,11 +105,24 @@ export default async function BulkMarketplacePage() {
             </a>
           </section>
 
-          <p className="flex items-start gap-2 rounded-lg bg-surface-muted px-4 py-3 text-xs leading-relaxed text-ink-muted">
-            <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
-            Pesanan berulang dibuat sebagai template catatan di pesanan — gudang
-            akan menyiapkan stok sesuai frekuensi yang dipilih.
-          </p>
+          <section aria-labelledby="how-heading" className="rounded-xl border border-line bg-surface p-5">
+            <h2 id="how-heading" className="text-sm font-semibold text-ink">
+              Cara kerja pre-order
+            </h2>
+            <ul className="mt-3 space-y-3">
+              {BULK_FLOW.map((step) => (
+                <li key={step} className="flex items-start gap-2.5">
+                  <span
+                    className="mt-1.5 size-1.5 shrink-0 rounded-full bg-brand-soft ring-1 ring-brand/30"
+                    aria-hidden="true"
+                  />
+                  <span className="text-sm leading-relaxed text-ink-muted">
+                    {step}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
         </div>
       </div>
     </div>

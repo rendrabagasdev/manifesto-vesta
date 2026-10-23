@@ -38,8 +38,7 @@ export function FreshnessMeter({
         </span>
         <span
           className={cn(
-            "truncate text-ink-muted",
-            size === "sm" ? "text-[11px]" : "text-xs",
+            "min-w-0 truncate text-ink-muted text-xs",
           )}
         >
           {tone.label}

@@ -1,0 +1,223 @@
+name: 🔍 CI/CD Pipeline - Vesta
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  workflow_dispatch:
+
+jobs:
+  # Lint and TypeCheck Job
+  lint:
+    name: Lint & TypeCheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      lint-errors: ${{ steps.lint.outputs.errors || '0' }}
+      typecheck-errors: ${{ steps.typecheck.outputs.errors || '0' }}
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📥 Install Dependencies
+        run: npm ci
+
+      - name: 🔍 Run Lint
+        run: npm run lint -- --max-warnings=0
+        id: lint
+        continue-on-error: false
+        env:
+          CI: true
+
+      - name: 📝 Upload Lint Report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lint-report
+          path: ./eslint-report.txt
+
+      - name: ✅ Lint Status
+        run: echo "Lint passed!" || exit 1
+
+  # Type Check Job
+  typecheck:
+    name: TypeScript TypeCheck
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: lint
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📥 Install Dependencies
+        run: npm ci
+
+      - name: ⚙️ TypeScript Type Check
+        run: npx tsc --noEmit
+        id: typecheck
+        env:
+          CI: true
+
+      - name: ✅ TypeCheck Status
+        run: echo "TypeScript type check passed!" || exit 1
+
+  # Test Job
+  test:
+    name: 🧪 Run Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: typecheck
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📥 Install Dependencies
+        run: npm ci
+
+      - name: 🧪 Run Unit Tests
+        run: npm run test -- --reporter=verbose
+        env:
+          CI: true
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/vesta_test"
+          NEXTAUTH_SECRET: "test-secret-min-32-chars"
+          NEXTAUTH_URL: "http://localhost:3000"
+          MIDTRANS_SERVER_KEY: "SERVER-test"
+          MIDTRANS_CLIENT_KEY: "KEY-test"
+          FONNTE_API_TOKEN: "test-token"
+
+      - name: 📊 Upload Test Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: ./coverage/
+
+      - name: ✅ Test Status
+        run: echo "All tests passed!" || exit 1
+
+  # Build Job
+  build:
+    name: 🏗️ Next.js Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: test
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📥 Install Dependencies
+        run: npm ci
+
+      - name: ⚙️ Next.js Build
+        run: npm run build
+        env:
+          CI: true
+          DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/vesta_test"
+          NEXTAUTH_SECRET: "test-secret-min-32-chars"
+          NEXTAUTH_URL: "http://localhost:3000"
+          MIDTRANS_SERVER_KEY: "SERVER-test"
+          MIDTRANS_CLIENT_KEY: "KEY-test"
+          FONNTE_API_TOKEN: "test-token"
+
+      - name: 📊 Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: .next/standalone
+          retention-days: 7
+
+      - name: ✅ Build Status
+        run: echo "Next.js build passed!" || exit 1
+
+  # TypeCheck (separate for clarity)
+  typecheck-separate:
+    name: TypeScript Check (Separate)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📥 Install Dependencies
+        run: npm ci
+
+      - name: ⚙️ TypeScript Type Check
+        run: npx tsc --noEmit
+        env:
+          CI: true
+
+      - name: ✅ TypeCheck Passed
+        run: echo "TypeScript types are correct!" || exit 1
+
+deploy:
+    name: 🚀 Deploy to Vercel
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📦 Install Vercel CLI
+        run: npm install -g vercel@latest
+
+      - name: 🔐 Authenticate with Vercel
+        uses: vercel/action@v1
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: 🚀 Deploy to Vercel
+        run: vercel --prod --confirm
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: ✅ Deploy Status
+        run: echo "✅ Successfully deployed to Vercel!" || exit 1

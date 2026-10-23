@@ -11,6 +11,10 @@ const BATCH_CODES = [
   "DEMO-APEL-003",
   "DEMO-TOMAT-004",
   "DEMO-BERAS-005",
+  "DEMO-WORTEL-006",
+  "DEMO-CABE-007",
+  "DEMO-TELUR-008",
+  "DEMO-KANGKUNG-009",
 ] as const;
 
 type BatchStatusValue = "FRESH" | "RESCUE" | "FEED" | "RESIDUE" | "DISPOSED";
@@ -278,6 +282,50 @@ async function main() {
 
   if (!rice) throw new Error("Gagal menyiapkan produk beras demo.");
 
+  const carrot = await ensureProduct({
+    name: "Wortel Berastagi",
+    category: "VEGETABLE",
+    shelfLifeDays: 21,
+    idealTempC: 4,
+    basePricePerKg: 11000,
+    description: "Wortel Berastagi manis dengan warna oranye cerah.",
+  });
+
+  if (!carrot) throw new Error("Gagal menyiapkan produk wortel demo.");
+
+  const chili = await ensureProduct({
+    name: "Cabe Merah Keriting",
+    category: "HERB",
+    shelfLifeDays: 10,
+    idealTempC: 12,
+    basePricePerKg: 38000,
+    description: "Cabe merah keriting panen petani Brebes.",
+  });
+
+  if (!chili) throw new Error("Gagal menyiapkan produk cabe demo.");
+
+  const egg = await ensureProduct({
+    name: "Telur Ayam Kampung",
+    category: "PROTEIN",
+    shelfLifeDays: 14,
+    idealTempC: 18,
+    basePricePerKg: 32000,
+    description: "Telur ayam kampung dari peternakan mitra.",
+  });
+
+  if (!egg) throw new Error("Gagal menyiapkan produk telur demo.");
+
+  const waterSpinach = await ensureProduct({
+    name: "Kangkung Hidroponik",
+    category: "VEGETABLE",
+    shelfLifeDays: 5,
+    idealTempC: 10,
+    basePricePerKg: 8000,
+    description: "Kangkung hidroponik segar dipanen pagi hari.",
+  });
+
+  if (!waterSpinach) throw new Error("Gagal menyiapkan produk kangkung demo.");
+
   await createBatch(
     {
       code: "DEMO-TOMAT-001",
@@ -403,6 +451,106 @@ async function main() {
     warehouseUser.id,
   );
 
+  await createBatch(
+    {
+      code: "DEMO-WORTEL-006",
+      productId: carrot.id,
+      warehouseId: warehouse.id,
+      harvestDate: daysAgo(3),
+      storageTempC: 5,
+      quantityKg: 150,
+      freshnessScore: 88,
+      status: "FRESH",
+      qualityNote: "Warna cerah, tidak ada retak.",
+      fromStatus: null,
+      cascadeReason: "Batch diterima dan lolos inspeksi.",
+      price: {
+        basePricePerKg: 11000,
+        warehouseCostPerKg: 1000,
+        logisticsCostPerKg: 1500,
+        marginPerKg: 2000,
+        rescueDiscountPct: 0,
+        finalPricePerKg: 15500,
+      },
+    },
+    warehouseUser.id,
+  );
+
+  await createBatch(
+    {
+      code: "DEMO-CABE-007",
+      productId: chili.id,
+      warehouseId: warehouse.id,
+      harvestDate: daysAgo(2),
+      storageTempC: 12,
+      quantityKg: 60,
+      freshnessScore: 84,
+      status: "FRESH",
+      qualityNote: "Kering, tangkai hijau.",
+      fromStatus: null,
+      cascadeReason: "Batch diterima dan lolos inspeksi.",
+      price: {
+        basePricePerKg: 38000,
+        warehouseCostPerKg: 1000,
+        logisticsCostPerKg: 1500,
+        marginPerKg: 2500,
+        rescueDiscountPct: 0,
+        finalPricePerKg: 43000,
+      },
+    },
+    warehouseUser.id,
+  );
+
+  await createBatch(
+    {
+      code: "DEMO-TELUR-008",
+      productId: egg.id,
+      warehouseId: warehouse.id,
+      harvestDate: daysAgo(1),
+      storageTempC: 18,
+      quantityKg: 90,
+      freshnessScore: 95,
+      status: "FRESH",
+      qualityNote: "Kulit bersih, tidak ada retak.",
+      fromStatus: null,
+      cascadeReason: "Batch diterima dan lolos inspeksi.",
+      price: {
+        basePricePerKg: 32000,
+        warehouseCostPerKg: 800,
+        logisticsCostPerKg: 1200,
+        marginPerKg: 2000,
+        rescueDiscountPct: 0,
+        finalPricePerKg: 36000,
+      },
+    },
+    warehouseUser.id,
+  );
+
+  await createBatch(
+    {
+      code: "DEMO-KANGKUNG-009",
+      productId: waterSpinach.id,
+      warehouseId: warehouse.id,
+      harvestDate: daysAgo(1),
+      storageTempC: 10,
+      quantityKg: 70,
+      freshnessScore: 90,
+      status: "FRESH",
+      qualityNote: "Daun segar, tangkai renyah.",
+      fromStatus: null,
+      cascadeReason: "Batch diterima dan lolos inspeksi.",
+      price: {
+        basePricePerKg: 8000,
+        warehouseCostPerKg: 1000,
+        logisticsCostPerKg: 1500,
+        marginPerKg: 1500,
+        rescueDiscountPct: 0,
+        finalPricePerKg: 12000,
+      },
+    },
+    warehouseUser.id,
+  );
+
   await db.orm.public.RescueDeal.create({
     batchId: rescueSpinach.id,
     discountPct: 35,
@@ -496,7 +644,7 @@ async function main() {
   });
 
   console.log("\nproduk      4");
-  console.log("batch       5 (FRESH 2, RESCUE 1, FEED 1, RESIDUE 1)");
+  console.log("batch       9 (FRESH 6, RESCUE 1, FEED 1, RESIDUE 1)");
   console.log("listing     RescueDeal 1, FeedListing 1, ResidueListing 1");
   console.log("order       1 (PAID, 2 item, impact log, loyalty ledger)");
   console.log("\nData demo siap. Kata sandi akun: " + DEMO_PASSWORD);

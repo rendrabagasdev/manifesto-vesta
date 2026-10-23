@@ -1,85 +1,71 @@
-name: Deploy Next.js Docker to Fedora (Self-Hosted)
+name: 🚀 Deploy to Vercel
 
 on:
   push:
-    branches:
-      - main
-
-env:
-  REGISTRY: ghcr.io
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
-  # 1. Build & Push image dilakukan di cloud GitHub
-  build-and-push:
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Downcase Image Name
-        run: |
-          echo "IMAGE_NAME=${GITHUB_REPOSITORY,,}" >> ${GITHUB_ENV}
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract Metadata for Docker
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=raw,value=latest
-
-      - name: Build and Push Docker Image
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-
-  # 2. Deploy dijalankan LANGSUNG di server Fedora (Tanpa SSH sama sekali!)
   deploy:
-    needs: build-and-push
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
-      - name: Downcase Image Name
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 📦 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📥 Install Dependencies
+        run: npm ci
+
+      - name: ⚙️ Generate Prisma Client
+        run: npx prisma generate
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: 🗄️ Run Prisma Migrations
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: 🏗️ Next.js Build
+        run: npm run build
+        env:
+          CI: true
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          MIDTRANS_SERVER_KEY: ${{ secrets.MIDTRANS_SERVER_KEY }}
+          MIDTRANS_CLIENT_KEY: ${{ secrets.MIDTRANS_CLIENT_KEY }}
+          FONNTE_API_TOKEN: ${{ secrets.FONNTE_API_TOKEN }}
+          SIMULATE_TIME_ENABLED: "true"
+
+      - name: 🔐 Authenticate with Vercel
+        uses: vercel/action@v1
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: 🚀 Deploy to Vercel
+        run: vercel --prod --confirm
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: ✅ Deployment Complete
         run: |
-          echo "IMAGE_NAME=${GITHUB_REPOSITORY,,}" >> ${GITHUB_ENV}
-
-      - name: Pull and Run Container on Fedora
-        run: |
-          # Login ke GHCR di server Fedora
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY }} -u ${{ github.actor }} --password-stdin
-
-          # Pull image terbaru yang baru saja di-build
-          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-
-          # Hentikan dan bersihkan container lama
-          docker stop vesta-app || true
-          docker rm -f vesta-app || true
-
-          # Pastikan network vesta-network tersedia
-          docker network create vesta-network || true
-
-          # Jalankan container baru (di port 3001 agar tidak bentrok)
-          docker run -d \
-            --name vesta-app \
-            --restart unless-stopped \
-            --network vesta-network \
-            --env-file /var/www/vesta/.env \
-            -p 127.0.0.1:3001:3000 \
-            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:latest
-
-          # Hapus image lama yang tidak terpakai
-          docker image prune -f
+          echo "========================================"
+          echo "✅ Vesta successfully deployed to Vercel"
+          echo "========================================"
+          echo "🌐 Deployment URL: https://vesta.vercel.app"
+          echo "📊 Dashboard: https://vercel.com"
+          echo "========================================"
