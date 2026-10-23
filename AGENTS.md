@@ -33,8 +33,7 @@ Dibangun untuk **Lomba Web Development UNIC** — tema Ekosistem Digital / Food 
 | PDF        | @react-pdf/renderer                        |
 | QR Code    | qrcode.react                               |
 | Payment    | Midtrans Sandbox                           |
-| Notifikasi | Fonnte (WhatsApp Sandbox)                  |
-| Deployment | Vercel                                     |
+| Notifikasi | VPS SElfhosted                             |
 
 ---
 

@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/src/prisma/db";
-import { calculateFreshnessScore, calculateDynamicPricing } from "@/src/lib/batches/engine";
+import { calculateFreshnessScore, calculateDynamicPricing, getCommodityProfile } from "@/src/lib/batches/engine";
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+type BatchStatus = "FRESH" | "RESCUE" | "FEED" | "RESIDUE" | "DISPOSED";
 
 export async function POST(request: NextRequest) {
   try {
