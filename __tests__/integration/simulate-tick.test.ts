@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 import { db } from "@/src/prisma/db";
 import { GET, POST } from "@/app/api/demo/simulate-tick/route";
 import { closeTestResources, truncateAll } from "./helpers/db";
+import { syncBatchState } from "@/src/lib/cascade/service";
 import {
   createBatch,
   createWorld,
@@ -76,6 +77,45 @@ describe("GET /api/demo/simulate-tick", () => {
 });
 
 describe("POST /api/demo/simulate-tick", () => {
+  it("matches the normal cascade service for equivalent batches", async () => {
+    const world = await createWorld();
+    const normal = await createBatch({
+      product: world.products.tomato,
+      warehouseId: world.warehouse.id,
+      harvestDate: daysAgo(2),
+      receivedAt: daysAgoIso(2),
+      status: "FRESH",
+      freshnessScore: 71,
+      quantityKg: 100,
+    });
+    const simulated = await createBatch({
+      product: world.products.tomato,
+      warehouseId: world.warehouse.id,
+      harvestDate: daysAgo(2),
+      receivedAt: daysAgoIso(2),
+      status: "FRESH",
+      freshnessScore: 71,
+      quantityKg: 100,
+    });
+
+    const advancedNow = new Date("2026-10-24T00:00:00.000Z");
+    const normalResult = await syncBatchState(db, normal.batch.id, {
+      now: advancedNow,
+      forwardOnly: true,
+      respectManualOverride: true,
+    });
+    const simulationJson = await readJson(await POST(tick({ hours: 24 })));
+    const simulatedTransition = simulationJson.data!.statusTransitions.find(
+      (transition) => transition.batchId === simulated.batch.id,
+    );
+
+    expect(simulatedTransition).toMatchObject({
+      fromStatus: normalResult!.previousStatus,
+      toStatus: normalResult!.status,
+      freshnessScore: normalResult!.freshnessScore,
+    });
+  });
+
   it("advances 24h and moves a FRESH batch into RESCUE with a new deal", async () => {
     const world = await createWorld();
     const { batch } = await createBatch({

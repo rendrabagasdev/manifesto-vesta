@@ -14,16 +14,11 @@ kanban-plugin: board
 
 ## 📥 Backlog
 
-- [ ] Algoritma Freshness Score
 - [ ] CRUD Batch Pasokan & Gudang
-- [ ] Dynamic Rescue Pricing Engine
-- [ ] Simulate Time API (`/api/demo/simulate-tick`)
 - [ ] Marketplace Katalog B2C & B2B
 - [ ] Loyalty Tier System + Poin
 - [ ] Anti-Abuse Rules & Kuota
 - [ ] Early Access Timer per Tier
-- [ ] Cascade: FEED Marketplace
-- [ ] Cascade: RESIDUE Marketplace
 - [ ] WhatsApp Notification (Fonnte)
 - [ ] Halaman Impact Counter (Public)
 - [ ] QR Code Traceability (`/trace/[batchId]`)
@@ -34,12 +29,17 @@ kanban-plugin: board
 - [ ] Skenario Presentasi Demo
 - [ ] Freeze Code
 
+## ✅ Done
+
+- [x] Algoritma Freshness Score
+- [x] Dynamic Rescue Pricing Engine
+- [x] Simulate Time API (`/api/demo/simulate-tick`)
+- [x] Cascade: FEED Marketplace
+- [x] Cascade: RESIDUE Marketplace
+- [x] Scheduler cascade produksi per jam
+
 
 ## 🔨 In Progress
-
-
-
-## ✅ Done
 
 - [x] Setup Next.js App Router + TypeScript + Tailwind + shadcn/ui
 - [ ] Inisialisasi Prisma Schema (15+ tabel)

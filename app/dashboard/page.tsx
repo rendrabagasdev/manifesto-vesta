@@ -23,7 +23,6 @@ import { summarizeBatches } from "@/src/lib/batches/metrics";
 import { getBatchesForUser } from "@/src/lib/batches/queries";
 import { getOrdersForUser } from "@/src/lib/marketplace/queries";
 import { StatusPill } from "@/src/components/status-pill";
-import { SimulateTimeSection } from "@/src/components/simulate-time/SimulateTimeSection";
 
 export const instant = false;
 
@@ -350,16 +349,6 @@ export default async function DashboardPage() {
           </p>
         </section>
       </div>
-
-      {/* Admin-only: Simulate Time Control */}
-      {user.role === "ADMIN" && (
-        <section className="mt-6" aria-labelledby="simulate-time-heading">
-          <h2 id="simulate-time-heading" className="sr-only">
-            Kontrol Simulasi Waktu
-          </h2>
-          <SimulateTimeSection />
-        </section>
-      )}
 
     </div>
   );
