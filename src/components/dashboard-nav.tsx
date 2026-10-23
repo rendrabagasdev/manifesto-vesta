@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  Briefcase,
   LayoutDashboard,
   Package,
   ShieldCheck,
@@ -25,7 +26,7 @@ const ROLE_MODULE: Record<UserRole, { href: string; label: string; icon: typeof 
   PRODUCER: { href: "/dashboard/producer", label: "Modul produsen", icon: Sprout },
   WAREHOUSE: { href: "/dashboard/warehouse", label: "Modul gudang", icon: Warehouse },
   CONSUMER: { href: "/dashboard/consumer", label: "Akun saya", icon: UserRound },
-  BUSINESS: { href: "/dashboard/consumer", label: "Akun saya", icon: UserRound },
+  BUSINESS: { href: "/dashboard/business", label: "Modul bisnis", icon: Briefcase },
 };
 
 const BUYER_ROLES: UserRole[] = ["CONSUMER", "BUSINESS"];
@@ -49,6 +50,7 @@ export function DashboardNav({ role, canViewBatches, variant }: DashboardNavProp
     <nav
       aria-label="Navigasi utama"
       className={cn(
+        "min-w-0",
         variant === "sidebar" ? "space-y-1" : "flex items-center gap-1",
       )}
     >
@@ -65,10 +67,10 @@ export function DashboardNav({ role, canViewBatches, variant }: DashboardNavProp
             href={item.href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "inline-flex items-center gap-2.5 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
+              "inline-flex items-center gap-2.5 whitespace-nowrap text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
               variant === "sidebar"
                 ? "h-9 w-full rounded-lg px-3 font-medium"
-                : "h-11 rounded-lg px-2.5 font-semibold",
+                : "h-11 shrink-0 rounded-lg px-2.5 font-semibold",
               variant === "sidebar" && active
                 ? "bg-surface text-ink"
                 : variant === "sidebar"
@@ -78,13 +80,9 @@ export function DashboardNav({ role, canViewBatches, variant }: DashboardNavProp
                     : "text-ink-muted hover:bg-surface/70 hover:text-ink",
             )}
           >
-            <Icon
-              className={cn(
-                "shrink-0",
-                variant === "sidebar" ? "size-4" : "size-[18px]",
-              )}
-              aria-hidden="true"
-            />
+            {variant === "sidebar" ? (
+              <Icon className="size-4 shrink-0" aria-hidden="true" />
+            ) : null}
             {item.label}
           </Link>
         );

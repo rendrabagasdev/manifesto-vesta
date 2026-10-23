@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Video from 'next-video';
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { Leaf } from "lucide-react";
@@ -15,20 +16,6 @@ export const metadata: Metadata = {
   description: "Masuk ke platform Freshness Cascade Vesta.",
 };
 
-const CASCADE_STAGES = [
-  { name: "FRESH", threshold: "≥ 70", dot: "bg-stage-fresh" },
-  { name: "RESCUE", threshold: "< 70", dot: "bg-stage-rescue" },
-  { name: "FEED", threshold: "< 30", dot: "bg-stage-feed" },
-  { name: "RESIDUE", threshold: "< 10", dot: "bg-stage-residue" },
-  { name: "DISPOSED", threshold: "0", dot: "bg-stage-disposed" },
-] as const;
-
-const VALUE_PROPS = [
-  "Harga jujur dari petani ke pembeli — rincian harga terbuka di setiap batch.",
-  "Batch yang mendekati kedaluwarsa diselamatkan lewat diskon dinamis, bukan dibuang.",
-  "Setiap tahap cascade punya pembeli: segar, rescue, pakan, hingga residu.",
-] as const;
-
 export default async function LoginPage() {
   await connection();
   const session = await auth();
@@ -36,70 +23,18 @@ export default async function LoginPage() {
 
   return (
     <main className="min-h-dvh bg-surface text-ink lg:grid lg:grid-cols-[1.1fr_0.9fr]">
-      <section className="hidden bg-brand-strong px-10 py-12 text-on-brand lg:sticky lg:top-0 lg:flex lg:min-h-dvh lg:flex-col lg:justify-between xl:px-16 xl:py-16">
-        <div>
-          <Link
-            href="/"
-            className="inline-flex items-center gap-2.5 text-lg font-semibold tracking-tight"
-          >
-            <span className="flex size-9 items-center justify-center rounded-lg bg-brand text-on-brand">
-              <Leaf className="size-5" aria-hidden="true" />
-            </span>
-            Vesta
-          </Link>
-
-          <p className="mt-16 max-w-lg text-balance font-heading text-3xl font-extrabold leading-[1.08] tracking-tight text-on-brand xl:text-4xl">
-            Setiap bahan punya waktu.
-          </p>
-          <p className="mt-5 max-w-md text-base leading-relaxed text-on-brand/80">
-            Satu platform yang menghubungkan produsen, gudang, dan pembeli
-            untuk menyelamatkan bahan segar sebelum waktunya habis.
-          </p>
-
-          <ul className="mt-12 max-w-md space-y-4">
-            {VALUE_PROPS.map((prop) => (
-              <li key={prop} className="flex items-start gap-3">
-                <span
-                  className="mt-2 size-2 shrink-0 rounded-full bg-brand-soft"
-                  aria-hidden="true"
-                />
-                <span className="text-sm leading-relaxed text-on-brand/85">
-                  {prop}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div className="mt-16">
-          <p className="text-sm font-semibold text-brand-soft">Alur cascade</p>
-          <ol className="mt-4 space-y-2">
-            {CASCADE_STAGES.map((stage) => (
-              <li
-                key={stage.name}
-                className="flex items-center justify-between gap-4 rounded-lg bg-on-brand/10 px-3.5 py-2.5"
-              >
-                <span className="flex items-center gap-3">
-                  <span
-                    className={`size-2 rounded-full ${stage.dot}`}
-                    aria-hidden="true"
-                  />
-                  <span className="text-sm font-semibold text-on-brand">
-                    {stage.name}
-                  </span>
-                </span>
-                <span className="text-sm tabular-nums text-on-brand/70">
-                  {stage.threshold}
-                </span>
-              </li>
-            ))}
-          </ol>
-          <p className="mt-5 text-sm text-on-brand/70">
-            Freshness Score menentukan tahap berikutnya secara otomatis.
-          </p>
-        </div>
+      <section className="hidden bg-brand-strong text-on-brand lg:sticky lg:top-0 lg:flex lg:min-h-dvh lg:flex-col lg:justify-between xl:py-0 rounded-r-4xl overflow-hidden">
+        <video
+          src="/assets/login.mp4"
+          autoPlay
+          loop
+          muted
+          plays
+          Inline
+          controls={false}
+          className="block w-full h-full flex-1 object-cover"
+        />
       </section>
-
       <section className="flex min-h-dvh flex-col justify-center px-6 py-12 sm:px-10 lg:px-14 xl:px-20">
         <div className="mx-auto w-full max-w-sm">
           <Link

@@ -83,12 +83,12 @@ export function AppShell({
             <div className="flex min-w-0 items-center gap-3">
               <Link
                 href="/dashboard"
-                className="inline-flex items-center gap-2 font-semibold tracking-tight text-ink lg:hidden"
+                aria-label="Beranda dashboard"
+                className="inline-flex items-center rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand lg:hidden"
               >
-                <span className="flex size-7 items-center justify-center rounded-lg bg-brand-strong text-on-brand">
-                  <Leaf className="size-3.5" aria-hidden="true" />
+                <span className="flex size-9 items-center justify-center rounded-lg bg-brand-strong text-on-brand">
+                  <Leaf className="size-4" aria-hidden="true" />
                 </span>
-                Vesta
               </Link>
               <span className="hidden items-center gap-1.5 text-xs text-ink-muted lg:flex">
                 Ruang kerja

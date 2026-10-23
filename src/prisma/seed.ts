@@ -15,6 +15,7 @@ const BATCH_CODES = [
   "DEMO-CABE-007",
   "DEMO-TELUR-008",
   "DEMO-KANGKUNG-009",
+  "DEMO-DISPOSED-010",
 ] as const;
 
 type BatchStatusValue = "FRESH" | "RESCUE" | "FEED" | "RESIDUE" | "DISPOSED";
@@ -40,8 +41,11 @@ type BatchSeed = {
   productId: number;
   warehouseId: number;
   harvestDate: string;
+  /** Explicit receipt timestamp keeps seeded scores close to simulate-tick. */
+  receivedAt: string;
   storageTempC: number;
   quantityKg: number;
+  reservedKg?: number;
   freshnessScore: number;
   status: BatchStatusValue;
   qualityNote: string;
@@ -67,6 +71,10 @@ function hoursFromNow(hours: number) {
   return new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
 }
 
+function hoursAgoIso(hours: number) {
+  return new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
+}
+
 async function requireUser(email: string) {
   const user = await db.orm.public.User.where({ email }).first();
   if (!user) throw new Error(`User demo tidak ditemukan: ${email}`);
@@ -79,8 +87,10 @@ async function createBatch(seed: BatchSeed, actorId: number) {
     productId: seed.productId,
     warehouseId: seed.warehouseId,
     harvestDate: seed.harvestDate,
+    receivedAt: seed.receivedAt,
     storageTempC: seed.storageTempC,
     quantityKg: seed.quantityKg,
+    reservedKg: seed.reservedKg ?? 0,
     freshnessScore: seed.freshnessScore,
     status: seed.status,
     qualityNote: seed.qualityNote,
@@ -222,6 +232,29 @@ async function main() {
 
   if (!warehouse) throw new Error("Gagal menyiapkan warehouse demo.");
 
+  const existingSecondWarehouse = await db.orm.public.Warehouse.where({
+    name: "Gudang Cimahi",
+  }).first();
+
+  const secondWarehouse = existingSecondWarehouse
+    ? await db.orm.public.Warehouse.where({
+        id: existingSecondWarehouse.id,
+      }).update({
+        managerId: warehouseUser.id,
+        address: "Jl. Industri No. 7, Cimahi",
+        city: "Cimahi",
+        capacityKg: 2500,
+      })
+    : await db.orm.public.Warehouse.create({
+        name: "Gudang Cimahi",
+        managerId: warehouseUser.id,
+        address: "Jl. Industri No. 7, Cimahi",
+        city: "Cimahi",
+        capacityKg: 2500,
+      });
+
+  if (!secondWarehouse) throw new Error("Gagal menyiapkan warehouse kedua.");
+
   async function ensureProduct(seed: ProductSeed) {
     const existing = await db.orm.public.Product.where({
       producerId,
@@ -331,7 +364,8 @@ async function main() {
       code: "DEMO-TOMAT-001",
       productId: tomato.id,
       warehouseId: warehouse.id,
-      harvestDate: daysAgo(2),
+      harvestDate: daysAgo(1),
+      receivedAt: hoursAgoIso(12),
       storageTempC: 9,
       quantityKg: 120,
       freshnessScore: 92,
@@ -356,10 +390,11 @@ async function main() {
       code: "DEMO-BAYAM-002",
       productId: spinach.id,
       warehouseId: warehouse.id,
-      harvestDate: daysAgo(4),
+      harvestDate: daysAgo(1),
+      receivedAt: hoursAgoIso(24),
       storageTempC: 12,
       quantityKg: 45,
-      freshnessScore: 58,
+      freshnessScore: 56,
       status: "RESCUE",
       qualityNote: "Daun mulai lemas, masih layak konsumsi.",
       fromStatus: "FRESH",
@@ -381,10 +416,11 @@ async function main() {
       code: "DEMO-APEL-003",
       productId: apple.id,
       warehouseId: warehouse.id,
-      harvestDate: daysAgo(25),
+      harvestDate: daysAgo(12),
+      receivedAt: hoursAgoIso(12 * 24),
       storageTempC: 18,
       quantityKg: 80,
-      freshnessScore: 24,
+      freshnessScore: 17,
       status: "FEED",
       qualityNote: "Tidak layak konsumsi manusia, aman untuk pakan.",
       fromStatus: "RESCUE",
@@ -406,10 +442,11 @@ async function main() {
       code: "DEMO-TOMAT-004",
       productId: tomato.id,
       warehouseId: warehouse.id,
-      harvestDate: daysAgo(30),
+      harvestDate: daysAgo(3),
+      receivedAt: hoursAgoIso(3 * 24),
       storageTempC: 24,
       quantityKg: 30,
-      freshnessScore: 6,
+      freshnessScore: 8,
       status: "RESIDUE",
       qualityNote: "Sudah tidak layak konsumsi, dialihkan ke residu organik.",
       fromStatus: "FEED",
@@ -432,9 +469,10 @@ async function main() {
       productId: rice.id,
       warehouseId: warehouse.id,
       harvestDate: daysAgo(10),
+      receivedAt: hoursAgoIso(10 * 24),
       storageTempC: 20,
       quantityKg: 200,
-      freshnessScore: 96,
+      freshnessScore: 94,
       status: "FRESH",
       qualityNote: "Butir utuh, kondisi kering.",
       fromStatus: null,
@@ -455,11 +493,12 @@ async function main() {
     {
       code: "DEMO-WORTEL-006",
       productId: carrot.id,
-      warehouseId: warehouse.id,
+      warehouseId: secondWarehouse.id,
       harvestDate: daysAgo(3),
+      receivedAt: hoursAgoIso(3 * 24),
       storageTempC: 5,
       quantityKg: 150,
-      freshnessScore: 88,
+      freshnessScore: 86,
       status: "FRESH",
       qualityNote: "Warna cerah, tidak ada retak.",
       fromStatus: null,
@@ -482,9 +521,10 @@ async function main() {
       productId: chili.id,
       warehouseId: warehouse.id,
       harvestDate: daysAgo(2),
+      receivedAt: hoursAgoIso(2 * 24),
       storageTempC: 12,
       quantityKg: 60,
-      freshnessScore: 84,
+      freshnessScore: 80,
       status: "FRESH",
       qualityNote: "Kering, tangkai hijau.",
       fromStatus: null,
@@ -505,11 +545,12 @@ async function main() {
     {
       code: "DEMO-TELUR-008",
       productId: egg.id,
-      warehouseId: warehouse.id,
+      warehouseId: secondWarehouse.id,
       harvestDate: daysAgo(1),
+      receivedAt: hoursAgoIso(24),
       storageTempC: 18,
       quantityKg: 90,
-      freshnessScore: 95,
+      freshnessScore: 93,
       status: "FRESH",
       qualityNote: "Kulit bersih, tidak ada retak.",
       fromStatus: null,
@@ -532,6 +573,7 @@ async function main() {
       productId: waterSpinach.id,
       warehouseId: warehouse.id,
       harvestDate: daysAgo(1),
+      receivedAt: hoursAgoIso(12),
       storageTempC: 10,
       quantityKg: 70,
       freshnessScore: 90,
@@ -551,13 +593,39 @@ async function main() {
     warehouseUser.id,
   );
 
+  await createBatch(
+    {
+      code: "DEMO-DISPOSED-010",
+      productId: tomato.id,
+      warehouseId: secondWarehouse.id,
+      harvestDate: daysAgo(10),
+      receivedAt: hoursAgoIso(10 * 24),
+      storageTempC: 24,
+      quantityKg: 20,
+      freshnessScore: 0,
+      status: "DISPOSED",
+      qualityNote: "Tidak ada nilai guna; dibuang sesuai SOP.",
+      fromStatus: "RESIDUE",
+      cascadeReason: "Skor kesegaran mencapai 0 dan batch dibuang.",
+      price: {
+        basePricePerKg: 15000,
+        warehouseCostPerKg: 500,
+        logisticsCostPerKg: 500,
+        marginPerKg: 0,
+        rescueDiscountPct: 100,
+        finalPricePerKg: 0,
+      },
+    },
+    warehouseUser.id,
+  );
+
   await db.orm.public.RescueDeal.create({
     batchId: rescueSpinach.id,
     discountPct: 35,
     rescuePricePerKg: 7800,
     startsAt: hoursFromNow(-1),
     endsAt: hoursFromNow(35),
-    earlyAccessHours: 2,
+    earlyAccessHours: 12,
     isActive: true,
   });
 
@@ -643,8 +711,11 @@ async function main() {
     earlyAccessHours: 6,
   });
 
-  console.log("\nproduk      4");
-  console.log("batch       9 (FRESH 6, RESCUE 1, FEED 1, RESIDUE 1)");
+  console.log("\nproduk      8");
+  console.log("gudang      2 (Bandung, Cimahi)");
+  console.log(
+    "batch       10 (FRESH 6, RESCUE 1, FEED 1, RESIDUE 1, DISPOSED 1)",
+  );
   console.log("listing     RescueDeal 1, FeedListing 1, ResidueListing 1");
   console.log("order       1 (PAID, 2 item, impact log, loyalty ledger)");
   console.log("\nData demo siap. Kata sandi akun: " + DEMO_PASSWORD);
