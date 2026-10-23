@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import Video from 'next-video';
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { Leaf } from "lucide-react";
@@ -29,8 +28,7 @@ export default async function LoginPage() {
           autoPlay
           loop
           muted
-          plays
-          Inline
+          playsInline
           controls={false}
           className="block w-full h-full flex-1 object-cover"
         />

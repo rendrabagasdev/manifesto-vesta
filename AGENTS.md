@@ -12,6 +12,12 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 # AGENTS.md — Freshness Cascade Platform (Vesta)
 
+## Protected CI/CD Workflows
+
+- [`.github/workflows/ci.yml`](.github/workflows/ci.yml) is finalized and protected. Do not modify, remove, or reintroduce production build/deploy steps there unless the user explicitly requests a CI/CD architecture change.
+- [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) is the only workflow responsible for building the production Docker image and deploying it.
+- Do not duplicate `npm run build`, Docker build, image push, or deployment steps in `ci.yml`.
+
 ## Tentang Proyek
 
 **Vesta** (Freshness Cascade Platform) adalah marketplace bahan pokok segar yang menghubungkan produsen → gudang → konsumen tanpa tengkulak. Stok mendekati kedaluwarsa diselamatkan lewat harga dinamis dan sistem cascade 5 tahap (FRESH → RESCUE → FEED → RESIDUE → DISPOSED).
