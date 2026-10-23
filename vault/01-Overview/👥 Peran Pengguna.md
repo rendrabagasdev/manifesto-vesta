@@ -2,9 +2,9 @@
 tags: [overview, peran, rbac]
 ---
 
-# 👥 7 Peran Pengguna
+# 👥 5 Peran Pengguna
 
-Sistem melayani **tujuh peran** dalam satu ekosistem data:
+Sistem melayani **lima peran** dalam satu ekosistem data:
 
 | #   | Peran                                  | Aktivitas Utama                                           | Kebutuhan Utama                 |
 | --- | -------------------------------------- | --------------------------------------------------------- | ------------------------------- |
@@ -22,10 +22,10 @@ flowchart LR
     G[Gudang] --> DG["Dashboard Gudang<br/>Penerimaan, suhu, Freshness Score"]
     B2C[Konsumen B2C] --> MP["Marketplace<br/>Katalog, price breakdown, Rescue Deal"]
     B2B[Mitra B2B] --> MP
-    PT[Buyer Pakan] --> MP
-    BR[Buyer Residue] --> MP
     A[Admin] --> DA["Dashboard Admin<br/>Monitoring cascade, konfigurasi"]
 ```
+
+> Pembeli pakan ternak dan residu menggunakan peran **Mitra B2B**, bukan role terpisah.
 
 ## Halaman Publik (Tanpa Login)
 - **Impact Counter** — kg terselamatkan, CO₂e, WDR

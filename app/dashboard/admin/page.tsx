@@ -53,12 +53,14 @@ export default async function AdminDashboardPage() {
             Pusat kendali cascade: pemantauan seluruh batch, konfigurasi tier,
             harga dasar, dan analitik dampak.
           </p>
-          <Link
-            href="/dashboard/admin/simulate"
-            className="inline-flex h-9 items-center rounded-lg bg-brand-strong px-3 text-sm font-semibold text-on-brand transition-colors hover:bg-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-          >
-            Buka simulasi waktu
-          </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href="/dashboard/admin/simulate"
+              className="inline-flex h-9 items-center rounded-lg bg-brand-strong px-3 text-sm font-semibold text-on-brand transition-colors hover:bg-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+            >
+              Buka simulasi waktu
+            </Link>
+          </div>
         </div>
       </header>
 

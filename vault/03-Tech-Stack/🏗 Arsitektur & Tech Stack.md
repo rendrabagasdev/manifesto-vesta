@@ -20,7 +20,7 @@ flowchart TD
     subgraph CLIENT["🖥 Client / Frontend"]
         R["React 18 + Next.js App Router"]
         T["Tailwind CSS + shadcn/ui"]
-        D7["Dashboard 7 Peran"]
+        D7["Dashboard 5 Peran"]
         ST["Simulate Time Control"]
         IC["Public Impact Counter"]
     end
@@ -63,7 +63,7 @@ flowchart TD
 | **UI** | Tailwind CSS + shadcn/ui | Komponen accessible & profesional siap pakai |
 | **Database** | PostgreSQL (Supabase / Neon) | Cloud relational DB untuk 15+ tabel |
 | **ORM** | Prisma | Query builder, auto-migration, autogenerate TS types |
-| **Auth** | Supabase Auth / NextAuth.js | RBAC untuk 7 peran |
+| **Auth** | Supabase Auth / NextAuth.js | RBAC untuk 5 peran |
 | **PDF** | @react-pdf/renderer | Sertifikat Impact ESG via JSX |
 | **QR Code** | qrcode.react | QR traceability per batch |
 | **Payment** | Midtrans Sandbox | Simulasi pembayaran |

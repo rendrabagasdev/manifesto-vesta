@@ -14,7 +14,7 @@ Pilihan **Next.js Fullstack (App Router)** digunakan sebagai single repository /
 +-----------------------------------------------------------------------+
 |                           CLIENT / FRONTEND                           |
 |  React 18 + Next.js App Router | Tailwind CSS | shadcn/ui Component   |
-|  Dashboard 7 Peran | Simulate Time Control | Public Impact Counter    |
+|  Dashboard 5 Peran | Simulate Time Control | Public Impact Counter    |
 +-----------------------------------------------------------------------+
                                    |
                          (Internal REST / Actions)
@@ -47,7 +47,7 @@ Pilihan **Next.js Fullstack (App Router)** digunakan sebagai single repository /
 | **UI Styling** | **Tailwind CSS + shadcn/ui** | Komponen UI accessible dan profesional (Table, Dialog, Select, Badge, Card) siap pakai tanpa perlu desain dari nol. |
 | **Database** | **PostgreSQL (Supabase / Neon.tech)** | Relational DB cloud terunggul untuk menangani 15+ tabel terintegrasi (batch, cascade, order, tier). |
 | **ORM** | **Prisma ORM** | Mempercepat query DB, otomatisasi migrasi skema, dan autogenerate TypeScript types secara instan. |
-| **Authentication** | **Supabase Auth / NextAuth.js** | Menangani Role-Based Access Control (RBAC) untuk 7 peran pengguna. |
+| **Authentication** | **Supabase Auth / NextAuth.js** | Menangani Role-Based Access Control (RBAC) untuk 5 peran pengguna. |
 | **PDF Generation** | **`@react-pdf/renderer`** | Membuat Sertifikat Impact ESG berformat PDF langsung di server/client menggunakan JSX. |
 | **QR Code** | **`qrcode.react`** | Merender QR Code acuan traceability produk yang dapat di-scan juri. |
 | **Integration** | **Midtrans Sandbox & Fonnte WA** | Gateway pembayaran simulasi dan notifikasi WhatsApp deal secara otomatis. |
