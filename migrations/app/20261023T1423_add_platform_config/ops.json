@@ -1,0 +1,43 @@
+[
+  {
+    "id": "table.PlatformConfig",
+    "label": "Create table \"PlatformConfig\"",
+    "summary": "Creates table \"PlatformConfig\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "PlatformConfig"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"PlatformConfig\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"PlatformConfig\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"PlatformConfig\"",
+        "sql": "CREATE TABLE \"public\".\"PlatformConfig\" (\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"earlyAccessWindowHours\" int4 DEFAULT 12 NOT NULL,\n  \"feedTimerHours\" int4,\n  \"freshTimerHours\" int4,\n  \"id\" int4 DEFAULT 1 NOT NULL,\n  \"logisticsCostPerKg\" int4 DEFAULT 1500 NOT NULL,\n  \"marginPerKg\" int4 DEFAULT 2000 NOT NULL,\n  \"rescueDealDurationHours\" int4 DEFAULT 48 NOT NULL,\n  \"rescueTimerHours\" int4,\n  \"residueTimerHours\" int4,\n  \"thresholdFeed\" int4 DEFAULT 10 NOT NULL,\n  \"thresholdFresh\" int4 DEFAULT 70 NOT NULL,\n  \"thresholdRescue\" int4 DEFAULT 30 NOT NULL,\n  \"thresholdResidue\" int4 DEFAULT 0 NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"updatedById\" int4,\n  \"warehouseCostPerKg\" int4 DEFAULT 1000 NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"PlatformConfig\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3))) AS \"result\"",
+        "params": [
+          "\"public\".\"PlatformConfig\"",
+          "r",
+          "p"
+        ]
+      }
+    ]
+  }
+]

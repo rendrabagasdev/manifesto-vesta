@@ -337,6 +337,28 @@ model OrderItem {
   @@index([batchId])
 }
 
+/// Single-row table (id = 1) holding the operational knobs an ADMIN can tune
+/// without a redeploy: cascade thresholds, stage timers and default costs.
+model PlatformConfig {
+  id                       Int      @id @default(1)
+  thresholdFresh           Int      @default(70)
+  thresholdRescue          Int      @default(30)
+  thresholdFeed            Int      @default(10)
+  thresholdResidue         Int      @default(0)
+  freshTimerHours          Int?
+  rescueTimerHours         Int?
+  feedTimerHours           Int?
+  residueTimerHours        Int?
+  rescueDealDurationHours  Int      @default(48)
+  earlyAccessWindowHours   Int      @default(12)
+  warehouseCostPerKg       Int      @default(1000)
+  logisticsCostPerKg       Int      @default(1500)
+  marginPerKg              Int      @default(2000)
+  updatedById              Int?
+  createdAt                TimestamptzString @default(now())
+  updatedAt                temporal.updatedAtString()
+}
+
 model ImpactLog {
   id               Int           @id @default(autoincrement())
   batchId          Int?

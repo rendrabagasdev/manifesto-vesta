@@ -36,6 +36,10 @@
       "model": "OrderItem",
       "namespace": "public"
     },
+    "PlatformConfig": {
+      "model": "PlatformConfig",
+      "namespace": "public"
+    },
     "Post": {
       "model": "Post",
       "namespace": "public"
@@ -1625,6 +1629,187 @@
               },
               "namespaceId": "public",
               "table": "OrderItem"
+            }
+          },
+          "PlatformConfig": {
+            "fields": {
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "earlyAccessWindowHours": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "feedTimerHours": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "freshTimerHours": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "logisticsCostPerKg": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "marginPerKg": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "rescueDealDurationHours": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "rescueTimerHours": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "residueTimerHours": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "thresholdFeed": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "thresholdFresh": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "thresholdRescue": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "thresholdResidue": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "updatedById": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "warehouseCostPerKg": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {},
+            "storage": {
+              "fields": {
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "earlyAccessWindowHours": {
+                  "column": "earlyAccessWindowHours"
+                },
+                "feedTimerHours": {
+                  "column": "feedTimerHours"
+                },
+                "freshTimerHours": {
+                  "column": "freshTimerHours"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "logisticsCostPerKg": {
+                  "column": "logisticsCostPerKg"
+                },
+                "marginPerKg": {
+                  "column": "marginPerKg"
+                },
+                "rescueDealDurationHours": {
+                  "column": "rescueDealDurationHours"
+                },
+                "rescueTimerHours": {
+                  "column": "rescueTimerHours"
+                },
+                "residueTimerHours": {
+                  "column": "residueTimerHours"
+                },
+                "thresholdFeed": {
+                  "column": "thresholdFeed"
+                },
+                "thresholdFresh": {
+                  "column": "thresholdFresh"
+                },
+                "thresholdRescue": {
+                  "column": "thresholdRescue"
+                },
+                "thresholdResidue": {
+                  "column": "thresholdResidue"
+                },
+                "updatedAt": {
+                  "column": "updatedAt"
+                },
+                "updatedById": {
+                  "column": "updatedById"
+                },
+                "warehouseCostPerKg": {
+                  "column": "warehouseCostPerKg"
+                }
+              },
+              "namespaceId": "public",
+              "table": "PlatformConfig"
             }
           },
           "Post": {
@@ -4054,6 +4239,147 @@
                 }
               ]
             },
+            "PlatformConfig": {
+              "columns": {
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "earlyAccessWindowHours": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "kind": "literal",
+                    "value": 12
+                  },
+                  "nullable": false
+                },
+                "feedTimerHours": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": true
+                },
+                "freshTimerHours": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": true
+                },
+                "id": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "kind": "literal",
+                    "value": 1
+                  },
+                  "nullable": false
+                },
+                "logisticsCostPerKg": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "kind": "literal",
+                    "value": 1500
+                  },
+                  "nullable": false
+                },
+                "marginPerKg": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "kind": "literal",
+                    "value": 2000
+                  },
+                  "nullable": false
+                },
+                "rescueDealDurationHours": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "kind": "literal",
+                    "value": 48
+                  },
+                  "nullable": false
+                },
+                "rescueTimerHours": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": true
+                },
+                "residueTimerHours": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": true
+                },
+                "thresholdFeed": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "kind": "literal",
+                    "value": 10
+                  },
+                  "nullable": false
+                },
+                "thresholdFresh": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "kind": "literal",
+                    "value": 70
+                  },
+                  "nullable": false
+                },
+                "thresholdRescue": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "kind": "literal",
+                    "value": 30
+                  },
+                  "nullable": false
+                },
+                "thresholdResidue": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nullable": false
+                },
+                "updatedAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": false
+                },
+                "updatedById": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": true
+                },
+                "warehouseCostPerKg": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "kind": "literal",
+                    "value": 1000
+                  },
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
             "Post": {
               "columns": {
                 "authorId": {
@@ -5022,10 +5348,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "a931a850fc112bc9a499a0eee007f0f1bfa68e9d9822dc2b852c48535da67b54"
+    "storageHash": "98e72e41a2fa5341924fead770a7640eb047360e1e48eae01e035a93ecd2d5e6"
   },
   "execution": {
-    "executionHash": "71c6355d0510c727acd3a24904bdbe26f4e75b64dd6594d7f9d2a5dae16b6de3",
+    "executionHash": "72a678ae5abbc20560d5d389981a277cdba90fae0226162c86ebb90e86df1123",
     "mutations": {
       "defaults": [
         {
@@ -5084,6 +5410,21 @@
           },
           "ref": {
             "entry": "Order",
+            "field": "updatedAt",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "timestamptzStringNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "timestamptzStringNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "PlatformConfig",
             "field": "updatedAt",
             "namespace": "public"
           }

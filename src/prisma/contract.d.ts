@@ -23,9 +23,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'a931a850fc112bc9a499a0eee007f0f1bfa68e9d9822dc2b852c48535da67b54'>;
+  StorageHashBase<'98e72e41a2fa5341924fead770a7640eb047360e1e48eae01e035a93ecd2d5e6'>;
 export type ExecutionHash =
-  ExecutionHashBase<'71c6355d0510c727acd3a24904bdbe26f4e75b64dd6594d7f9d2a5dae16b6de3'>;
+  ExecutionHashBase<'72a678ae5abbc20560d5d389981a277cdba90fae0226162c86ebb90e86df1123'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -541,6 +541,26 @@ export namespace Models {
     order: public_Order;
     readonly [RelationKeys]?: 'batch' | 'order';
   };
+  export type public_PlatformConfig = {
+    createdAt: FieldOutputTypes['public']['PlatformConfig']['createdAt'];
+    earlyAccessWindowHours: FieldOutputTypes['public']['PlatformConfig']['earlyAccessWindowHours'];
+    feedTimerHours: FieldOutputTypes['public']['PlatformConfig']['feedTimerHours'];
+    freshTimerHours: FieldOutputTypes['public']['PlatformConfig']['freshTimerHours'];
+    id: FieldOutputTypes['public']['PlatformConfig']['id'];
+    logisticsCostPerKg: FieldOutputTypes['public']['PlatformConfig']['logisticsCostPerKg'];
+    marginPerKg: FieldOutputTypes['public']['PlatformConfig']['marginPerKg'];
+    rescueDealDurationHours: FieldOutputTypes['public']['PlatformConfig']['rescueDealDurationHours'];
+    rescueTimerHours: FieldOutputTypes['public']['PlatformConfig']['rescueTimerHours'];
+    residueTimerHours: FieldOutputTypes['public']['PlatformConfig']['residueTimerHours'];
+    thresholdFeed: FieldOutputTypes['public']['PlatformConfig']['thresholdFeed'];
+    thresholdFresh: FieldOutputTypes['public']['PlatformConfig']['thresholdFresh'];
+    thresholdRescue: FieldOutputTypes['public']['PlatformConfig']['thresholdRescue'];
+    thresholdResidue: FieldOutputTypes['public']['PlatformConfig']['thresholdResidue'];
+    updatedAt: FieldOutputTypes['public']['PlatformConfig']['updatedAt'];
+    updatedById: FieldOutputTypes['public']['PlatformConfig']['updatedById'];
+    warehouseCostPerKg: FieldOutputTypes['public']['PlatformConfig']['warehouseCostPerKg'];
+    readonly [RelationKeys]?: never;
+  };
   export type public_Post = {
     authorId: FieldOutputTypes['public']['Post']['authorId'];
     content: FieldOutputTypes['public']['Post']['content'];
@@ -683,6 +703,7 @@ export declare const models: {
     LoyaltyLedger: Models.public_LoyaltyLedger;
     Order: Models.public_Order;
     OrderItem: Models.public_OrderItem;
+    PlatformConfig: Models.public_PlatformConfig;
     Post: Models.public_Post;
     PriceBreakdown: Models.public_PriceBreakdown;
     Producer: Models.public_Producer;
@@ -1696,6 +1717,157 @@ type ContractBase = Omit<
                 },
               ];
             };
+            readonly PlatformConfig: {
+              columns: {
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly earlyAccessWindowHours: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 12>;
+                  };
+                  readonly many: false;
+                };
+                readonly feedTimerHours: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly freshTimerHours: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 1>;
+                  };
+                  readonly many: false;
+                };
+                readonly logisticsCostPerKg: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 1500>;
+                  };
+                  readonly many: false;
+                };
+                readonly marginPerKg: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 2000>;
+                  };
+                  readonly many: false;
+                };
+                readonly rescueDealDurationHours: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 48>;
+                  };
+                  readonly many: false;
+                };
+                readonly rescueTimerHours: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly residueTimerHours: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly thresholdFeed: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 10>;
+                  };
+                  readonly many: false;
+                };
+                readonly thresholdFresh: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 70>;
+                  };
+                  readonly many: false;
+                };
+                readonly thresholdRescue: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 30>;
+                  };
+                  readonly many: false;
+                };
+                readonly thresholdResidue: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
+                  };
+                  readonly many: false;
+                };
+                readonly updatedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly updatedById: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly warehouseCostPerKg: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 1000>;
+                  };
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [];
+              foreignKeys: readonly [];
+            };
             readonly Post: {
               columns: {
                 readonly authorId: {
@@ -2522,6 +2694,10 @@ type ContractBase = Omit<
     };
     readonly Order: { readonly namespace: 'public' & NamespaceId; readonly model: 'Order' };
     readonly OrderItem: { readonly namespace: 'public' & NamespaceId; readonly model: 'OrderItem' };
+    readonly PlatformConfig: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'PlatformConfig';
+    };
     readonly Post: { readonly namespace: 'public' & NamespaceId; readonly model: 'Post' };
     readonly PriceBreakdown: {
       readonly namespace: 'public' & NamespaceId;
@@ -3389,6 +3565,108 @@ type ContractBase = Omit<
                 readonly pricePerKg: { readonly column: 'pricePerKg' };
                 readonly quantityKg: { readonly column: 'quantityKg' };
                 readonly stage: { readonly column: 'stage' };
+              };
+            };
+          };
+          readonly PlatformConfig: {
+            readonly fields: {
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly earlyAccessWindowHours: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly feedTimerHours: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly freshTimerHours: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly logisticsCostPerKg: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly marginPerKg: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly rescueDealDurationHours: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly rescueTimerHours: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly residueTimerHours: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly thresholdFeed: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly thresholdFresh: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly thresholdRescue: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly thresholdResidue: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly updatedById: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly warehouseCostPerKg: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: Record<string, never>;
+            readonly storage: {
+              readonly table: 'PlatformConfig';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly earlyAccessWindowHours: { readonly column: 'earlyAccessWindowHours' };
+                readonly feedTimerHours: { readonly column: 'feedTimerHours' };
+                readonly freshTimerHours: { readonly column: 'freshTimerHours' };
+                readonly id: { readonly column: 'id' };
+                readonly logisticsCostPerKg: { readonly column: 'logisticsCostPerKg' };
+                readonly marginPerKg: { readonly column: 'marginPerKg' };
+                readonly rescueDealDurationHours: { readonly column: 'rescueDealDurationHours' };
+                readonly rescueTimerHours: { readonly column: 'rescueTimerHours' };
+                readonly residueTimerHours: { readonly column: 'residueTimerHours' };
+                readonly thresholdFeed: { readonly column: 'thresholdFeed' };
+                readonly thresholdFresh: { readonly column: 'thresholdFresh' };
+                readonly thresholdRescue: { readonly column: 'thresholdRescue' };
+                readonly thresholdResidue: { readonly column: 'thresholdResidue' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+                readonly updatedById: { readonly column: 'updatedById' };
+                readonly warehouseCostPerKg: { readonly column: 'warehouseCostPerKg' };
               };
             };
           };
@@ -4325,6 +4603,15 @@ type ContractBase = Omit<
           readonly onUpdate: { readonly id: 'timestamptzStringNow'; readonly kind: 'generator' };
           readonly ref: {
             readonly entry: 'Order';
+            readonly field: 'updatedAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'timestamptzStringNow'; readonly kind: 'generator' };
+          readonly onUpdate: { readonly id: 'timestamptzStringNow'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'PlatformConfig';
             readonly field: 'updatedAt';
             readonly namespace: 'public';
           };
