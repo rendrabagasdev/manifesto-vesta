@@ -191,7 +191,7 @@ services:
     env_file:
       - /var/www/vesta/.env
     ports:
-      - "127.0.0.1:3001:3000"  # Hanya localhost, diakses via Nginx reverse proxy
+      - "127.0.0.1:3001:3000"  # Hanya localhost, diakses via Cloudflare Tunnel
 
   # Optional: PostgreSQL jika tidak pakai external DB
   # postgres:
@@ -217,83 +217,57 @@ networks:
 
 ---
 
-## 🌐 Nginx Reverse Proxy (SSL/TLS)
+## 🌐 Cloudflare Tunnel (SSL/TLS Otomatis)
 
-### Install Nginx & Certbot
+> **Catatan:** Menggunakan Cloudflare Tunnel dari Docker host, **tidak perlu Nginx/Certbot**.
 
-```bash
-sudo dnf install -y nginx certbot python3-certbot-nginx
-sudo systemctl start nginx
-sudo systemctl enable nginx
-```
-
-### Konfigurasi Nginx
+### Setup Cloudflare Tunnel
 
 ```bash
-sudo nano /etc/nginx/conf.d/vesta.conf
+# Install cloudflared
+sudo dnf install -y cloudflared
+
+# Login ke Cloudflare (akan buka browser untuk autorisasi)
+cloudflared tunnel login
+
+# Buat tunnel
+cloudflared tunnel create vesta
+
+# Catat Tunnel ID yang dihasilkan (contoh: abc123-def456-...)
+# Buat file konfigurasi
+mkdir -p ~/.cloudflared
+cat > ~/.cloudflared/config.yml <<EOF
+tunnel: <TUNNEL_ID>
+credentials-file: /home/$USER/.cloudflared/<TUNNEL_ID>.json
+
+ingress:
+  - hostname: vesta.yourdomain.com
+    service: http://127.0.0.1:3001
+  - service: http_status:404
+EOF
+
+# Install sebagai service systemd
+sudo cloudflared service install
+sudo systemctl start cloudflared
+sudo systemctl enable cloudflared
 ```
 
-```nginx
-# HTTP → HTTPS redirect
-server {
-    listen 80;
-    server_name vesta.yourdomain.com;
-    return 301 https://$server_name$request_uri;
-}
+### DNS di Cloudflare Dashboard
 
-# HTTPS
-server {
-    listen 443 ssl http2;
-    server_name vesta.yourdomain.com;
+1. Buka **Cloudflare Dashboard → DNS → Records**
+2. Tambahkan record:
+   - Type: `CNAME`
+   - Name: `vesta` (atau `@` untuk root domain)
+   - Target: `<TUNNEL_ID>.cfargotunnel.com`
+   - Proxy status: **Proxied** (orange cloud)
 
-    ssl_certificate /etc/letsencrypt/live/vesta.yourdomain.com/fullchain.pem;
-    ssl_certificate_key /etc/letsencrypt/live/vesta.yourdomain.com/privkey.pem;
+### Keuntungan Cloudflare Tunnel
 
-    # Security headers
-    add_header X-Frame-Options "SAMEORIGIN";
-    add_header X-Content-Type-Options "nosniff";
-    add_header Referrer-Policy "strict-origin-when-cross-origin";
-
-    # Proxy ke Next.js
-    location / {
-        proxy_pass http://127.0.0.1:3001;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
-        proxy_read_timeout 86400;
-    }
-
-    # Static files caching
-    location /_next/static/ {
-        proxy_pass http://127.0.0.1:3001;
-        add_header Cache-Control "public, max-age=31536000, immutable";
-    }
-
-    location /public/ {
-        proxy_pass http://127.0.0.1:3001;
-        add_header Cache-Control "public, max-age=86400";
-    }
-}
-```
-
-### Dapatkan SSL Certificate
-
-```bash
-sudo certbot --nginx -d vesta.yourdomain.com
-# Ikuti prompt, pilih redirect HTTP→HTTPS
-```
-
-### Test & Reload Nginx
-
-```bash
-sudo nginx -t
-sudo systemctl reload nginx
-```
+- ✅ SSL/TLS otomatis (Edge certificates)
+- ✅ DDoS protection & WAF
+- ✅ Tidak perlu buka port 80/443 di firewall server
+- ✅ Tidak perlu Nginx reverse proxy
+- ✅ Automatic gzip, Brotli, HTTP/2, HTTP/3
 
 ---
 
@@ -389,6 +363,9 @@ docker run -d --name vesta-app --restart unless-stopped --network vesta-network 
 # Prune image lama
 docker image prune -f
 
+# Cloudflare Tunnel logs
+journalctl -u cloudflared -f
+
 # Backup database (jika PostgreSQL di Docker)
 docker exec vesta-postgres pg_dump -U manifesto appdb > backup_$(date +%F).sql
 
@@ -429,12 +406,11 @@ journalctl -u docker -f
 
 ## 🔒 Security Hardening
 
-### Firewall (firewalld)
+### Firewall (firewalld) - Minimal
 
 ```bash
-sudo firewall-cmd --permanent --add-service=http
-sudo firewall-cmd --permanent --add-service=https
-sudo firewall-cmd --permanent --add-port=3001/tcp --zone=trusted --source=127.0.0.1
+# Hanya butuh SSH (port 22) - Cloudflare Tunnel handle HTTP/HTTPS
+sudo firewall-cmd --permanent --add-service=ssh
 sudo firewall-cmd --reload
 ```
 
@@ -454,6 +430,13 @@ sudo systemctl enable fail2ban
 # docker run --read-only --tmpfs /tmp --tmpfs /var/cache/nginx ...
 ```
 
+### Cloudflare Security (Dashboard)
+
+- **SSL/TLS**: Full (Strict)
+- **WAF**: Enable Managed Rules
+- **Bot Fight Mode**: On
+- **Rate Limiting**: Configure untuk API endpoints
+
 ---
 
 ## 📝 Checklist Deployment Production
@@ -464,9 +447,10 @@ sudo systemctl enable fail2ban
 - [ ] PostgreSQL tersedia (host atau Docker) & accessible
 - [ ] `/var/www/vesta/.env` sudah diisi dengan nilai production
 - [ ] `NEXTAUTH_SECRET` di-generate baru (32+ chars)
-- [ ] `NEXTAUTH_URL` sesuai domain production
-- [ ] Nginx reverse proxy sudah konfigurasi + SSL Certbot
-- [ ] Firewall hanya buka port 80, 443 (dan 3001 hanya localhost)
+- [ ] `NEXTAUTH_URL` sesuai domain production (https://vesta.yourdomain.com)
+- [ ] Cloudflare Tunnel terinstall & running (`systemctl status cloudflared`)
+- [ ] DNS Cloudflare: CNAME `vesta` → `<TUNNEL_ID>.cfargotunnel.com` (Proxied)
+- [ ] Firewall: **tidak perlu buka port 80/443** (Cloudflare Tunnel handle)
 - [ ] GitHub Actions workflow berhasil run (cek tab Actions)
 - [ ] Health check endpoint `/api/health` return 200 OK
 - [ ] Demo accounts bisa login di production
@@ -496,14 +480,16 @@ echo $GITHUB_TOKEN | docker login ghcr.io -u USERNAME --password-stdin
 # Pastikan runner user punya akses docker & GHCR token valid
 ```
 
-### Nginx 502 Bad Gateway
+### Cloudflare Tunnel Error (522/524)
 ```bash
 # Cek container running
 docker ps
-# Cek port 3001 listen
+# Cek port 3001 listen di host
 ss -tlnp | grep 3001
-# Cek nginx error log
-sudo tail -f /var/log/nginx/error.log
+# Cek cloudflared logs
+journalctl -u cloudflared -f
+# Test koneksi lokal
+curl -s http://127.0.0.1:3001/api/health
 ```
 
 ---
@@ -513,5 +499,5 @@ sudo tail -f /var/log/nginx/error.log
 - [GitHub Self-Hosted Runners](https://docs.github.com/en/actions/hosting-your-own-runners)
 - [Docker Multi-stage Build](https://docs.docker.com/build/building/multi-stage/)
 - [Next.js Standalone Output](https://nextjs.org/docs/app/api-reference/next-config-js/output)
-- [Nginx Reverse Proxy](https://nginx.org/en/docs/http/ngx_http_proxy_module.html)
-- [Certbot Let's Encrypt](https://certbot.eff.org/)
+- [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/)
+- [cloudflared Installation](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/)
