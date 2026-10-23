@@ -70,7 +70,7 @@ erDiagram
 ### 1. User & Auth
 | Tabel | Keterangan |
 |-------|-----------|
-| `users` / `accounts` | Credentials, role (7 peran), profil |
+| `users` / `accounts` | Credentials, role (5 peran), profil |
 
 ### 2. Supply Chain
 | Tabel | Keterangan |

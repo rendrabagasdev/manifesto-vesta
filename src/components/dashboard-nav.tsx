@@ -40,11 +40,27 @@ export function DashboardNav({ role, canViewBatches, variant }: DashboardNavProp
     ...(canViewBatches
       ? [{ href: "/dashboard/batches", label: "Batch", icon: Package }]
       : []),
+    ...(role === "ADMIN"
+      ? [
+          {
+            href: "/dashboard/admin/warehouses",
+            label: "Kelola gudang",
+            icon: Warehouse,
+          },
+        ]
+      : []),
     ...(roleModule ? [{ ...roleModule }] : []),
     ...(BUYER_ROLES.includes(role)
       ? [{ href: "/marketplace", label: "Belanja", icon: ShoppingBasket }]
       : []),
   ];
+
+  const activeHref = items
+    .map((item) => item.href)
+    .filter(
+      (href) => pathname === href || pathname.startsWith(`${href}/`),
+    )
+    .sort((a, b) => b.length - a.length)[0];
 
   return (
     <nav
@@ -55,10 +71,7 @@ export function DashboardNav({ role, canViewBatches, variant }: DashboardNavProp
       )}
     >
       {items.map((item) => {
-        const active =
-          item.href === "/dashboard"
-            ? pathname === "/dashboard"
-            : pathname.startsWith(item.href);
+        const active = item.href === activeHref;
         const Icon = item.icon;
 
         return (
