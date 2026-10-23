@@ -1,6 +1,7 @@
 ---
 name: VisualQA
 description: Agen Quality Assurance visual untuk memeriksa screenshot aplikasi dan bug UI.
+mode: subagent
 model: opencode/nemotron-3.5-super-vl-free
 temperature: 0.2
 ---

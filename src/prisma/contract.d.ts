@@ -23,7 +23,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'d8910fcbadf130666bfc2a0db323b25c00858e14b4f596247eea40943c024c63'>;
+  StorageHashBase<'a931a850fc112bc9a499a0eee007f0f1bfa68e9d9822dc2b852c48535da67b54'>;
 export type ExecutionHash =
   ExecutionHashBase<'71c6355d0510c727acd3a24904bdbe26f4e75b64dd6594d7f9d2a5dae16b6de3'>;
 export type ProfileHash =
@@ -270,6 +270,10 @@ type FieldTypeOverrides = {
         };
       };
       readonly Order: {
+        readonly kind: {
+          readonly output: 'REGULAR' | 'PREORDER';
+          readonly input: 'REGULAR' | 'PREORDER';
+        };
         readonly status: {
           readonly output: 'PENDING' | 'PAID' | 'SHIPPED' | 'COMPLETED' | 'CANCELLED';
           readonly input: 'PENDING' | 'PAID' | 'SHIPPED' | 'COMPLETED' | 'CANCELLED';
@@ -345,6 +349,10 @@ type ColumnTypeOverrides = {
       };
     };
     readonly Order: {
+      readonly kind: {
+        readonly output: 'REGULAR' | 'PREORDER';
+        readonly input: 'REGULAR' | 'PREORDER';
+      };
       readonly status: {
         readonly output: 'PENDING' | 'PAID' | 'SHIPPED' | 'COMPLETED' | 'CANCELLED';
         readonly input: 'PENDING' | 'PAID' | 'SHIPPED' | 'COMPLETED' | 'CANCELLED';
@@ -497,10 +505,18 @@ export namespace Models {
   export type public_Order = {
     buyerId: FieldOutputTypes['public']['Order']['buyerId'];
     code: FieldOutputTypes['public']['Order']['code'];
+    contactPhone: FieldOutputTypes['public']['Order']['contactPhone'];
     createdAt: FieldOutputTypes['public']['Order']['createdAt'];
     deliveryAddress: FieldOutputTypes['public']['Order']['deliveryAddress'];
     discount: FieldOutputTypes['public']['Order']['discount'];
     id: FieldOutputTypes['public']['Order']['id'];
+    kind: FieldOutputTypes['public']['Order']['kind'];
+    notes: FieldOutputTypes['public']['Order']['notes'];
+    paidAt: FieldOutputTypes['public']['Order']['paidAt'];
+    paymentProvider: FieldOutputTypes['public']['Order']['paymentProvider'];
+    paymentRef: FieldOutputTypes['public']['Order']['paymentRef'];
+    paymentUrl: FieldOutputTypes['public']['Order']['paymentUrl'];
+    scheduledFor: FieldOutputTypes['public']['Order']['scheduledFor'];
     status: FieldOutputTypes['public']['Order']['status'];
     subtotal: FieldOutputTypes['public']['Order']['subtotal'];
     tierAtPurchase: FieldOutputTypes['public']['Order']['tierAtPurchase'];
@@ -1414,6 +1430,12 @@ type ContractBase = Omit<
                   readonly nullable: false;
                   readonly many: false;
                 };
+                readonly contactPhone: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
                 readonly createdAt: {
                   readonly dataType: 'pg/timestamptz';
                   readonly codecId: 'pg/timestamptz-string@1';
@@ -1445,6 +1467,52 @@ type ContractBase = Omit<
                     readonly kind: 'function';
                     readonly expression: 'autoincrement()';
                   };
+                  readonly many: false;
+                };
+                readonly kind: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'REGULAR'>;
+                  };
+                  readonly many: false;
+                };
+                readonly notes: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly paidAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly paymentProvider: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly paymentRef: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly paymentUrl: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly scheduledFor: {
+                  readonly dataType: 'pg/date';
+                  readonly codecId: 'pg/date-string@1';
+                  readonly nullable: true;
                   readonly many: false;
                 };
                 readonly status: {
@@ -1493,6 +1561,18 @@ type ContractBase = Omit<
                   readonly name: 'Order_buyerId_idx_80be0de9';
                   readonly prefix: 'Order_buyerId_idx';
                   readonly columns: readonly ['buyerId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'Order_buyerId_kind_idx_d1607eab';
+                  readonly prefix: 'Order_buyerId_kind_idx';
+                  readonly columns: readonly ['buyerId', 'kind'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'Order_kind_idx_c9ca668f';
+                  readonly prefix: 'Order_kind_idx';
+                  readonly columns: readonly ['kind'];
                   readonly unique: false;
                 },
                 {
@@ -2387,6 +2467,10 @@ type ContractBase = Omit<
               readonly kind: 'valueSet';
               readonly values: readonly ['EARN', 'REDEEM', 'ADJUST'];
             };
+            readonly OrderKind: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['REGULAR', 'PREORDER'];
+            };
             readonly OrderStatus: {
               readonly kind: 'valueSet';
               readonly values: readonly ['PENDING', 'PAID', 'SHIPPED', 'COMPLETED', 'CANCELLED'];
@@ -3081,6 +3165,10 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly contactPhone: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly createdAt: {
                 readonly nullable: false;
                 readonly type: {
@@ -3099,6 +3187,37 @@ type ContractBase = Omit<
               readonly id: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly kind: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly notes: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly paidAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly paymentProvider: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly paymentRef: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly paymentUrl: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly scheduledFor: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/date-string@1' };
               };
               readonly status: {
                 readonly nullable: false;
@@ -3174,10 +3293,18 @@ type ContractBase = Omit<
               readonly fields: {
                 readonly buyerId: { readonly column: 'buyerId' };
                 readonly code: { readonly column: 'code' };
+                readonly contactPhone: { readonly column: 'contactPhone' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly deliveryAddress: { readonly column: 'deliveryAddress' };
                 readonly discount: { readonly column: 'discount' };
                 readonly id: { readonly column: 'id' };
+                readonly kind: { readonly column: 'kind' };
+                readonly notes: { readonly column: 'notes' };
+                readonly paidAt: { readonly column: 'paidAt' };
+                readonly paymentProvider: { readonly column: 'paymentProvider' };
+                readonly paymentRef: { readonly column: 'paymentRef' };
+                readonly paymentUrl: { readonly column: 'paymentUrl' };
+                readonly scheduledFor: { readonly column: 'scheduledFor' };
                 readonly status: { readonly column: 'status' };
                 readonly subtotal: { readonly column: 'subtotal' };
                 readonly tierAtPurchase: { readonly column: 'tierAtPurchase' };
@@ -4037,6 +4164,13 @@ type ContractBase = Omit<
               { readonly name: 'ADJUST'; readonly value: 'ADJUST' },
             ];
           };
+          readonly OrderKind: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'REGULAR'; readonly value: 'REGULAR' },
+              { readonly name: 'PREORDER'; readonly value: 'PREORDER' },
+            ];
+          };
           readonly OrderStatus: {
             readonly codecId: 'pg/text@1';
             readonly members: readonly [
@@ -4090,6 +4224,10 @@ type ContractBase = Omit<
             { readonly name: 'EARN'; readonly value: 'EARN' },
             { readonly name: 'REDEEM'; readonly value: 'REDEEM' },
             { readonly name: 'ADJUST'; readonly value: 'ADJUST' },
+          ];
+          readonly OrderKind: readonly [
+            { readonly name: 'REGULAR'; readonly value: 'REGULAR' },
+            { readonly name: 'PREORDER'; readonly value: 'PREORDER' },
           ];
           readonly OrderStatus: readonly [
             { readonly name: 'PENDING'; readonly value: 'PENDING' },
