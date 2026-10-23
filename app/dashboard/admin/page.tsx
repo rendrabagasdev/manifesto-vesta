@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
-import { ArrowUpRight, Droplets, Leaf, Recycle, Users } from "lucide-react";
+import { Droplets, Leaf, Recycle, Users } from "lucide-react";
 import { requireRole } from "@/src/lib/auth/session";
 import { getBatchesForUser } from "@/src/lib/batches/queries";
 import { summarizeBatches } from "@/src/lib/batches/metrics";
@@ -20,7 +20,6 @@ import {
 import { TIER_BENEFITS, TIER_NAMES } from "@/src/lib/loyalty/tiers";
 import { ROLE_LABELS } from "@/src/lib/auth/roles";
 import { StatusPill } from "@/src/components/status-pill";
-import { SimulateTimeSection } from "@/src/components/simulate-time/SimulateTimeSection";
 
 export const instant = false;
 
@@ -49,10 +48,18 @@ export default async function AdminDashboardPage() {
         <h1 className="font-heading text-2xl font-bold tracking-tight text-ink">
           Dashboard admin
         </h1>
-        <p className="mt-1 text-sm leading-relaxed text-ink-muted">
-          Pusat kendali cascade: pemantauan seluruh batch, konfigurasi tier,
-          harga dasar, dan analitik dampak.
-        </p>
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <p className="mt-1 max-w-2xl text-sm leading-relaxed text-ink-muted">
+            Pusat kendali cascade: pemantauan seluruh batch, konfigurasi tier,
+            harga dasar, dan analitik dampak.
+          </p>
+          <Link
+            href="/dashboard/admin/simulate"
+            className="inline-flex h-9 items-center rounded-lg bg-brand-strong px-3 text-sm font-semibold text-on-brand transition-colors hover:bg-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          >
+            Buka simulasi waktu
+          </Link>
+        </div>
       </header>
 
       <section
@@ -278,9 +285,24 @@ export default async function AdminDashboardPage() {
           </ul>
         </section>
 
-        <div>
-          <SimulateTimeSection />
-        </div>
+        <section
+          aria-labelledby="demo-heading"
+          className="rounded-xl border border-line bg-surface p-4"
+        >
+          <h2 id="demo-heading" className="text-sm font-semibold text-ink">
+            Demo dan pengujian
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-ink-muted">
+            Jalankan percepatan waktu pada halaman simulasi terpisah agar
+            aktivitas demo tidak tercampur dengan monitoring operasional.
+          </p>
+          <Link
+            href="/dashboard/admin/simulate"
+            className="mt-4 inline-flex text-sm font-semibold text-brand-strong hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          >
+            Kelola simulasi waktu →
+          </Link>
+        </section>
       </div>
     </div>
   );

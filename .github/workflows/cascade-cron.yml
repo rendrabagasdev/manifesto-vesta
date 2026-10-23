@@ -1,0 +1,24 @@
+name: Hourly Cascade Tick
+
+on:
+  schedule:
+    - cron: "7 * * * *"
+  workflow_dispatch:
+
+jobs:
+  cascade-tick:
+    name: Run production cascade tick
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call production cascade endpoint
+        env:
+          CRON_URL: ${{ secrets.VESTA_CRON_URL }}
+          CRON_SECRET: ${{ secrets.VESTA_CRON_SECRET }}
+        run: |
+          set -eu
+          test -n "$CRON_URL"
+          test -n "$CRON_SECRET"
+          curl --fail-with-body --silent --show-error \
+            --max-time 120 \
+            -H "Authorization: Bearer $CRON_SECRET" \
+            "$CRON_URL/api/cron/cascade-tick"

@@ -56,6 +56,8 @@ export interface SyncBatchOptions {
   ignoreStageTimers?: boolean;
   /** Manually adjusted batches keep their stage unless forced. */
   respectManualOverride?: boolean;
+  /** Demo ticks only process batches with an existing pricing record. */
+  requirePriceBreakdown?: boolean;
 }
 
 export interface BatchSyncResult {
@@ -116,7 +118,13 @@ export async function syncBatchState(
     )
     .first();
 
-  if (!batch || !batch.product) return null;
+  if (
+    !batch ||
+    !batch.product ||
+    (options.requirePriceBreakdown && !batch.priceBreakdown)
+  ) {
+    return null;
+  }
 
   const product = batch.product;
   const previousStatus = batch.status;
@@ -408,7 +416,7 @@ export interface CascadeTickResult {
 
 export async function runCascadeTick(
   now = new Date(),
-  options: { actorId?: number | null } = {},
+  options: { actorId?: number | null; requirePriceBreakdown?: boolean } = {},
 ): Promise<CascadeTickResult> {
   const batches = await db.orm.public.Batch.select("id").all();
 
@@ -424,6 +432,7 @@ export async function runCascadeTick(
           actorId: options.actorId ?? null,
           forwardOnly: true,
           respectManualOverride: true,
+          requirePriceBreakdown: options.requirePriceBreakdown,
         }),
       );
 

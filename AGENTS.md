@@ -17,6 +17,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 - [`.github/workflows/ci.yml`](.github/workflows/ci.yml) is finalized and protected. Do not modify, remove, or reintroduce production build/deploy steps there unless the user explicitly requests a CI/CD architecture change.
 - [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) is the only workflow responsible for building the production Docker image and deploying it.
 - Do not duplicate `npm run build`, Docker build, image push, or deployment steps in `ci.yml`.
+- `.github/workflows/cascade-cron.yml` calls the protected production endpoint hourly. Configure `VESTA_CRON_URL` and `VESTA_CRON_SECRET` in GitHub Actions secrets, with the same value as production `CRON_SECRET`.
 
 ## Tentang Proyek
 
@@ -177,6 +178,7 @@ MIDTRANS_CLIENT_KEY="..."
 
 # WhatsApp (Sandbox)
 FONNTE_API_TOKEN="..."
+CRON_SECRET="..."
 
 # Demo
 SIMULATE_TIME_ENABLED="true"

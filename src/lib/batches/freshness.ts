@@ -1,3 +1,8 @@
+import {
+  calculateFreshnessScore as calculateEngineFreshnessScore,
+  type FreshnessInput as EngineFreshnessInput,
+} from "./engine";
+
 export const BATCH_STATUSES = [
   "FRESH",
   "RESCUE",
@@ -7,8 +12,6 @@ export const BATCH_STATUSES = [
 ] as const;
 
 export type BatchStatusValue = (typeof BATCH_STATUSES)[number];
-
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 export const DEFAULT_PRICE_COSTS = {
   warehouseCostPerKg: 1000,
@@ -84,51 +87,22 @@ export function discountForStatus(status: BatchStatusValue): number {
   }
 }
 
-export type FreshnessInput = {
-  harvestDate: string;
+export type FreshnessInput = Omit<EngineFreshnessInput, "category"> & {
+  category?: string;
   receivedAt: Date | string;
-  storageTempC: number;
-  idealTempC: number;
-  shelfLifeDays: number;
-  now?: Date;
 };
 
-export function calculateFreshnessScore({
-  harvestDate,
-  receivedAt,
-  storageTempC,
-  idealTempC,
-  shelfLifeDays,
-  now = new Date(),
-}: FreshnessInput): number {
-  const harvest = new Date(`${harvestDate}T00:00:00.000Z`);
-  const received =
-    receivedAt instanceof Date ? receivedAt : new Date(receivedAt);
-
-  if (
-    Number.isNaN(harvest.getTime()) ||
-    Number.isNaN(received.getTime()) ||
-    !Number.isFinite(storageTempC) ||
-    !Number.isFinite(idealTempC) ||
-    shelfLifeDays <= 0
-  ) {
-    return 0;
-  }
-
-  const storageDays = Math.max(
-    0,
-    (now.getTime() - received.getTime()) / DAY_MS,
-  );
-  const transitDays = Math.max(
-    0,
-    (received.getTime() - harvest.getTime()) / DAY_MS,
-  );
-  const temperaturePenalty =
-    1 + Math.max(0, Math.abs(storageTempC - idealTempC) - 2) * 0.08;
-  const loss =
-    (storageDays * temperaturePenalty + transitDays) / Math.max(1, shelfLifeDays);
-
-  return Math.max(0, Math.min(100, Math.round((1 - loss) * 100)));
+/**
+ * Compatibility wrapper for callers that only need the numeric score.
+ *
+ * The calculation lives in batches/engine.ts. Callers that need the status,
+ * remaining days, or degradation rate should use the engine directly.
+ */
+export function calculateFreshnessScore(input: FreshnessInput): number {
+  return calculateEngineFreshnessScore({
+    ...input,
+    category: input.category ?? "OTHER",
+  }).score;
 }
 
 export type BatchPrice = {
