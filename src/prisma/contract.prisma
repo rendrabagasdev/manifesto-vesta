@@ -58,6 +58,13 @@ enum OrderStatus {
   CANCELLED = "CANCELLED"
 }
 
+enum OrderKind {
+  @@type("pg/text@1")
+
+  REGULAR  = "REGULAR"
+  PREORDER = "PREORDER"
+}
+
 model User {
   id           Int      @id @default(autoincrement())
   email        String   @unique
@@ -288,12 +295,20 @@ model Order {
   code            String      @unique
   buyerId         Int
   buyer           User        @relation(fields: [buyerId], references: [id])
+  kind            OrderKind   @default(REGULAR)
   status          OrderStatus @default(PENDING)
   subtotal        Int
   discount        Int         @default(0)
   total           Int
   tierAtPurchase  TierName    @default(STARTER)
   deliveryAddress String?
+  contactPhone    String?
+  scheduledFor    DateString?
+  notes           String?
+  paymentProvider String?
+  paymentRef      String?
+  paymentUrl      String?
+  paidAt          TimestamptzString?
   items           OrderItem[]
   loyaltyLedger   LoyaltyLedger[]
   impactLogs      ImpactLog[]
@@ -302,6 +317,8 @@ model Order {
 
   @@index([buyerId])
   @@index([status])
+  @@index([kind])
+  @@index([buyerId, kind])
 }
 
 model OrderItem {

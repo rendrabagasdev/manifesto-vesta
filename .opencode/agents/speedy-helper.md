@@ -1,6 +1,7 @@
 ---
 name: SpeedyHelper
 description: Agen asisten cepat untuk refactoring kode ringan, menulis komentar, dan membuat dokumentasi.
+mode: subagent
 model: opencode/nemotron-3.5-lightning-free
 temperature: 0.1
 ---

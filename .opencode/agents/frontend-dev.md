@@ -1,10 +1,9 @@
 ---
 name: FrontendDev
 description: Agen frontend menggunakan GLM Flash Free dengan akses ke tested-skills.
-model: opencode/glm-5.3-flash
+mode: subagent
+model: opencode/glm-5.3-flash-free
 temperature: 0.4
-skills:
-  - tested-skills # Menghubungkan skill tested-skills agar bisa dipakai oleh agen ini
 ---
 
 # Peran

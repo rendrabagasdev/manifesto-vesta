@@ -2,24 +2,46 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Package } from "lucide-react";
+import {
+  LayoutDashboard,
+  Package,
+  ShieldCheck,
+  ShoppingBasket,
+  Sprout,
+  UserRound,
+  Warehouse,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { UserRole } from "@/src/lib/auth/roles";
 
 type DashboardNavProps = {
+  role: UserRole;
   canViewBatches: boolean;
   variant: "sidebar" | "mobile";
 };
 
-export function DashboardNav({
-  canViewBatches,
-  variant,
-}: DashboardNavProps) {
+const ROLE_MODULE: Record<UserRole, { href: string; label: string; icon: typeof Package } | null> = {
+  ADMIN: { href: "/dashboard/admin", label: "Modul admin", icon: ShieldCheck },
+  PRODUCER: { href: "/dashboard/producer", label: "Modul produsen", icon: Sprout },
+  WAREHOUSE: { href: "/dashboard/warehouse", label: "Modul gudang", icon: Warehouse },
+  CONSUMER: { href: "/dashboard/consumer", label: "Akun saya", icon: UserRound },
+  BUSINESS: { href: "/dashboard/consumer", label: "Akun saya", icon: UserRound },
+};
+
+const BUYER_ROLES: UserRole[] = ["CONSUMER", "BUSINESS"];
+
+export function DashboardNav({ role, canViewBatches, variant }: DashboardNavProps) {
   const pathname = usePathname();
+  const roleModule = ROLE_MODULE[role];
 
   const items = [
     { href: "/dashboard", label: "Ringkasan", icon: LayoutDashboard },
     ...(canViewBatches
       ? [{ href: "/dashboard/batches", label: "Batch", icon: Package }]
+      : []),
+    ...(roleModule ? [{ ...roleModule }] : []),
+    ...(BUYER_ROLES.includes(role)
+      ? [{ href: "/marketplace", label: "Belanja", icon: ShoppingBasket }]
       : []),
   ];
 

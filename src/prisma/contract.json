@@ -119,6 +119,19 @@
               }
             ]
           },
+          "OrderKind": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "REGULAR",
+                "value": "REGULAR"
+              },
+              {
+                "name": "PREORDER",
+                "value": "PREORDER"
+              }
+            ]
+          },
           "OrderStatus": {
             "codecId": "pg/text@1",
             "members": [
@@ -1219,6 +1232,13 @@
                   "kind": "scalar"
                 }
               },
+              "contactPhone": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "createdAt": {
                 "nullable": false,
                 "type": {
@@ -1244,6 +1264,61 @@
                 "nullable": false,
                 "type": {
                   "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "kind": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "OrderKind",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "notes": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "paidAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "paymentProvider": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "paymentRef": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "paymentUrl": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "scheduledFor": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/date-string@1",
                   "kind": "scalar"
                 }
               },
@@ -1366,6 +1441,9 @@
                 "code": {
                   "column": "code"
                 },
+                "contactPhone": {
+                  "column": "contactPhone"
+                },
                 "createdAt": {
                   "column": "createdAt"
                 },
@@ -1377,6 +1455,27 @@
                 },
                 "id": {
                   "column": "id"
+                },
+                "kind": {
+                  "column": "kind"
+                },
+                "notes": {
+                  "column": "notes"
+                },
+                "paidAt": {
+                  "column": "paidAt"
+                },
+                "paymentProvider": {
+                  "column": "paymentProvider"
+                },
+                "paymentRef": {
+                  "column": "paymentRef"
+                },
+                "paymentUrl": {
+                  "column": "paymentUrl"
+                },
+                "scheduledFor": {
+                  "column": "scheduledFor"
                 },
                 "status": {
                   "column": "status"
@@ -3595,6 +3694,11 @@
             "Order": {
               "checks": [
                 {
+                  "expression": "\"kind\" IN ('REGULAR', 'PREORDER')",
+                  "name": "Order_kind_check_308ecb6a",
+                  "prefix": "Order_kind_check"
+                },
+                {
                   "expression": "\"status\" IN ('PENDING', 'PAID', 'SHIPPED', 'COMPLETED', 'CANCELLED')",
                   "name": "Order_status_check_e158e2c8",
                   "prefix": "Order_status_check"
@@ -3615,6 +3719,11 @@
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
                   "nullable": false
+                },
+                "contactPhone": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
                 },
                 "createdAt": {
                   "codecId": "pg/timestamptz-string@1",
@@ -3647,6 +3756,51 @@
                     "kind": "function"
                   },
                   "nullable": false
+                },
+                "kind": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "default": {
+                    "kind": "literal",
+                    "value": "REGULAR"
+                  },
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "OrderKind",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "notes": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "paidAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": true
+                },
+                "paymentProvider": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "paymentRef": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "paymentUrl": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "scheduledFor": {
+                  "codecId": "pg/date-string@1",
+                  "dataType": "pg/date",
+                  "nullable": true
                 },
                 "status": {
                   "codecId": "pg/text@1",
@@ -3722,6 +3876,23 @@
                   ],
                   "name": "Order_buyerId_idx_80be0de9",
                   "prefix": "Order_buyerId_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "buyerId",
+                    "kind"
+                  ],
+                  "name": "Order_buyerId_kind_idx_d1607eab",
+                  "prefix": "Order_buyerId_kind_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "kind"
+                  ],
+                  "name": "Order_kind_idx_c9ca668f",
+                  "prefix": "Order_kind_idx",
                   "unique": false
                 },
                 {
@@ -4798,6 +4969,13 @@
                 "ADJUST"
               ]
             },
+            "OrderKind": {
+              "kind": "valueSet",
+              "values": [
+                "REGULAR",
+                "PREORDER"
+              ]
+            },
             "OrderStatus": {
               "kind": "valueSet",
               "values": [
@@ -4844,7 +5022,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "d8910fcbadf130666bfc2a0db323b25c00858e14b4f596247eea40943c024c63"
+    "storageHash": "a931a850fc112bc9a499a0eee007f0f1bfa68e9d9822dc2b852c48535da67b54"
   },
   "execution": {
     "executionHash": "71c6355d0510c727acd3a24904bdbe26f4e75b64dd6594d7f9d2a5dae16b6de3",

@@ -44,7 +44,11 @@ export function AppShell({
             Operasional
           </p>
           <div className="mt-2">
-            <DashboardNav canViewBatches={canViewBatches} variant="sidebar" />
+            <DashboardNav
+              role={user.role}
+              canViewBatches={canViewBatches}
+              variant="sidebar"
+            />
           </div>
 
           <div className="mt-auto rounded-xl bg-surface/70 p-3">
@@ -96,6 +100,7 @@ export function AppShell({
             <div className="flex items-center gap-1.5">
               <div className="lg:hidden">
                 <DashboardNav
+                  role={user.role}
                   canViewBatches={canViewBatches}
                   variant="mobile"
                 />
