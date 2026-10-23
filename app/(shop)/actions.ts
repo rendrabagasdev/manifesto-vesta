@@ -47,8 +47,8 @@ export async function checkoutAction(
   const parsed = cartSchema.safeParse({
     lines: rawCart,
     deliveryAddress: formData.get("deliveryAddress"),
-    contactPhone: formData.get("contactPhone"),
-    notes: formData.get("notes"),
+    contactPhone: formData.get("contactPhone") ?? undefined,
+    notes: formData.get("notes") ?? undefined,
   });
 
   if (!parsed.success) {
@@ -104,7 +104,7 @@ export async function buyRescueDealAction(
   const parsed = directBuySchema.safeParse({
     batchId: formData.get("batchId"),
     quantityKg: formData.get("quantityKg"),
-    contactPhone: formData.get("contactPhone"),
+    contactPhone: formData.get("contactPhone") ?? undefined,
   });
 
   if (!parsed.success) {
@@ -161,7 +161,7 @@ export async function buyListingAction(
     listingId: formData.get("listingId"),
     source: formData.get("source"),
     quantityKg: formData.get("quantityKg"),
-    contactPhone: formData.get("contactPhone"),
+    contactPhone: formData.get("contactPhone") ?? undefined,
   });
 
   if (!parsed.success) {
@@ -236,7 +236,7 @@ export async function preorderAction(
     quantityKg: formData.get("quantityKg"),
     scheduledFor: formData.get("scheduledFor"),
     recurrence: formData.get("recurrence"),
-    notes: formData.get("notes"),
+    notes: formData.get("notes") ?? undefined,
   });
 
   if (!parsed.success) {

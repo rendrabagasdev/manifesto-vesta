@@ -1,0 +1,21 @@
+# Vercel Ignore Pattern
+# Files and directories to ignore during deployment
+
+.next/
+node_modules/
+*.md
+*.log
+*.env*
+docker-compose.yml
+Dockerfile
+.vscode/
+.git/
+.gitignore
+.taste-skill/
+skills-lock.json
+README*
+PRD*
+tech_stack_*
+*.md
+docs/
+vault/

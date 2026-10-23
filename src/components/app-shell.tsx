@@ -40,7 +40,7 @@ export function AppShell({
             </span>
           </Link>
 
-          <p className="mt-8 px-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-muted">
+          <p className="mt-8 px-3 text-xs font-medium text-ink-muted">
             Operasional
           </p>
           <div className="mt-2">

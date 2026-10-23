@@ -74,8 +74,8 @@ export function DashboardNav({ role, canViewBatches, variant }: DashboardNavProp
                 : variant === "sidebar"
                   ? "text-ink-muted hover:bg-surface/70 hover:text-ink"
                   : active
-                    ? "border-b-2 border-brand-strong text-ink"
-                    : "border-b-2 border-transparent text-ink-muted hover:text-ink",
+                    ? "bg-surface text-ink"
+                    : "text-ink-muted hover:bg-surface/70 hover:text-ink",
             )}
           >
             <Icon

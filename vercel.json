@@ -1,0 +1,46 @@
+{
+  "buildCommand": "npm run build",
+  "output": "standalone",
+  "framework": "nextjs",
+  "region": "auto",
+  "env": {
+    "DATABASE_URL": {
+      "fromSecret": "DATABASE_URL"
+    },
+    "NEXTAUTH_SECRET": {
+      "fromSecret": "NEXTAUTH_SECRET"
+    },
+    "NEXTAUTH_URL": {
+      "fromSecret": "NEXTAUTH_URL"
+    },
+    "MIDTRANS_SERVER_KEY": {
+      "fromSecret": "MIDTRANS_SERVER_KEY"
+    },
+    "MIDTRANS_CLIENT_KEY": {
+      "fromSecret": "MIDTRANS_CLIENT_KEY"
+    },
+    "FONNTE_API_TOKEN": {
+      "fromSecret": "FONNTE_API_TOKEN"
+    },
+    "SIMULATE_TIME_ENABLED": {
+      "value": "true"
+    }
+  },
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, max-age=0"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/demo/simulate-tick",
+      "destination": "/api/demo/simulate-tick"
+    }
+  ]
+}

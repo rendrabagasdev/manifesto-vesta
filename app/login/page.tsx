@@ -23,6 +23,12 @@ const CASCADE_STAGES = [
   { name: "DISPOSED", threshold: "0", dot: "bg-stage-disposed" },
 ] as const;
 
+const VALUE_PROPS = [
+  "Harga jujur dari petani ke pembeli — rincian harga terbuka di setiap batch.",
+  "Batch yang mendekati kedaluwarsa diselamatkan lewat diskon dinamis, bukan dibuang.",
+  "Setiap tahap cascade punya pembeli: segar, rescue, pakan, hingga residu.",
+] as const;
+
 export default async function LoginPage() {
   await connection();
   const session = await auth();
@@ -49,6 +55,20 @@ export default async function LoginPage() {
             Satu platform yang menghubungkan produsen, gudang, dan pembeli
             untuk menyelamatkan bahan segar sebelum waktunya habis.
           </p>
+
+          <ul className="mt-12 max-w-md space-y-4">
+            {VALUE_PROPS.map((prop) => (
+              <li key={prop} className="flex items-start gap-3">
+                <span
+                  className="mt-2 size-2 shrink-0 rounded-full bg-brand-soft"
+                  aria-hidden="true"
+                />
+                <span className="text-sm leading-relaxed text-on-brand/85">
+                  {prop}
+                </span>
+              </li>
+            ))}
+          </ul>
         </div>
 
         <div className="mt-16">

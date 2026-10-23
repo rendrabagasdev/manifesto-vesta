@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowUpRight, Package } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Package, ShoppingBasket } from "lucide-react";
 import {
   BATCH_VIEW_ROLES,
   hasRole,
   ROLE_LABELS,
-  ROLE_MODULES,
   ROLE_SUMMARIES,
 } from "@/src/lib/auth/roles";
 import { requireSession } from "@/src/lib/auth/session";
@@ -14,12 +13,15 @@ import {
   STATUS_META,
 } from "@/src/lib/batches/freshness";
 import {
+  formatDateTime,
+  formatIdr,
   formatInteger,
   formatKg,
   formatNumber,
 } from "@/src/lib/batches/format";
 import { summarizeBatches } from "@/src/lib/batches/metrics";
 import { getBatchesForUser } from "@/src/lib/batches/queries";
+import { getOrdersForUser } from "@/src/lib/marketplace/queries";
 import { StatusPill } from "@/src/components/status-pill";
 import { SimulateTimeSection } from "@/src/components/simulate-time/SimulateTimeSection";
 
@@ -30,11 +32,46 @@ export const metadata: Metadata = {
   description: "Ringkasan operasional Freshness Cascade Vesta.",
 };
 
+const ORDER_STATUS_LABELS: Record<string, string> = {
+  PENDING: "Menunggu bayar",
+  PAID: "Lunas",
+  SHIPPED: "Dikirim",
+  COMPLETED: "Selesai",
+  CANCELLED: "Dibatalkan",
+};
+
 export default async function DashboardPage() {
   const user = await requireSession();
   const canViewBatches = hasRole(user.role, BATCH_VIEW_ROLES);
 
   if (!canViewBatches) {
+    const orders = await getOrdersForUser(Number(user.id));
+    const recentOrders = orders.slice(0, 3);
+
+    const quickLinks = [
+      {
+        href: "/marketplace",
+        title: "Marketplace segar",
+        description: "Batch skor ≥ 70 dengan harga normal dan rincian harga transparan.",
+      },
+      {
+        href: "/rescue-deals",
+        title: "Rescue deals",
+        description: "Selamatkan batch skor turun dengan diskon dinamis sesuai tier.",
+      },
+      user.role === "BUSINESS"
+        ? {
+            href: "/marketplace/bulk",
+            title: "Pre-order grosir",
+            description: "Pesan kebutuhan usaha dalam jumlah besar langsung dari gudang.",
+          }
+        : {
+            href: "/impact",
+            title: "Dampak Anda",
+            description: "Lihat berapa kg pangan yang terselamatkan lewat pembelian Anda.",
+          },
+    ];
+
     return (
       <div>
         <h1 className="font-heading text-2xl font-bold tracking-tight text-ink">
@@ -48,22 +85,101 @@ export default async function DashboardPage() {
         </p>
 
         <div className="mt-8 grid gap-3 sm:grid-cols-3">
-          {ROLE_MODULES[user.role].map((module) => (
-            <article
-              key={module}
-              className="rounded-xl border border-line bg-surface p-4"
+          {quickLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="group flex flex-col rounded-xl border border-line bg-surface p-4 transition-colors hover:border-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
             >
-              <Package
-                className="size-4 text-ink-muted"
-                aria-hidden="true"
-              />
-              <h2 className="mt-3 text-sm font-semibold text-ink">{module}</h2>
-              <p className="mt-1 text-xs leading-relaxed text-ink-muted">
-                Modul ini disiapkan pada tahap berikutnya.
+              <span className="flex items-center justify-between gap-2">
+                <ShoppingBasket
+                  className="size-4 text-ink-muted"
+                  aria-hidden="true"
+                />
+                <ArrowUpRight
+                  className="size-4 text-ink-muted transition-colors group-hover:text-brand"
+                  aria-hidden="true"
+                />
+              </span>
+              <h2 className="mt-3 text-sm font-semibold text-ink">
+                {link.title}
+              </h2>
+              <p className="mt-1 text-[13px] leading-relaxed text-ink-muted">
+                {link.description}
               </p>
-            </article>
+            </Link>
           ))}
         </div>
+
+        <section
+          aria-labelledby="recent-orders-heading"
+          className="mt-4 rounded-xl border border-line bg-surface"
+        >
+          <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
+            <h2
+              id="recent-orders-heading"
+              className="text-sm font-semibold text-ink"
+            >
+              Pesanan terbaru
+            </h2>
+            <Link
+              href="/orders"
+              className="text-xs font-semibold text-brand-strong hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+            >
+              Lihat semua
+            </Link>
+          </div>
+
+          {recentOrders.length === 0 ? (
+            <div className="px-4 py-8 text-center">
+              <p className="text-sm font-medium text-ink">
+                Belum ada pesanan.
+              </p>
+              <p className="mt-1 text-sm text-ink-muted">
+                Mulai belanja di marketplace — pesanan Anda muncul di sini.
+              </p>
+              <Link
+                href="/marketplace"
+                className="mt-4 inline-flex h-9 items-center gap-1.5 rounded-lg bg-brand-strong px-4 text-sm font-semibold text-on-brand transition-colors hover:bg-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+              >
+                Ke marketplace
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </Link>
+            </div>
+          ) : (
+            <ul>
+              {recentOrders.map((order) => (
+                <li
+                  key={order.id}
+                  className="border-b border-line last:border-0"
+                >
+                  <Link
+                    href={`/orders/${order.code}`}
+                    className="flex items-center justify-between gap-3 px-4 py-3 transition-colors hover:bg-surface-muted/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-ink">
+                        {order.code}
+                        <span className="ml-2 rounded-full bg-surface-muted px-2 py-0.5 text-[11px] font-medium text-ink-muted">
+                          {ORDER_STATUS_LABELS[order.status] ?? order.status}
+                        </span>
+                      </p>
+                      <p className="mt-0.5 truncate text-xs text-ink-muted">
+                        {order.items
+                          .map((item) => item.productName)
+                          .join(", ")}{" "}
+                        · {formatDateTime(order.createdAt)}
+                      </p>
+                    </div>
+                    <span className="shrink-0 text-sm font-semibold tabular-nums text-ink">
+                      {formatIdr(order.total)}
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
       </div>
     );
   }
@@ -139,7 +255,7 @@ export default async function DashboardPage() {
       </section>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-6">
-        <section className="rounded-xl border border-line bg-surface lg:col-span-4">
+        <section className="flex flex-col rounded-xl border border-line bg-surface lg:col-span-4">
           <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
             <h2 className="text-sm font-semibold text-ink">
               Perlu ditindaklanjuti
@@ -153,7 +269,7 @@ export default async function DashboardPage() {
           </div>
 
           {attention.length === 0 ? (
-            <div className="px-4 py-8 text-center">
+            <div className="flex flex-1 flex-col items-center justify-center px-4 py-10 text-center">
               <p className="text-sm font-medium text-ink">
                 Tidak ada batch yang menunggu tindakan.
               </p>

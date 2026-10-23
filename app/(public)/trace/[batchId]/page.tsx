@@ -51,6 +51,17 @@ export default async function TracePage({
       ]
     : null;
 
+  const NEXT_STAGE: Record<string, { label: string; note: string; dot: string } | null> = {
+    FRESH: { label: "Rescue", note: "jika skor turun di bawah 70", dot: "bg-stage-rescue" },
+    RESCUE: { label: "Pakan", note: "jika skor turun di bawah 30", dot: "bg-stage-feed" },
+    FEED: { label: "Residu", note: "jika skor turun di bawah 10", dot: "bg-stage-residue" },
+    RESIDUE: { label: "Dibuang", note: "jika skor mencapai 0", dot: "bg-stage-disposed" },
+    DISPOSED: null,
+  };
+  const nextStage = isBatchStatus(trace.batch.status)
+    ? NEXT_STAGE[trace.batch.status] ?? null
+    : null;
+
   return (
     <div>
       <Link
@@ -91,7 +102,7 @@ export default async function TracePage({
       <div className="mt-6 grid gap-4 lg:grid-cols-3">
         <section
           aria-labelledby="journey-heading"
-          className="rounded-xl border border-line bg-surface lg:col-span-2"
+          className="self-start rounded-xl border border-line bg-surface lg:col-span-2"
         >
           <div className="border-b border-line px-4 py-3">
             <h2 id="journey-heading" className="text-sm font-semibold text-ink">
@@ -133,16 +144,34 @@ export default async function TracePage({
                   <p className="mt-0.5 text-sm leading-relaxed text-ink-muted">
                     {event.description}
                   </p>
-                  <p className="mt-1 text-xs text-ink-muted">
-                    {event.actor}
-                    {event.freshnessScore !== null
-                      ? ` · skor ${formatNumber(event.freshnessScore)}/100`
-                      : ""}
-                  </p>
+                  <p className="mt-1 text-xs text-ink-muted">{event.actor}</p>
+                  {event.freshnessScore !== null ? (
+                    <div className="mt-2 max-w-48">
+                      <FreshnessMeter score={event.freshnessScore} size="sm" />
+                    </div>
+                  ) : null}
                 </div>
               </li>
             ))}
           </ol>
+
+          <div className="border-t border-line px-4 py-3">
+            {nextStage ? (
+              <p className="flex items-center gap-2 text-sm text-ink-muted">
+                <span
+                  className={`size-1.5 shrink-0 rounded-full ${nextStage.dot}`}
+                  aria-hidden="true"
+                />
+                Tahap berikutnya:{" "}
+                <span className="font-semibold text-ink">{nextStage.label}</span>{" "}
+                {nextStage.note}.
+              </p>
+            ) : (
+              <p className="text-sm text-ink-muted">
+                Batch ini telah menyelesaikan seluruh tahap cascade.
+              </p>
+            )}
+          </div>
         </section>
 
         <div className="grid gap-4">

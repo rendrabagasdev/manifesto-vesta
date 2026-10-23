@@ -25,32 +25,32 @@ export function ListingCard({
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           {listing.tag ? (
-            <p className="text-[11px] font-medium uppercase tracking-wide text-ink-muted">
+            <p className="text-xs font-medium text-ink-muted">
               {listing.tag}
             </p>
           ) : null}
-          <h3 className="mt-0.5 truncate text-sm font-semibold text-ink">
+          <h2 className="mt-0.5 truncate text-sm font-semibold text-ink">
             {listing.productName}
-          </h3>
+          </h2>
         </div>
         <p className="shrink-0 text-right">
           <span className="font-heading text-lg font-bold tabular-nums tracking-tight text-ink">
             {formatIdr(listing.pricePerKg)}
           </span>
-          <span className="block text-[11px] text-ink-muted">per kg</span>
+          <span className="block text-xs text-ink-muted">per kg</span>
         </p>
       </div>
 
-      <p className="mt-1.5 flex items-center gap-1 text-xs text-ink-muted">
+      <p className="mt-1.5 flex items-center gap-1 text-[13px] text-ink-muted">
         <MapPin className="size-3.5 shrink-0" aria-hidden="true" />
-        <span className="truncate">
+        <span className="min-w-0 truncate">
           {listing.warehouseName}
           {listing.warehouseCity ? `, ${listing.warehouseCity}` : ""} · {listing.batchCode}
         </span>
       </p>
 
       {listing.description ? (
-        <p className="mt-2 line-clamp-2 text-xs leading-relaxed text-ink-muted">
+        <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-ink-muted">
           {listing.description}
         </p>
       ) : null}
@@ -59,7 +59,7 @@ export function ListingCard({
         <FreshnessMeter score={listing.freshnessScore} size="sm" />
       </div>
 
-      <p className="mt-2 text-xs text-ink-muted">{formatKg(listing.availableKg)} tersedia</p>
+      <p className="mt-2 text-[13px] text-ink-muted">{formatKg(listing.availableKg)} tersedia</p>
 
       <div className="mt-auto pt-3">
         <DirectBuyForm

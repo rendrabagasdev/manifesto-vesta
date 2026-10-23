@@ -7,6 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:integration": "vitest run __tests__/integration",
     "contract:emit": "prisma contract emit",
     "db:init": "prisma db init",
     "db:seed": "tsx src/prisma/seed.ts"
@@ -14,8 +17,8 @@
   "dependencies": {
     "@base-ui/react": "^1.9.0",
     "@prisma/orm-postgres": "^8.0.0-rc.19",
-    "@upstash/context7-tools-ai-sdk": "^1.0.3",
     "@react-pdf/renderer": "^4.9.0",
+    "@upstash/context7-tools-ai-sdk": "^1.0.3",
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.5.0",
@@ -44,6 +47,7 @@
     "prisma": "^8.0.0-rc.25",
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.2.7"
   }
 }

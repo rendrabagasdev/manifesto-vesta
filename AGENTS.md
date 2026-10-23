@@ -102,13 +102,13 @@ vesta/
 
 ## 5 Peran Pengguna (RBAC)
 
-| Role        | Akses                                                                 |
-| ----------- | --------------------------------------------------------------------- |
-| `ADMIN`     | Kelola tier, harga dasar, monitoring cascade, konfigurasi             |
-| `PRODUCER`  | Input stok, tanggal panen, harga dasar, pantau pembayaran             |
-| `WAREHOUSE` | Cek kualitas, catat suhu, update status batch                         |
-| `CONSUMER`  | Marketplace normal, Rescue Deal sesuai tier                           |
-| `BUSINESS`  | Order besar, pre-order, pakan, residu, sertifikat dampak              |
+| Role        | Akses                                                     |
+| ----------- | --------------------------------------------------------- |
+| `ADMIN`     | Kelola tier, harga dasar, monitoring cascade, konfigurasi |
+| `PRODUCER`  | Input stok, tanggal panen, harga dasar, pantau pembayaran |
+| `WAREHOUSE` | Cek kualitas, catat suhu, update status batch             |
+| `CONSUMER`  | Marketplace normal, Rescue Deal sesuai tier               |
+| `BUSINESS`  | Order besar, pre-order, pakan, residu, sertifikat dampak  |
 
 ---
 
@@ -144,7 +144,6 @@ FRESH (skor ≥70) → RESCUE (skor <70) → FEED (skor <30) → RESIDUE (skor <
 
 ## Hal yang TIDAK Boleh Dilakukan
 
-- ❌ Jangan edit file di `vault/` — itu Obsidian Knowledge Base, dikelola manual
 - ❌ Jangan push langsung ke `main` / `master`
 - ❌ Jangan pakai `any` type di TypeScript
 - ❌ Jangan buat komponen client tanpa alasan — default ke Server Component

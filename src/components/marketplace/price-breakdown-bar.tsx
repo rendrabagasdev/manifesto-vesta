@@ -52,7 +52,7 @@ export function PriceBreakdownBar({
                 className={cn("size-2 shrink-0 rounded-full", part.className)}
                 aria-hidden="true"
               />
-              <span className="truncate">{part.label}</span>
+              <span className="min-w-0 truncate">{part.label}</span>
             </span>
             <span className="shrink-0 text-sm font-semibold tabular-nums text-ink">
               {formatIdr(part.amountPerKg)}

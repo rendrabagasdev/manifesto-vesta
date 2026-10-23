@@ -1,11 +1,46 @@
-import NextAuth from "next-auth";
+import NextAuth, { type NextAuthConfig } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { db } from "@/src/prisma/db";
 import { loginSchema } from "@/src/lib/auth/validation";
 import type { UserRole } from "@/src/lib/auth/roles";
 
-export const { handlers, auth, signIn, signOut } = NextAuth({
+export interface CredentialInput {
+  email?: unknown;
+  password?: unknown;
+}
+
+/**
+ * Credential check shared by NextAuth and the integration tests. Keeping it
+ * separate from `NextAuth(...)` lets tests exercise the real validation,
+ * lookup and bcrypt comparison without booting an HTTP server.
+ */
+export async function authenticateCredentials(
+  credentials: CredentialInput | undefined,
+) {
+  const parsed = loginSchema.safeParse(credentials);
+  if (!parsed.success) return null;
+
+  const user = await db.orm.public.User.where({
+    email: parsed.data.email,
+  }).first();
+  if (!user) return null;
+
+  const passwordMatches = await bcrypt.compare(
+    parsed.data.password,
+    user.passwordHash,
+  );
+  if (!passwordMatches) return null;
+
+  return {
+    id: String(user.id),
+    email: user.email,
+    name: user.name,
+    role: user.role as UserRole,
+  };
+}
+
+export const authConfig = {
   secret: process.env.NEXTAUTH_SECRET,
   trustHost: true,
   session: { strategy: "jwt" },
@@ -16,28 +51,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Kata sandi", type: "password" },
       },
-      authorize: async (credentials) => {
-        const parsed = loginSchema.safeParse(credentials);
-        if (!parsed.success) return null;
-
-        const user = await db.orm.public.User.where({
-          email: parsed.data.email,
-        }).first();
-        if (!user) return null;
-
-        const passwordMatches = await bcrypt.compare(
-          parsed.data.password,
-          user.passwordHash,
-        );
-        if (!passwordMatches) return null;
-
-        return {
-          id: String(user.id),
-          email: user.email,
-          name: user.name,
-          role: user.role as UserRole,
-        };
-      },
+      authorize: authenticateCredentials,
     }),
   ],
   callbacks: {
@@ -56,4 +70,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       return session;
     },
   },
-});
+} satisfies NextAuthConfig;
+
+export const { handlers, auth, signIn, signOut } = NextAuth(authConfig);

@@ -129,7 +129,7 @@ export async function createOrderFromCart(options: {
         "BATCH_NOT_FRESH",
       );
     }
-    if (line.quantityKg <= 0) {
+    if (!Number.isFinite(line.quantityKg) || line.quantityKg <= 0) {
       throw new ApiError(`Jumlah untuk ${batch.product.name} tidak valid.`, 400, "INVALID_QTY");
     }
     if (line.quantityKg > availableKg) {
@@ -246,7 +246,7 @@ export async function createSinglePurchase(options: {
   }
 
   let pricePerKg: number;
-  let stage: "RESCUE" | "FEED" | "RESIDUE" = options.source;
+  const stage: "RESCUE" | "FEED" | "RESIDUE" = options.source;
 
   if (options.source === "RESCUE") {
     if (batch.status !== "RESCUE") {
