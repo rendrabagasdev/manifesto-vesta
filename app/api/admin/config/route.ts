@@ -25,9 +25,6 @@ import {
   type PlatformConfigPatch,
 } from "@/src/lib/config/platform";
 
-export const runtime = "nodejs";
-export const dynamic = "force-dynamic";
-
 const thresholdValue = z.coerce
   .number()
   .int("Ambang harus bilangan bulat.")
