@@ -14,8 +14,8 @@ const nunitoSans = Nunito_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Vesta — Freshness Cascade Platform",
-  description: "Marketplace bahan pokok segar & cascade penyelamatan pangan",
+  title: "Vesta — Platform Kaskade Kesegaran",
+  description: "Marketplace bahan pokok segar dengan harga transparan",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

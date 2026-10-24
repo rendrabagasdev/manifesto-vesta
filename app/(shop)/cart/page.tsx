@@ -21,8 +21,7 @@ export default async function CartPage() {
           Keranjang
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-ink-muted">
-          Harga dikunci ulang dari sistem saat checkout — jika stok berubah,
-          Anda akan diberi tahu sebelum bayar.
+          Periksa pesanan lalu lanjut ke pembayaran.
         </p>
       </header>
 

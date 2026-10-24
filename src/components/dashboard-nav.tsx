@@ -4,8 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Briefcase,
+  ClipboardList,
   LayoutDashboard,
   Package,
+  Settings2,
   ShieldCheck,
   ShoppingBasket,
   Sprout,
@@ -40,12 +42,29 @@ export function DashboardNav({ role, canViewBatches, variant }: DashboardNavProp
     ...(canViewBatches
       ? [{ href: "/dashboard/batches", label: "Batch", icon: Package }]
       : []),
+    ...(role === "ADMIN" || role === "PRODUCER"
+      ? [{ href: "/dashboard/products", label: "Produk", icon: Sprout }]
+      : []),
+    ...(role === "ADMIN" || role === "WAREHOUSE"
+      ? [
+          {
+            href: "/dashboard/orders",
+            label: "Pesanan",
+            icon: ClipboardList,
+          },
+        ]
+      : []),
     ...(role === "ADMIN"
       ? [
           {
             href: "/dashboard/admin/warehouses",
             label: "Kelola gudang",
             icon: Warehouse,
+          },
+          {
+            href: "/dashboard/admin/config",
+            label: "Konfigurasi",
+            icon: Settings2,
           },
         ]
       : []),

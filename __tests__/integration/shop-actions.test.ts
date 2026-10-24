@@ -68,6 +68,8 @@ function checkoutForm(cart: unknown, overrides: Record<string, string> = {}) {
   const form = new FormData();
   form.set("cart", typeof cart === "string" ? cart : JSON.stringify(cart));
   form.set("deliveryAddress", ADDRESS);
+  form.set("deliveryCity", "bandung");
+  form.set("deliveryMethod", "INSTANT");
   form.set("contactPhone", PHONE);
   for (const [key, value] of Object.entries(overrides)) form.set(key, value);
   return form;
@@ -134,6 +136,33 @@ describe("checkoutAction", () => {
     expect(result.error).toBe("Alamat pengiriman minimal 10 karakter.");
   });
 
+  it("rejects a delivery method that does not serve the destination", async () => {
+    const world = await createWorld();
+    state.user = sessionUser(world.users.consumer.id, "CONSUMER");
+
+    const { batch } = await createBatch({
+      product: world.products.tomato,
+      warehouseId: world.warehouse.id,
+      quantityKg: 100,
+      status: "FRESH",
+      freshnessScore: 95,
+    });
+
+    const result = await checkoutAction(
+      { ok: false },
+      checkoutForm([{ batchId: batch.id, quantityKg: 2 }], {
+        deliveryCity: "jakarta",
+        deliveryMethod: "INSTANT",
+      }),
+    );
+
+    expect(result).toEqual({
+      ok: false,
+      error: "Metode Instan tidak tersedia untuk Jakarta.",
+    });
+    expect(await db.orm.public.Order.all()).toHaveLength(0);
+  });
+
   it("surfaces ApiError messages from the order service", async () => {
     const world = await createWorld();
     state.user = sessionUser(world.users.consumer.id, "CONSUMER");
@@ -180,7 +209,7 @@ describe("buyRescueDealAction", () => {
 
     const result = await buyRescueDealAction({ ok: false }, form);
     expect(result.ok).toBe(true);
-    expect(result.message).toContain("Rescue deal dibeli");
+    expect(result.message).toContain("Penawaran layu dibeli");
   });
 
   it("validates the quantity and reports locked deals", async () => {
@@ -359,7 +388,7 @@ describe("notifyMeAction", () => {
 
     expect(await notifyMeAction({ ok: false }, form)).toEqual({
       ok: false,
-      message: "Deal tidak valid.",
+      message: "Penawaran tidak valid.",
     });
   });
 });

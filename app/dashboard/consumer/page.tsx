@@ -28,7 +28,7 @@ export const instant = false;
 
 export const metadata: Metadata = {
   title: "Dashboard konsumen — Vesta",
-  description: "Riwayat pesanan, progres tier, kuota rescue, dan kontribusi dampak.",
+  description: "Riwayat pesanan, progres tier, kuota layu, dan kontribusi dampak.",
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -116,14 +116,14 @@ export default async function ConsumerDashboardPage() {
             </div>
             <p className="mt-1.5 text-xs text-ink-muted">
               {nextTier && nextThreshold !== null
-                ? `${formatIdr(Math.max(0, nextThreshold - quota.totalSpend30d))} lagi untuk ${TIER_BENEFITS[nextTier].label} (${TIER_BENEFITS[nextTier].rescueQuotaPerWeek} kuota, +${TIER_BENEFITS[nextTier].earlyAccessHours} jam early access).`
-                : "Anda sudah di tier Platinum — semua benefit aktif."}
+                ? `${formatIdr(Math.max(0, nextThreshold - quota.totalSpend30d))} lagi untuk ${TIER_BENEFITS[nextTier].label} (${TIER_BENEFITS[nextTier].rescueQuotaPerWeek} kuota, +${TIER_BENEFITS[nextTier].earlyAccessHours} jam akses awal).`
+                : "Anda sudah di tier Platinum — semua manfaat aktif."}
             </p>
           </div>
 
           <div className="mt-4 border-t border-line pt-4">
             <div className="flex items-center justify-between gap-3">
-              <p className="text-sm font-semibold text-ink">Kuota rescue minggu ini</p>
+              <p className="text-sm font-semibold text-ink">Kuota layu minggu ini</p>
               <p className="text-sm tabular-nums text-ink">
                 <span className="font-semibold">{quota.remaining}</span>
                 <span className="text-ink-muted"> / {quota.limit}</span>
@@ -135,7 +135,7 @@ export default async function ConsumerDashboardPage() {
               aria-valuenow={quota.used}
               aria-valuemin={0}
               aria-valuemax={quota.limit}
-              aria-label={`Kuota rescue terpakai ${quota.used} dari ${quota.limit}`}
+              aria-label={`Kuota layu terpakai ${quota.used} dari ${quota.limit}`}
             >
               <span
                 className="block h-full rounded-full bg-stage-rescue"
@@ -156,7 +156,7 @@ export default async function ConsumerDashboardPage() {
             <li className="flex items-center justify-between gap-3">
               <span className="flex items-center gap-2 text-ink-muted">
                 <Leaf className="size-4" aria-hidden="true" />
-                Terselamatkan
+                Tidak terbuang
               </span>
               <span className="font-semibold tabular-nums text-ink">
                 {formatKg(impact.totalRescuedKg)}
@@ -207,7 +207,7 @@ export default async function ConsumerDashboardPage() {
             <div className="p-4">
               <EmptyState
                 title="Belum ada pesanan"
-                description="Mulai belanja di marketplace segar atau selamatkan batch lewat Rescue Deals."
+                description="Mulai belanja di marketplace segar atau penawaran layu."
                 action={
                   <Link
                     href="/marketplace"

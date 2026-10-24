@@ -38,7 +38,7 @@ function OrderStatusPill({ status }: { status: string }) {
 export const instant = false;
 export const metadata: Metadata = {
   title: "Dashboard business — Vesta",
-  description: "Pre-order, pesanan grosir, sertifikat dampak, dan akses rescue untuk mitra B2B.",
+  description: "Pre-order, pesanan grosir, sertifikat dampak, dan akses layu untuk mitra B2B.",
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -107,7 +107,7 @@ export default async function BusinessDashboardPage() {
           </p>
         </div>
         <div className="bg-surface p-4">
-          <p className="text-xs text-ink-muted">Terselamatkan</p>
+          <p className="text-xs text-ink-muted">Tidak terbuang</p>
           <p className="mt-1 text-2xl font-semibold tabular-nums tracking-tight text-ink">
             {formatNumber(impact.totalRescuedKg)}
             <span className="text-sm font-normal text-ink-muted"> kg</span>
@@ -129,7 +129,7 @@ export default async function BusinessDashboardPage() {
         <div className="min-w-0">
           <h2 id="rescue-heading" className="flex items-center gap-2 text-sm font-semibold text-ink">
             <AlarmClock className="size-4" aria-hidden="true" />
-            Akses Rescue Deals — tier {benefits.label}
+            Akses Penawaran Layu — tier {benefits.label}
           </h2>
           <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-muted">
             <span>
@@ -139,7 +139,7 @@ export default async function BusinessDashboardPage() {
               /{quota.limit} kuota minggu ini
             </span>
             <span>
-              Early access{" "}
+              Akses awal{" "}
               <span className="font-semibold tabular-nums text-ink">
                 +{benefits.earlyAccessHours}
               </span>{" "}
@@ -152,7 +152,7 @@ export default async function BusinessDashboardPage() {
             aria-valuenow={quota.used}
             aria-valuemin={0}
             aria-valuemax={quota.limit}
-            aria-label={`Kuota rescue terpakai ${quota.used} dari ${quota.limit}`}
+            aria-label={`Kuota layu terpakai ${quota.used} dari ${quota.limit}`}
           >
             <span
               className="block h-full rounded-full bg-stage-rescue"
@@ -165,7 +165,7 @@ export default async function BusinessDashboardPage() {
           className="inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-lg border border-line px-4 text-sm font-semibold text-ink transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
         >
           <ShoppingBag className="size-4" aria-hidden="true" />
-          Lihat rescue deals
+          Lihat penawaran layu
         </Link>
       </section>
 
@@ -245,7 +245,7 @@ export default async function BusinessDashboardPage() {
             <div className="p-4">
               <EmptyState
                 title="Belum ada pesanan"
-                description="Belanja langsung di marketplace segar, atau selamatkan batch lewat Rescue Deals."
+                description="Belanja di marketplace segar atau penawaran layu."
               />
             </div>
           ) : (
@@ -284,8 +284,8 @@ export default async function BusinessDashboardPage() {
             Sertifikat dampak
           </h2>
           <p className="mt-1.5 text-xs leading-relaxed text-ink-muted">
-            Sertifikat personal untuk laporan ESG — dihitung dari impact ledger
-            setiap transaksi yang selesai. Bahan terselamatkan{" "}
+            Sertifikat untuk laporan ESG dari transaksi yang selesai. Bahan tidak
+            terbuang{" "}
             <span className="font-semibold tabular-nums text-ink">
               {formatKg(impact.totalRescuedKg)}
             </span>{" "}

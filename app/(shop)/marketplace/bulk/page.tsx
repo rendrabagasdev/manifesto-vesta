@@ -79,7 +79,7 @@ export default async function BulkMarketplacePage() {
             </p>
             <dl className="mt-3 space-y-1.5 border-t border-line pt-3 text-sm">
               <div className="flex items-center justify-between gap-3">
-                <dt className="text-ink-muted">Terselamatkan</dt>
+                <dt className="text-ink-muted">Tidak terbuang</dt>
                 <dd className="font-semibold tabular-nums text-ink">
                   {formatNumber(impact.totalRescuedKg)} kg
                 </dd>

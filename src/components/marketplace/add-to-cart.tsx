@@ -15,6 +15,7 @@ export interface AddToCartProduct {
   pricePerKg: number;
   maxKg: number;
   warehouseName: string;
+  warehouseCity: string | null;
 }
 
 /**
@@ -73,6 +74,7 @@ export function AddToCart({ product }: { product: AddToCartProduct }) {
       maxKg: clampedMax,
       stage: "FRESH",
       warehouseName: product.warehouseName,
+      warehouseCity: product.warehouseCity,
     });
     setFeedback(result);
     if (result.ok) {
@@ -127,20 +129,11 @@ export function AddToCart({ product }: { product: AddToCartProduct }) {
 
         <button
           type="button"
-          onClick={handleAdd}
-          className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg bg-brand-strong px-3 text-sm font-semibold text-on-brand transition-colors hover:bg-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-        >
-          <ShoppingCart className="size-4" aria-hidden="true" />
-          Keranjang
-        </button>
-
-        <button
-          type="button"
           onClick={toggleSaved}
           aria-pressed={saved}
           aria-label={saved ? `Hapus ${product.productName} dari daftar simpanan` : `Simpan ${product.productName}`}
           title={saved ? "Hapus dari simpanan" : "Simpan produk"}
-          className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-line text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          className="ml-auto inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-line text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
         >
           {saved ? (
             <BookmarkCheck className="size-4 text-brand-strong" aria-hidden="true" />
@@ -149,6 +142,15 @@ export function AddToCart({ product }: { product: AddToCartProduct }) {
           )}
         </button>
       </div>
+
+      <button
+        type="button"
+        onClick={handleAdd}
+        className="mt-2 inline-flex h-9 w-full items-center justify-center gap-1.5 rounded-lg bg-brand-strong px-3 text-sm font-semibold text-on-brand transition-colors hover:bg-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+      >
+        <ShoppingCart className="size-4" aria-hidden="true" />
+        Masukkan keranjang
+      </button>
 
       <p className="mt-1.5 text-xs text-ink-muted" aria-live="polite">
         {feedback ? (

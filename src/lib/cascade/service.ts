@@ -8,24 +8,23 @@ import {
   calculateDynamicPricing,
   calculateFreshnessScore,
 } from "@/src/lib/batches/engine";
+import {
+  DEFAULT_PLATFORM_CONFIG,
+  getPlatformConfig,
+  type PlatformConfigView,
+} from "@/src/lib/config/platform";
+import {
+  runLoyaltyExpiry,
+  type LoyaltyExpiryResult,
+} from "@/src/lib/loyalty/tiers";
 
 export const CASCADE_CONFIG = {
-  thresholds: {
-    fresh: 70,
-    rescue: 30,
-    feed: 10,
-    residue: 0,
-  },
+  thresholds: DEFAULT_PLATFORM_CONFIG.thresholds,
   /** Maximum time a batch may stay in a stage before the next stage is forced. */
-  stageTimersHours: {
-    FRESH: null,
-    RESCUE: 48,
-    FEED: 72,
-    RESIDUE: 72,
-    DISPOSED: null,
-  } satisfies Record<BatchStatusValue, number | null>,
-  rescueDealDurationHours: 48,
-  earlyAccessWindowHours: 12,
+  stageTimersHours: DEFAULT_PLATFORM_CONFIG
+    .stageTimersHours as Record<BatchStatusValue, number | null>,
+  rescueDealDurationHours: DEFAULT_PLATFORM_CONFIG.rescueDealDurationHours,
+  earlyAccessWindowHours: DEFAULT_PLATFORM_CONFIG.earlyAccessWindowHours,
 } as const;
 
 export function nextStatus(status: BatchStatusValue): BatchStatusValue {
@@ -58,6 +57,8 @@ export interface SyncBatchOptions {
   respectManualOverride?: boolean;
   /** Demo ticks only process batches with an existing pricing record. */
   requirePriceBreakdown?: boolean;
+  /** Reuse one config read across a tick instead of querying per batch. */
+  config?: PlatformConfigView;
 }
 
 export interface BatchSyncResult {
@@ -95,6 +96,7 @@ export async function syncBatchState(
   options: SyncBatchOptions = {},
 ): Promise<BatchSyncResult | null> {
   const now = options.now ?? new Date();
+  const config = options.config ?? (await getPlatformConfig(client));
 
   const batch = await client.orm.public.Batch.where({ id: batchId })
     .include("product", (product) =>
@@ -141,7 +143,7 @@ export async function syncBatchState(
   });
 
   const availableKg = Math.max(0, batch.quantityKg - batch.reservedKg);
-  let targetStatus = freshness.status;
+  let targetStatus = statusFromScore(freshness.score, config.thresholds);
   let forcedByTimer = false;
 
   if (
@@ -165,7 +167,7 @@ export async function syncBatchState(
       batch.rescueDeal !== null &&
       now.getTime() > asDate(batch.rescueDeal.endsAt).getTime();
 
-    const timerHours = CASCADE_CONFIG.stageTimersHours[previousStatus];
+    const timerHours = config.stageTimersHours[previousStatus];
     const timerExpired =
       timerHours !== null && elapsedHours >= timerHours;
 
@@ -187,9 +189,14 @@ export async function syncBatchState(
     status: targetStatus,
     category: product.category,
     freshnessScore: freshness.score,
-    warehouseCostPerKg: batch.priceBreakdown?.warehouseCostPerKg ?? 1000,
-    logisticsCostPerKg: batch.priceBreakdown?.logisticsCostPerKg ?? 1500,
-    marginPerKg: batch.priceBreakdown?.marginPerKg ?? 2000,
+    warehouseCostPerKg:
+      batch.priceBreakdown?.warehouseCostPerKg ??
+      config.pricing.warehouseCostPerKg,
+    logisticsCostPerKg:
+      batch.priceBreakdown?.logisticsCostPerKg ??
+      config.pricing.logisticsCostPerKg,
+    marginPerKg: batch.priceBreakdown?.marginPerKg ?? config.pricing.marginPerKg,
+    rescueBounds: config.thresholds,
   });
 
   await client.orm.public.Batch.where({ id: batch.id }).update({
@@ -238,12 +245,13 @@ export async function syncBatchState(
     batchId: batch.id,
     status: targetStatus,
     availableKg,
-    quantityKg: batch.quantityKg,
     productName: product.name,
     basePricePerKg: product.basePricePerKg,
     finalPricePerKg: pricing.finalPricePerKg,
     discountPct: pricing.rescueDiscountPct,
     now,
+    rescueDealDurationHours: config.rescueDealDurationHours,
+    earlyAccessWindowHours: config.earlyAccessWindowHours,
     existingRescueDealId: batch.rescueDeal?.id ?? null,
     existingFeedListingId: batch.feedListing?.id ?? null,
     existingResidueListingId: batch.residueListing?.id ?? null,
@@ -271,12 +279,13 @@ async function syncStageListing(
     batchId: number;
     status: BatchStatusValue;
     availableKg: number;
-    quantityKg: number;
     productName: string;
     basePricePerKg: number;
     finalPricePerKg: number;
     discountPct: number;
     now: Date;
+    rescueDealDurationHours: number;
+    earlyAccessWindowHours: number;
     existingRescueDealId: number | null;
     existingFeedListingId: number | null;
     existingResidueListingId: number | null;
@@ -286,19 +295,18 @@ async function syncStageListing(
     batchId,
     status,
     availableKg,
-    quantityKg,
     productName,
     basePricePerKg,
     finalPricePerKg,
     discountPct,
     now,
+    rescueDealDurationHours,
+    earlyAccessWindowHours,
   } = options;
 
   if (status === "RESCUE") {
     const startsAt = now;
-    const endsAt = new Date(
-      now.getTime() + CASCADE_CONFIG.rescueDealDurationHours * HOUR_MS,
-    );
+    const endsAt = new Date(now.getTime() + rescueDealDurationHours * HOUR_MS);
 
     let dealId = options.existingRescueDealId;
     if (dealId) {
@@ -307,7 +315,7 @@ async function syncStageListing(
         rescuePricePerKg: finalPricePerKg,
         startsAt: startsAt.toISOString(),
         endsAt: endsAt.toISOString(),
-        earlyAccessHours: CASCADE_CONFIG.earlyAccessWindowHours,
+        earlyAccessHours: earlyAccessWindowHours,
         isActive: availableKg > 0,
       });
     } else if (availableKg > 0) {
@@ -317,7 +325,7 @@ async function syncStageListing(
         rescuePricePerKg: finalPricePerKg,
         startsAt: startsAt.toISOString(),
         endsAt: endsAt.toISOString(),
-        earlyAccessHours: CASCADE_CONFIG.earlyAccessWindowHours,
+        earlyAccessHours: earlyAccessWindowHours,
         isActive: true,
       });
       dealId = deal.id;
@@ -412,12 +420,14 @@ export interface CascadeTickResult {
   transitions: BatchSyncResult[];
   statusCounts: Record<string, number>;
   skipped: number;
+  loyalty: LoyaltyExpiryResult;
 }
 
 export async function runCascadeTick(
   now = new Date(),
   options: { actorId?: number | null; requirePriceBreakdown?: boolean } = {},
 ): Promise<CascadeTickResult> {
+  const config = await getPlatformConfig();
   const batches = await db.orm.public.Batch.select("id").all();
 
   const transitions: BatchSyncResult[] = [];
@@ -433,6 +443,7 @@ export async function runCascadeTick(
           forwardOnly: true,
           respectManualOverride: true,
           requirePriceBreakdown: options.requirePriceBreakdown,
+          config,
         }),
       );
 
@@ -462,10 +473,13 @@ export async function runCascadeTick(
     statusCounts[row.status] = row.count;
   }
 
+  const loyalty = await runLoyaltyExpiry(now);
+
   return {
     processedBatches: processed,
     transitions,
     statusCounts,
     skipped,
+    loyalty,
   };
 }

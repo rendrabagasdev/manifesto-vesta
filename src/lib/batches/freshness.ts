@@ -29,14 +29,14 @@ export const STATUS_META: Record<
   }
 > = {
   FRESH: {
-    label: "Fresh",
+    label: "Segar",
     description: "Layak dijual dengan harga normal.",
     className: "bg-brand-soft text-brand-strong",
     dotClassName: "bg-brand",
   },
   RESCUE: {
-    label: "Rescue",
-    description: "Diskon penyelamatan sebelum kualitas turun lagi.",
+    label: "Layu",
+    description: "Harga lebih murah sebelum kualitas turun lagi.",
     className: "bg-stage-rescue/25 text-ink",
     dotClassName: "bg-stage-rescue",
   },
@@ -60,15 +60,32 @@ export const STATUS_META: Record<
   },
 };
 
+export interface StatusThresholds {
+  fresh: number;
+  rescue: number;
+  feed: number;
+  residue: number;
+}
+
+export const DEFAULT_STATUS_THRESHOLDS: StatusThresholds = {
+  fresh: 70,
+  rescue: 30,
+  feed: 10,
+  residue: 0,
+};
+
 export function isBatchStatus(value: string): value is BatchStatusValue {
   return (BATCH_STATUSES as readonly string[]).includes(value);
 }
 
-export function statusFromScore(score: number): BatchStatusValue {
-  if (score >= 70) return "FRESH";
-  if (score >= 30) return "RESCUE";
-  if (score >= 10) return "FEED";
-  if (score > 0) return "RESIDUE";
+export function statusFromScore(
+  score: number,
+  thresholds: StatusThresholds = DEFAULT_STATUS_THRESHOLDS,
+): BatchStatusValue {
+  if (score >= thresholds.fresh) return "FRESH";
+  if (score >= thresholds.rescue) return "RESCUE";
+  if (score >= thresholds.feed) return "FEED";
+  if (score > thresholds.residue) return "RESIDUE";
   return "DISPOSED";
 }
 

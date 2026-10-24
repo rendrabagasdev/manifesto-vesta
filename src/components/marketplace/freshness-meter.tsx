@@ -5,7 +5,7 @@ function scoreTone(score: number): {
   label: string;
 } {
   if (score >= 70) return { barClassName: "bg-stage-fresh", label: "Segar" };
-  if (score >= 30) return { barClassName: "bg-stage-rescue", label: "Perlu diselamatkan" };
+  if (score >= 30) return { barClassName: "bg-stage-rescue", label: "Layu" };
   if (score >= 10) return { barClassName: "bg-stage-feed", label: "Layak pakan" };
   if (score > 0) return { barClassName: "bg-stage-residue", label: "Layak residu" };
   return { barClassName: "bg-stage-disposed", label: "Akhir siklus" };
@@ -53,7 +53,7 @@ export function FreshnessMeter({
         aria-valuenow={clamped}
         aria-valuemin={0}
         aria-valuemax={100}
-        aria-label={`Freshness score ${clamped} dari 100`}
+        aria-label={`Skor kesegaran ${clamped} dari 100`}
       >
         <div
           className={cn("h-full rounded-full", tone.barClassName)}

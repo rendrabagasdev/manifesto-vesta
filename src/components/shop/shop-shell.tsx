@@ -9,7 +9,7 @@ import { CartBadge } from "./cart-badge";
 
 const SHOP_LINKS = [
   { href: "/marketplace", label: "Marketplace" },
-  { href: "/rescue-deals", label: "Rescue Deals" },
+  { href: "/rescue-deals", label: "Penawaran Layu" },
   { href: "/feed", label: "Pakan" },
   { href: "/residue", label: "Residu" },
   { href: "/impact", label: "Dampak" },
@@ -112,7 +112,7 @@ export function ShopShell({
       <footer className="border-t border-line bg-surface">
         <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-6 text-sm text-ink-muted sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <p className="font-semibold text-ink">
-            Vesta &middot; Freshness Cascade Platform
+            Vesta &middot; Platform Kaskade Kesegaran
           </p>
           <p>
             &copy; 2026 Vesta &middot; UNIC Web Development &middot; Mode demo

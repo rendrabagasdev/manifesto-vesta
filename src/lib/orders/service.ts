@@ -2,9 +2,14 @@ import { randomUUID } from "node:crypto";
 import { db } from "@/src/prisma/db";
 import { ApiError } from "@/src/lib/api/http";
 import { dateCompact } from "@/src/lib/batches/format";
+import { STATUS_META } from "@/src/lib/batches/freshness";
 import { createSaleImpactLog } from "@/src/lib/impact/ledger";
 import { addNormalSpend, consumeRescueQuota, getOrCreateBuyerTier } from "@/src/lib/loyalty/tiers";
 import { getDealAccess, type RescueDealWindow } from "@/src/lib/pricing/rescue";
+import {
+  resolveDeliverySelection,
+  type DeliveryMethodId,
+} from "@/src/lib/delivery/shipping";
 import {
   createSnapTransaction,
   isMidtransConfigured,
@@ -31,21 +36,35 @@ function createOrderCode(): string {
   return `ORD-${dateCompact()}-${suffix}`;
 }
 
-async function loadPurchasableBatch(client: QueryClient, batchId: number) {
+async function loadPurchasableBatch(
+  client: QueryClient,
+  batchId: number,
+  options: { forUpdate?: boolean } = {},
+) {
+  if (options.forUpdate) {
+    // Locking clauses cannot be combined with relation includes, so lock the
+    // batch row first and reuse this transaction's snapshot for the relations.
+    await client.orm.public.Batch.where({ id: batchId }).forUpdate().first();
+  }
+
   const batch = await client.orm.public.Batch
     .where({ id: batchId })
     .include("product", (product) =>
       product.select("id", "name", "category", "unit", "basePricePerKg"),
     )
+    .include("warehouse", (warehouse) =>
+      warehouse.select("id", "name", "city"),
+    )
     .include("priceBreakdown")
     .first();
 
-  if (!batch || !batch.product || !batch.priceBreakdown) {
+  if (!batch || !batch.product || !batch.priceBreakdown || !batch.warehouse) {
     throw new ApiError("Batch tidak ditemukan atau belum memiliki harga.", 404, "BATCH_NOT_FOUND");
   }
   return batch as typeof batch & {
     product: NonNullable<typeof batch.product>;
     priceBreakdown: NonNullable<typeof batch.priceBreakdown>;
+    warehouse: NonNullable<typeof batch.warehouse>;
   };
 }
 
@@ -105,6 +124,8 @@ export async function createOrderFromCart(options: {
   buyerEmail?: string | null;
   lines: CartLineInput[];
   deliveryAddress: string;
+  deliveryCity?: string;
+  deliveryMethod?: DeliveryMethodId;
   contactPhone: string;
   notes?: string;
 }): Promise<PurchaseResult> {
@@ -113,43 +134,80 @@ export async function createOrderFromCart(options: {
   }
 
   const now = new Date();
-  const batches = await Promise.all(
-    options.lines.map((line) => loadPurchasableBatch(db, line.batchId)),
-  );
-
-  let subtotal = 0;
-  const prepared = options.lines.map((line, index) => {
-    const batch = batches[index];
-    const availableKg = Math.max(0, batch.quantityKg - batch.reservedKg);
-
-    if (batch.status !== "FRESH") {
-      throw new ApiError(
-        `${batch.product.name} tidak lagi dijual dengan harga normal.`,
-        409,
-        "BATCH_NOT_FRESH",
-      );
-    }
-    if (!Number.isFinite(line.quantityKg) || line.quantityKg <= 0) {
-      throw new ApiError(`Jumlah untuk ${batch.product.name} tidak valid.`, 400, "INVALID_QTY");
-    }
-    if (line.quantityKg > availableKg) {
-      throw new ApiError(
-        `Stok ${batch.product.name} tersisa ${availableKg} ${batch.product.unit}.`,
-        409,
-        "INSUFFICIENT_STOCK",
-      );
-    }
-
-    const pricePerKg = batch.priceBreakdown!.finalPricePerKg;
-    const lineTotal = Math.round(pricePerKg * line.quantityKg);
-    subtotal += lineTotal;
-
-    return { batch, quantityKg: line.quantityKg, pricePerKg, lineTotal };
-  });
-
   const code = createOrderCode();
 
+  const quantities = new Map<number, number>();
+  for (const line of options.lines) {
+    if (!Number.isFinite(line.quantityKg) || line.quantityKg <= 0) {
+      throw new ApiError("Jumlah pembelian tidak valid.", 400, "INVALID_QTY");
+    }
+    quantities.set(
+      line.batchId,
+      (quantities.get(line.batchId) ?? 0) + line.quantityKg,
+    );
+  }
+
+  // Lock rows in a stable order so concurrent carts cannot deadlock.
+  const requestedLines = [...quantities.entries()]
+    .map(([batchId, quantityKg]) => ({ batchId, quantityKg }))
+    .sort((a, b) => a.batchId - b.batchId);
+
   const result = await db.transaction(async (tx) => {
+    let subtotal = 0;
+    const prepared: Array<{
+      batch: Awaited<ReturnType<typeof loadPurchasableBatch>>;
+      quantityKg: number;
+      pricePerKg: number;
+      lineTotal: number;
+    }> = [];
+
+    for (const line of requestedLines) {
+      const batch = await loadPurchasableBatch(tx, line.batchId, {
+        forUpdate: true,
+      });
+      const availableKg = Math.max(0, batch.quantityKg - batch.reservedKg);
+
+      if (batch.status !== "FRESH") {
+        throw new ApiError(
+          `${batch.product.name} tidak lagi dijual dengan harga normal.`,
+          409,
+          "BATCH_NOT_FRESH",
+        );
+      }
+      if (line.quantityKg > availableKg) {
+        throw new ApiError(
+          `Stok ${batch.product.name} tersisa ${availableKg} ${batch.product.unit}.`,
+          409,
+          "INSUFFICIENT_STOCK",
+        );
+      }
+
+      const pricePerKg = batch.priceBreakdown!.finalPricePerKg;
+      const lineTotal = Math.round(pricePerKg * line.quantityKg);
+      subtotal += lineTotal;
+      prepared.push({ batch, quantityKg: line.quantityKg, pricePerKg, lineTotal });
+    }
+
+    const delivery =
+      options.deliveryCity || options.deliveryMethod
+        ? resolveDeliverySelection({
+            cityId: options.deliveryCity,
+            methodId: options.deliveryMethod,
+            warehouseCities: prepared.map((line) => line.batch.warehouse.city),
+            now,
+          })
+        : null;
+
+    if (delivery && !delivery.ok) {
+      throw new ApiError(
+        delivery.message,
+        delivery.code === "INVALID_CITY" ? 400 : 409,
+        delivery.code,
+      );
+    }
+
+    const deliverySelection = delivery?.ok ? delivery : null;
+
     const order = await tx.orm.public.Order.create({
       code,
       buyerId: options.buyerId,
@@ -159,6 +217,10 @@ export async function createOrderFromCart(options: {
       discount: 0,
       total: subtotal,
       deliveryAddress: options.deliveryAddress,
+      deliveryCity: deliverySelection?.city.label ?? null,
+      deliveryMethod: deliverySelection?.method ?? null,
+      estimatedDeliveryAt:
+        deliverySelection?.estimatedDeliveryAt.toISOString() ?? null,
       contactPhone: options.contactPhone,
       notes: options.notes ?? null,
     });
@@ -193,6 +255,7 @@ export async function createOrderFromCart(options: {
       orderId: order.id,
       description: `Belanja marketplace ${code}`,
       at: now,
+      lockTier: true,
     });
 
     const settle = await settleOrder(tx, {
@@ -234,67 +297,75 @@ export async function createSinglePurchase(options: {
   }
 
   const now = new Date();
-  const batch = await loadPurchasableBatch(db, options.batchId);
-  const availableKg = Math.max(0, batch.quantityKg - batch.reservedKg);
-
-  if (qty > availableKg) {
-    throw new ApiError(
-      `Stok tersisa ${availableKg} ${batch.product.unit}.`,
-      409,
-      "INSUFFICIENT_STOCK",
-    );
-  }
-
-  let pricePerKg: number;
   const stage: "RESCUE" | "FEED" | "RESIDUE" = options.source;
-
-  if (options.source === "RESCUE") {
-    if (batch.status !== "RESCUE") {
-      throw new ApiError("Deal ini sudah tidak aktif.", 409, "DEAL_INACTIVE");
-    }
-    const deal = await db.orm.public.RescueDeal
-      .where({ batchId: batch.id, isActive: true })
-      .first();
-    if (!deal) {
-      throw new ApiError("Deal ini sudah tidak aktif.", 409, "DEAL_INACTIVE");
-    }
-
-    const tier = await getOrCreateBuyerTier(db, options.buyerId);
-    const access = getDealAccess(
-      {
-        startsAt: deal.startsAt,
-        endsAt: deal.endsAt,
-        earlyAccessHours: deal.earlyAccessHours,
-      } satisfies RescueDealWindow,
-      tier.earlyAccessHours ?? 0,
-      now,
-      deal.isActive,
-    );
-    if (!access.accessible) {
-      throw new ApiError(
-        "Deal ini belum bisa Anda akses. Tunggu early access tier Anda terbuka.",
-        403,
-        "DEAL_LOCKED",
-      );
-    }
-
-    // Quota is consumed atomically with the order.
-    await consumeRescueQuota(db, options.buyerId, now, 1);
-    pricePerKg = deal.rescuePricePerKg;
-  } else {
-    const listing = options.source === "FEED"
-      ? await db.orm.public.FeedListing.where({ batchId: batch.id, isActive: true }).first()
-      : await db.orm.public.ResidueListing.where({ batchId: batch.id, isActive: true }).first();
-    if (!listing) {
-      throw new ApiError("Listing tidak aktif.", 409, "LISTING_INACTIVE");
-    }
-    pricePerKg = listing.pricePerKg;
-  }
-
-  const lineTotal = Math.round(pricePerKg * qty);
   const code = createOrderCode();
 
   const result = await db.transaction(async (tx) => {
+    const batch = await loadPurchasableBatch(tx, options.batchId, {
+      forUpdate: true,
+    });
+    const availableKg = Math.max(0, batch.quantityKg - batch.reservedKg);
+
+    if (qty > availableKg) {
+      throw new ApiError(
+        `Stok tersisa ${availableKg} ${batch.product.unit}.`,
+        409,
+        "INSUFFICIENT_STOCK",
+      );
+    }
+
+    const tier = await getOrCreateBuyerTier(tx, options.buyerId, {
+      forUpdate: true,
+    });
+
+    let pricePerKg: number;
+
+    if (options.source === "RESCUE") {
+      if (batch.status !== "RESCUE") {
+        throw new ApiError("Penawaran ini sudah tidak aktif.", 409, "DEAL_INACTIVE");
+      }
+      const deal = await tx.orm.public.RescueDeal
+        .where({ batchId: batch.id, isActive: true })
+        .forUpdate()
+        .first();
+      if (!deal) {
+        throw new ApiError("Penawaran ini sudah tidak aktif.", 409, "DEAL_INACTIVE");
+      }
+
+      const access = getDealAccess(
+        {
+          startsAt: deal.startsAt,
+          endsAt: deal.endsAt,
+          earlyAccessHours: deal.earlyAccessHours,
+        } satisfies RescueDealWindow,
+        tier.earlyAccessHours ?? 0,
+        now,
+        deal.isActive,
+      );
+      if (!access.accessible) {
+        throw new ApiError(
+          "Penawaran ini belum bisa Anda akses. Tunggu akses awal tier Anda terbuka.",
+          403,
+          "DEAL_LOCKED",
+        );
+      }
+
+      await consumeRescueQuota(tx, options.buyerId, now, 1, {
+        lockTier: true,
+      });
+      pricePerKg = deal.rescuePricePerKg;
+    } else {
+      const listing = options.source === "FEED"
+        ? await tx.orm.public.FeedListing.where({ batchId: batch.id, isActive: true }).first()
+        : await tx.orm.public.ResidueListing.where({ batchId: batch.id, isActive: true }).first();
+      if (!listing) {
+        throw new ApiError("Listing tidak aktif.", 409, "LISTING_INACTIVE");
+      }
+      pricePerKg = listing.pricePerKg;
+    }
+
+    const lineTotal = Math.round(pricePerKg * qty);
+
     const order = await tx.orm.public.Order.create({
       code,
       buyerId: options.buyerId,
@@ -303,9 +374,9 @@ export async function createSinglePurchase(options: {
       subtotal: lineTotal,
       discount: 0,
       total: lineTotal,
-      tierAtPurchase: (await getOrCreateBuyerTier(tx, options.buyerId)).tier,
+      tierAtPurchase: tier.tier,
       contactPhone: options.contactPhone ?? null,
-      notes: `Pembelian langsung tahap ${stage}`,
+      notes: `Pembelian langsung tahap ${STATUS_META[stage].label}`,
     });
 
     await tx.orm.public.OrderItem.create({
@@ -368,21 +439,24 @@ export async function createPreorder(options: {
     throw new ApiError("Jumlah pesanan tidak valid.", 400, "INVALID_QTY");
   }
 
-  const batch = await loadPurchasableBatch(db, options.batchId);
-  const availableKg = Math.max(0, batch.quantityKg - batch.reservedKg);
-  if (options.quantityKg > availableKg) {
-    throw new ApiError(
-      `Stok tersisa ${availableKg} ${batch.product.unit}.`,
-      409,
-      "INSUFFICIENT_STOCK",
-    );
-  }
-
-  const pricePerKg = batch.priceBreakdown!.finalPricePerKg;
-  const lineTotal = Math.round(pricePerKg * options.quantityKg);
   const code = createOrderCode();
 
   await db.transaction(async (tx) => {
+    const batch = await loadPurchasableBatch(tx, options.batchId, {
+      forUpdate: true,
+    });
+    const availableKg = Math.max(0, batch.quantityKg - batch.reservedKg);
+    if (options.quantityKg > availableKg) {
+      throw new ApiError(
+        `Stok tersisa ${availableKg} ${batch.product.unit}.`,
+        409,
+        "INSUFFICIENT_STOCK",
+      );
+    }
+
+    const pricePerKg = batch.priceBreakdown!.finalPricePerKg;
+    const lineTotal = Math.round(pricePerKg * options.quantityKg);
+
     const order = await tx.orm.public.Order.create({
       code,
       buyerId: options.buyerId,

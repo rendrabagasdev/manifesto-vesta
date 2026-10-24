@@ -28,7 +28,7 @@ export const instant = false;
 
 export const metadata: Metadata = {
   title: "Dashboard · Vesta",
-  description: "Ringkasan operasional Freshness Cascade Vesta.",
+  description: "Ringkasan operasional kaskade kesegaran Vesta.",
 };
 
 const ORDER_STATUS_LABELS: Record<string, string> = {
@@ -55,8 +55,8 @@ export default async function DashboardPage() {
       },
       {
         href: "/rescue-deals",
-        title: "Rescue deals",
-        description: "Selamatkan batch skor turun dengan diskon dinamis sesuai tier.",
+        title: "Penawaran layu",
+        description: "Harga lebih murah untuk batch dengan skor turun.",
       },
       user.role === "BUSINESS"
         ? {
@@ -67,7 +67,7 @@ export default async function DashboardPage() {
         : {
             href: "/impact",
             title: "Dampak Anda",
-            description: "Lihat berapa kg pangan yang terselamatkan lewat pembelian Anda.",
+            description: "Lihat dampak dari pembelian Anda.",
           },
     ];
 
@@ -208,7 +208,7 @@ export default async function DashboardPage() {
                 ? `${formatInteger(
                     summary.needingAction,
                   )} batch perlu ditindaklanjuti hari ini.`
-                : "Semua batch aktif masih di tahap Fresh."}
+                : "Semua batch aktif masih di tahap Segar."}
           </p>
         </div>
 
@@ -241,7 +241,7 @@ export default async function DashboardPage() {
           <p className="mt-1 text-2xl font-semibold tabular-nums tracking-tight text-ink">
             {formatInteger(summary.needingAction)}
           </p>
-          <p className="mt-0.5 text-xs text-ink-muted">Rescue, pakan, residu</p>
+          <p className="mt-0.5 text-xs text-ink-muted">Layu, pakan, residu</p>
         </div>
         <div className="bg-surface p-4">
           <p className="text-xs text-ink-muted">Rata-rata skor</p>

@@ -222,6 +222,70 @@ describe("createOrderFromCart", () => {
     ).toBe(5);
   });
 
+  it("stores the delivery location and estimate", async () => {
+    const world = await createWorld();
+    await createBuyerTier({ userId: world.users.consumer.id });
+    const { fresh } = await setupShop(world);
+
+    const startedAt = Date.now();
+    const result = await createOrderFromCart({
+      buyerId: world.users.consumer.id,
+      lines: [{ batchId: fresh.batch.id, quantityKg: 2 }],
+      deliveryAddress: ADDRESS,
+      deliveryCity: "bandung",
+      deliveryMethod: "INSTANT",
+      contactPhone: PHONE,
+    });
+
+    const order = await db.orm.public.Order.where({ code: result.code }).first();
+    expect(order).toMatchObject({
+      deliveryCity: "Kota Bandung",
+      deliveryMethod: "INSTANT",
+    });
+    expect(order!.estimatedDeliveryAt).not.toBeNull();
+
+    const estimate = new Date(order!.estimatedDeliveryAt!).getTime();
+    expect(estimate).toBeGreaterThanOrEqual(startedAt + 2 * 60 * 60 * 1000 - 1000);
+    expect(estimate).toBeLessThanOrEqual(Date.now() + 2 * 60 * 60 * 1000 + 1000);
+  });
+
+  it("rejects instan outside the warehouse metro without reserving stock", async () => {
+    const world = await createWorld();
+    await createBuyerTier({ userId: world.users.consumer.id });
+    const { fresh } = await setupShop(world);
+
+    await expect(
+      createOrderFromCart({
+        buyerId: world.users.consumer.id,
+        lines: [{ batchId: fresh.batch.id, quantityKg: 2 }],
+        deliveryAddress: ADDRESS,
+        deliveryCity: "jakarta",
+        deliveryMethod: "INSTANT",
+        contactPhone: PHONE,
+      }),
+    ).rejects.toMatchObject({ code: "METHOD_UNAVAILABLE", status: 409 });
+
+    const batch = await db.orm.public.Batch.where({ id: fresh.batch.id }).first();
+    expect(batch!.reservedKg).toBe(0);
+    expect(await db.orm.public.Order.all()).toHaveLength(0);
+  });
+
+  it("rejects an unknown delivery city", async () => {
+    const world = await createWorld();
+    const { fresh } = await setupShop(world);
+
+    await expect(
+      createOrderFromCart({
+        buyerId: world.users.consumer.id,
+        lines: [{ batchId: fresh.batch.id, quantityKg: 2 }],
+        deliveryAddress: ADDRESS,
+        deliveryCity: "atlantis",
+        deliveryMethod: "REGULAR",
+        contactPhone: PHONE,
+      }),
+    ).rejects.toMatchObject({ code: "INVALID_CITY", status: 400 });
+  });
+
   it("rejects an empty cart", async () => {
     const world = await createWorld();
     await expect(
@@ -562,6 +626,164 @@ describe("createSinglePurchase (feed and residue)", () => {
         source: "RESIDUE",
       }),
     ).rejects.toMatchObject({ code: "LISTING_INACTIVE" });
+  });
+});
+
+describe("concurrent purchases", () => {
+  it("sells the last kilogram to only one of two concurrent carts", async () => {
+    const world = await createWorld();
+    await createBuyerTier({ userId: world.users.consumer.id });
+    const { fresh } = await setupShop(world);
+    await db.orm.public.Batch.where({ id: fresh.batch.id }).update({
+      quantityKg: 1,
+      reservedKg: 0,
+    });
+
+    const attempts = await Promise.allSettled([
+      createOrderFromCart({
+        buyerId: world.users.consumer.id,
+        lines: [{ batchId: fresh.batch.id, quantityKg: 1 }],
+        deliveryAddress: ADDRESS,
+        contactPhone: PHONE,
+      }),
+      createOrderFromCart({
+        buyerId: world.users.consumer.id,
+        lines: [{ batchId: fresh.batch.id, quantityKg: 1 }],
+        deliveryAddress: ADDRESS,
+        contactPhone: PHONE,
+      }),
+    ]);
+
+    const fulfilled = attempts.filter((result) => result.status === "fulfilled");
+    const rejected = attempts.filter(
+      (result): result is PromiseRejectedResult => result.status === "rejected",
+    );
+    expect(fulfilled).toHaveLength(1);
+    expect(rejected).toHaveLength(1);
+    expect(rejected[0].reason).toMatchObject({
+      code: "INSUFFICIENT_STOCK",
+      status: 409,
+    });
+
+    const batch = await db.orm.public.Batch.where({ id: fresh.batch.id }).first();
+    expect(batch!.reservedKg).toBe(1);
+    expect(await db.orm.public.Order.all()).toHaveLength(1);
+  });
+
+  it("enforces the weekly quota across concurrent rescue purchases", async () => {
+    const world = await createWorld();
+    await createBuyerTier({
+      userId: world.users.consumer.id,
+      tier: "STARTER",
+    });
+
+    const rescueBatches = await Promise.all(
+      [0, 1, 2].map(() =>
+        createBatch({
+          product: world.products.spinach,
+          warehouseId: world.warehouse.id,
+          quantityKg: 100,
+          status: "RESCUE",
+          freshnessScore: 57,
+        }),
+      ),
+    );
+    await Promise.all(
+      rescueBatches.map((batch) =>
+        createRescueDeal({
+          batchId: batch.batch.id,
+          rescuePricePerKg: 12000,
+        }),
+      ),
+    );
+
+    const attempts = await Promise.allSettled(
+      rescueBatches.map((batch) =>
+        createSinglePurchase({
+          buyerId: world.users.consumer.id,
+          batchId: batch.batch.id,
+          quantityKg: 1,
+          source: "RESCUE",
+        }),
+      ),
+    );
+
+    const fulfilled = attempts.filter((result) => result.status === "fulfilled");
+    const rejected = attempts.filter(
+      (result): result is PromiseRejectedResult => result.status === "rejected",
+    );
+    expect(fulfilled).toHaveLength(2);
+    expect(rejected).toHaveLength(1);
+    expect(rejected[0].reason).toMatchObject({
+      code: "RESCUE_QUOTA_EXHAUSTED",
+      status: 409,
+    });
+
+    const quota = await getQuotaStatus(db, world.users.consumer.id);
+    expect(quota).toMatchObject({ limit: 2, used: 2, remaining: 0 });
+    expect(await db.orm.public.Order.all()).toHaveLength(2);
+
+    const reserved = await db.orm.public.Batch.all();
+    expect(reserved.reduce((sum, batch) => sum + batch.reservedKg, 0)).toBe(2);
+  });
+
+  it("leaves no reservation or loyalty entry when any cart line is short", async () => {
+    const world = await createWorld();
+    await createBuyerTier({ userId: world.users.consumer.id });
+    const { fresh } = await setupShop(world);
+    const rice = await createBatch({
+      product: world.products.rice,
+      warehouseId: world.warehouse.id,
+      quantityKg: 2,
+      status: "FRESH",
+      freshnessScore: 98,
+    });
+
+    await expect(
+      createOrderFromCart({
+        buyerId: world.users.consumer.id,
+        lines: [
+          { batchId: fresh.batch.id, quantityKg: 5 },
+          { batchId: rice.batch.id, quantityKg: 5 },
+        ],
+        deliveryAddress: ADDRESS,
+        contactPhone: PHONE,
+      }),
+    ).rejects.toMatchObject({ code: "INSUFFICIENT_STOCK" });
+
+    expect(await db.orm.public.Order.all()).toHaveLength(0);
+    expect(await db.orm.public.LoyaltyLedger.all()).toHaveLength(0);
+    expect(
+      (await db.orm.public.Batch.where({ id: fresh.batch.id }).first())!.reservedKg,
+    ).toBe(0);
+    expect(
+      (await db.orm.public.Batch.where({ id: rice.batch.id }).first())!.reservedKg,
+    ).toBe(0);
+  });
+
+  it("does not consume the rescue quota when the stock check fails", async () => {
+    const world = await createWorld();
+    await createBuyerTier({
+      userId: world.users.consumer.id,
+      tier: "STARTER",
+    });
+    const { rescue } = await setupShop(world);
+
+    await expect(
+      createSinglePurchase({
+        buyerId: world.users.consumer.id,
+        batchId: rescue.batch.id,
+        quantityKg: 500,
+        source: "RESCUE",
+      }),
+    ).rejects.toMatchObject({ code: "INSUFFICIENT_STOCK" });
+
+    const quota = await getQuotaStatus(db, world.users.consumer.id);
+    expect(quota).toMatchObject({ used: 0, remaining: 2 });
+    expect(await db.orm.public.Order.all()).toHaveLength(0);
+    expect(
+      (await db.orm.public.Batch.where({ id: rescue.batch.id }).first())!.reservedKg,
+    ).toBe(0);
   });
 });
 

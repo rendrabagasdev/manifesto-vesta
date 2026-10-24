@@ -153,6 +153,7 @@ export interface PricingInput {
   warehouseCostPerKg?: number;
   logisticsCostPerKg?: number;
   marginPerKg?: number;
+  rescueBounds?: RescuePriceBounds;
 }
 
 export interface PricingResult {
@@ -167,19 +168,35 @@ export interface PricingResult {
   category: string;
 }
 
+export interface RescuePriceBounds {
+  fresh: number;
+  rescue: number;
+}
+
+export const DEFAULT_RESCUE_PRICE_BOUNDS: RescuePriceBounds = {
+  fresh: 70,
+  rescue: 30,
+};
+
 /**
  * Discount is gradual inside the RESCUE band: ~8% when the score is just
- * below 70 and up to ~58% as it approaches 30. This avoids a cliff at the
- * stage boundary and discourages waiting for a batch to become almost waste.
+ * below the FRESH threshold and up to ~58% as it approaches the RESCUE
+ * threshold. This avoids a cliff at the stage boundary and discourages
+ * waiting for a batch to become almost waste.
  */
 export function calculateRescueDiscountPct(
   freshnessScore: number,
   category: string,
+  bounds: RescuePriceBounds = DEFAULT_RESCUE_PRICE_BOUNDS,
 ): number {
   const profile = COMMODITY_PROFILES[category] ?? COMMODITY_PROFILES.OTHER;
   const maxDiscount = Math.max(45, profile.rescueDiscountCurve[2] ?? 55);
-  const score = Math.max(30, Math.min(69.999, freshnessScore));
-  const depth = (70 - score) / 40;
+  const span = Math.max(1, bounds.fresh - bounds.rescue);
+  const score = Math.max(
+    bounds.rescue,
+    Math.min(bounds.fresh - 0.001, freshnessScore),
+  );
+  const depth = (bounds.fresh - score) / span;
   const discount = 8 + depth * (maxDiscount - 8);
   return Math.round(Math.min(60, Math.max(8, discount)) * 10) / 10;
 }
@@ -193,6 +210,7 @@ export function calculateDynamicPricing(input: PricingInput): PricingResult {
     warehouseCostPerKg = 1000,
     logisticsCostPerKg = 1500,
     marginPerKg = 2000,
+    rescueBounds = DEFAULT_RESCUE_PRICE_BOUNDS,
   } = input;
 
   const gross =
@@ -207,6 +225,7 @@ export function calculateDynamicPricing(input: PricingInput): PricingResult {
       discountPct = calculateRescueDiscountPct(
         freshnessScore ?? 50,
         category,
+        rescueBounds,
       );
       break;
     case "FEED":
@@ -236,9 +255,9 @@ export function calculateDynamicPricing(input: PricingInput): PricingResult {
 }
 
 export function getRescueDiscountLabel(freshnessScore: number): string {
-  if (freshnessScore >= 55) return "Rescue Ringan";
-  if (freshnessScore >= 35) return "Rescue Sedang";
-  return "Rescue Darurat";
+  if (freshnessScore >= 55) return "Layu Ringan";
+  if (freshnessScore >= 35) return "Layu Sedang";
+  return "Layu Darurat";
 }
 
 export function getCommodityProfile(category: string): CommodityProfile {

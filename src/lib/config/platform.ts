@@ -8,6 +8,7 @@
  */
 
 import { db } from "@/src/prisma/db";
+import { DEFAULT_STATUS_THRESHOLDS } from "@/src/lib/batches/freshness";
 
 export const PLATFORM_CONFIG_ID = 1;
 
@@ -44,7 +45,7 @@ export interface PlatformConfigView {
 }
 
 export const DEFAULT_PLATFORM_CONFIG: PlatformConfigView = {
-  thresholds: { fresh: 70, rescue: 30, feed: 10, residue: 0 },
+  thresholds: { ...DEFAULT_STATUS_THRESHOLDS },
   stageTimersHours: {
     FRESH: null,
     RESCUE: 48,
@@ -174,7 +175,7 @@ export function assertValidThresholds(
     fresh <= 100;
   if (!valid) {
     throw new Error(
-      "Ambang cascade harus memenuhi fresh > rescue > feed ≥ residue ≥ 0.",
+      "Ambang cascade harus memenuhi segar > layu > pakan ≥ residu ≥ 0.",
     );
   }
 }

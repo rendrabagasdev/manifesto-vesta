@@ -19,6 +19,7 @@ export interface CartItem {
   maxKg: number;
   stage: string;
   warehouseName: string;
+  warehouseCity: string | null;
 }
 
 const STORAGE_KEY = "vesta-cart-v1";
@@ -52,6 +53,8 @@ function sanitizeItems(raw: unknown): CartItem[] {
       if (item.qtyKg > 0 && item.maxKg > 0) {
         items.push({
           ...item,
+          warehouseCity:
+            typeof item.warehouseCity === "string" ? item.warehouseCity : null,
           qtyKg: Math.min(item.qtyKg, item.maxKg),
         });
       }

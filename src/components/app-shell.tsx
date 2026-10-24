@@ -22,9 +22,9 @@ export function AppShell({
   const displayName = user.name ?? user.email ?? "Pengguna Vesta";
 
   return (
-    <div className="min-h-dvh bg-surface-muted lg:p-2">
-      <div className="mx-auto flex min-h-dvh max-w-[1560px] lg:min-h-[calc(100dvh-1rem)] lg:gap-2">
-        <aside className="hidden w-56 shrink-0 flex-col px-2 py-3 lg:flex">
+    <div className="min-h-dvh bg-surface-muted lg:h-dvh lg:overflow-hidden lg:p-2">
+      <div className="mx-auto flex min-h-dvh max-w-[1560px] lg:h-full lg:min-h-0 lg:gap-2">
+        <aside className="hidden w-56 shrink-0 flex-col px-2 py-3 lg:flex lg:h-full lg:min-h-0">
           <Link
             href="/dashboard"
             className="inline-flex items-center gap-2.5 rounded-lg px-2 py-1 font-semibold tracking-tight text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
@@ -43,7 +43,7 @@ export function AppShell({
           <p className="mt-8 px-3 text-xs font-medium text-ink-muted">
             Operasional
           </p>
-          <div className="mt-2">
+          <div className="mt-2 min-h-0 flex-1 overflow-y-auto">
             <DashboardNav
               role={user.role}
               canViewBatches={canViewBatches}
@@ -51,7 +51,7 @@ export function AppShell({
             />
           </div>
 
-          <div className="mt-auto rounded-xl bg-surface/70 p-3">
+          <div className="mt-auto shrink-0 rounded-xl bg-surface/70 p-3">
             <div className="flex items-center gap-2.5">
               <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-soft text-xs font-bold text-brand-strong">
                 {initials(displayName)}
@@ -78,8 +78,8 @@ export function AppShell({
           </div>
         </aside>
 
-        <div className="flex min-w-0 flex-1 flex-col">
-          <header className="flex h-12 items-center justify-between gap-3 px-4 sm:px-5">
+        <div className="flex min-w-0 flex-1 flex-col lg:min-h-0">
+          <header className="flex h-12 shrink-0 items-center justify-between gap-3 px-4 sm:px-5">
             <div className="flex min-w-0 items-center gap-3">
               <Link
                 href="/dashboard"
@@ -121,7 +121,7 @@ export function AppShell({
             </div>
           </header>
 
-          <div className="flex-1 bg-surface lg:mb-2 lg:mr-2 lg:rounded-2xl lg:border lg:border-line">
+          <div className="flex-1 bg-surface lg:mb-2 lg:mr-2 lg:min-h-0 lg:overflow-y-auto lg:rounded-2xl lg:border lg:border-line">
             <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
               {children}
             </div>

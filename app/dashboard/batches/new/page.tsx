@@ -14,7 +14,7 @@ export const instant = false;
 
 export const metadata: Metadata = {
   title: "Batch baru · Vesta",
-  description: "Catat pasokan baru dan hitung freshness score otomatis.",
+  description: "Catat pasokan baru dan hitung skor kesegaran otomatis.",
 };
 
 export default async function NewBatchPage() {

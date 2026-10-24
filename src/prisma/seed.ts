@@ -676,6 +676,14 @@ async function main() {
     stage: "FRESH",
   });
 
+  await db.orm.public.Batch.where({ id: rescueSpinach.id }).update({
+    reservedKg: rescueSpinach.reservedKg + 5,
+  });
+
+  await db.orm.public.Batch.where({ id: freshRice.id }).update({
+    reservedKg: freshRice.reservedKg + 2,
+  });
+
   await db.orm.public.ImpactLog.create({
     batchId: rescueSpinach.id,
     orderId: order.id,
@@ -692,7 +700,7 @@ async function main() {
     type: "EARN",
     amount: 71000,
     pointsDelta: 71,
-    description: "Pembelian demo Rescue Deal dan beras.",
+    description: "Pembelian demo penawaran layu dan beras.",
   });
 
   await ensureBuyerTier(b2cUser.id, {

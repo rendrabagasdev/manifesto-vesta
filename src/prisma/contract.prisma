@@ -302,6 +302,9 @@ model Order {
   total           Int
   tierAtPurchase  TierName    @default(STARTER)
   deliveryAddress String?
+  deliveryCity    String?
+  deliveryMethod  String?
+  estimatedDeliveryAt TimestamptzString?
   contactPhone    String?
   scheduledFor    DateString?
   notes           String?

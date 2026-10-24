@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { connection } from "next/server";
-import { AlarmClock, Info, Lock, ShoppingBasket, Timer } from "lucide-react";
+import { AlarmClock, Lock, ShoppingBasket, Timer } from "lucide-react";
 import { requireSession } from "@/src/lib/auth/session";
 import {
   getBuyerQuotaStatus,
@@ -10,7 +9,7 @@ import {
 } from "@/src/lib/marketplace/queries";
 import { getDealAccess } from "@/src/lib/pricing/rescue";
 import { TIER_BENEFITS, type TierName } from "@/src/lib/loyalty/tiers";
-import { formatDateTime, formatIdr, formatKg, formatNumber } from "@/src/lib/batches/format";
+import { formatDateTime, formatIdr, formatNumber } from "@/src/lib/batches/format";
 import { FreshnessMeter } from "@/src/components/marketplace/freshness-meter";
 import { Countdown } from "@/src/components/marketplace/countdown";
 import { DirectBuyForm } from "@/src/components/marketplace/direct-buy-form";
@@ -20,8 +19,8 @@ import { buyRescueDealAction } from "@/app/(shop)/actions";
 export const instant = false;
 
 export const metadata: Metadata = {
-  title: "Rescue Deals — Vesta",
-  description: "Selamatkan batch dengan skor turun sebelum jatuh ke tahap berikutnya.",
+  title: "Penawaran Layu — Vesta",
+  description: "Harga lebih murah untuk batch dengan skor kesegaran menurun.",
 };
 
 const TIER_ORDER: TierName[] = ["STARTER", "SILVER", "GOLD", "PLATINUM"];
@@ -83,7 +82,7 @@ function DealCard({ deal, earlyAccessHours }: { deal: RescueDealView; earlyAcces
               <Lock className="mt-0.5 size-4 shrink-0 text-ink-muted" aria-hidden="true" />
               <div className="min-w-0">
                 <p className="text-xs font-semibold text-ink">
-                  Early access tier Anda belum terbuka
+                  Akses awal tier Anda belum terbuka
                 </p>
                 <p className="mt-0.5 text-xs text-ink-muted">
                   <Countdown
@@ -102,8 +101,8 @@ function DealCard({ deal, earlyAccessHours }: { deal: RescueDealView; earlyAcces
         ) : !access.accessible ? (
           <p className="rounded-lg bg-surface-muted px-3 py-2.5 text-xs text-ink-muted">
             {access.reason === "EXPIRED"
-              ? "Deal sudah berakhir."
-              : "Deal belum aktif."}
+              ? "Penawaran sudah berakhir."
+              : "Penawaran belum aktif."}
           </p>
         ) : (
           <DirectBuyForm
@@ -113,7 +112,7 @@ function DealCard({ deal, earlyAccessHours }: { deal: RescueDealView; earlyAcces
             pricePerKg={deal.rescuePricePerKg}
             maxKg={deal.availableKg}
             unit={deal.unit}
-            label="Selamatkan"
+            label="Beli"
           />
         )}
       </div>
@@ -129,19 +128,16 @@ export default async function RescueDealsPage() {
     getBuyerQuotaStatus(Number(user.id)),
   ]);
 
-  const currentTierIndex = TIER_ORDER.indexOf(quota.tier as TierName);
-  const nextTier = TIER_ORDER[currentTierIndex + 1] ?? null;
   const quotaPct = quota.limit > 0 ? Math.round((quota.used / quota.limit) * 100) : 0;
 
   return (
     <div>
       <header className="max-w-2xl">
         <h1 className="font-heading text-2xl font-bold tracking-tight text-ink sm:text-3xl">
-          Rescue deals
+          Penawaran layu
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-ink-muted">
-          Batch dengan skor 30–69 diselamatkan lewat diskon dinamis — makin rendah
-          skor, makin besar diskon. Akses lebih awal adalah benefit tier Anda.
+          Harga lebih murah untuk batch dengan skor kesegaran di bawah 70.
         </p>
       </header>
 
@@ -153,7 +149,7 @@ export default async function RescueDealsPage() {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 id="quota-heading" className="flex items-center gap-2 text-sm font-semibold text-ink">
               <ShoppingBasket className="size-4" aria-hidden="true" />
-              Kuota rescue minggu ini
+              Kuota layu minggu ini
             </h2>
             <p className="text-xs text-ink-muted">
               Reset <Countdown targetIso={`${quota.resetsAt}T00:00:00.000Z`} prefix="" expiredLabel="segera" />
@@ -179,13 +175,12 @@ export default async function RescueDealsPage() {
             />
           </div>
           <p className="mt-1.5 text-xs text-ink-muted">
-            {quota.used} terpakai minggu ini · tier {quota.tierLabel} · kuota tidak
-            bisa ditumpuk antar minggu.
+            {quota.used} terpakai minggu ini · tier {quota.tierLabel}
           </p>
 
           <ul
             className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-4"
-            aria-label="Kuota rescue per tier"
+            aria-label="Kuota layu per tier"
           >
             {TIER_ORDER.map((tier) => {
               const benefit = TIER_BENEFITS[tier];
@@ -222,35 +217,24 @@ export default async function RescueDealsPage() {
         <section aria-labelledby="tier-heading" className="rounded-xl border border-line bg-surface p-4">
           <h2 id="tier-heading" className="flex items-center gap-2 text-sm font-semibold text-ink">
             <AlarmClock className="size-4" aria-hidden="true" />
-            Early access Anda
+            Akses awal Anda
           </h2>
           <p className="mt-3 font-heading text-3xl font-extrabold tabular-nums tracking-tight text-ink">
             {quota.earlyAccessHours > 0 ? `+${quota.earlyAccessHours}` : "0"}
             <span className="text-base font-semibold text-ink-muted"> jam</span>
           </p>
           <p className="mt-1.5 text-xs leading-relaxed text-ink-muted">
-            Sebelum deal dibuka publik, tier {quota.tierLabel} sudah bisa membeli{" "}
-            {quota.earlyAccessHours > 0 ? `${quota.earlyAccessHours} jam lebih awal` : "bersama semua tier"}.
+            {quota.earlyAccessHours > 0
+              ? `Beli ${quota.earlyAccessHours} jam lebih awal dari tier lain.`
+              : "Beli bersamaan dengan semua tier."}
           </p>
-          {nextTier ? (
-            <p className="mt-3 border-t border-line pt-3 text-xs text-ink-muted">
-              Naik ke {TIER_BENEFITS[nextTier].label} untuk{" "}
-              {TIER_BENEFITS[nextTier].earlyAccessHours} jam early access dan{" "}
-              {TIER_BENEFITS[nextTier].rescueQuotaPerWeek} kuota/minggu — via
-              belanja harga normal.
-            </p>
-          ) : null}
         </section>
       </div>
 
       {deals.length === 0 ? (
         <div className="mt-6 rounded-xl border border-dashed border-line bg-surface px-6 py-10 text-center">
-          <p className="text-sm font-semibold text-ink">Tidak ada rescue deal aktif</p>
-          <p className="mx-auto mt-1 max-w-md text-sm leading-relaxed text-ink-muted">
-            Saat skor sebuah batch turun di bawah 70, deal muncul otomatis di
-            halaman ini. Gunakan kontrol simulasi waktu di dashboard admin untuk
-            mempercepat demo.
-          </p>
+          <p className="text-sm font-semibold text-ink">Belum ada penawaran</p>
+          <p className="mt-1 text-sm text-ink-muted">Cek lagi nanti, ya.</p>
         </div>
       ) : (
         <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -261,12 +245,6 @@ export default async function RescueDealsPage() {
           ))}
         </ul>
       )}
-
-      <p className="mt-6 flex items-start gap-2 text-xs leading-relaxed text-ink-muted">
-        <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden="true" />
-        Poin loyalitas hanya dihitung dari pembelian harga normal — membeli rescue
-        tidak menaikkan tier, dan kuota rescue tidak bisa ditumpuk antar minggu.
-      </p>
     </div>
   );
 }

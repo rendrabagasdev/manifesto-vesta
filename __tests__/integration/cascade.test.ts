@@ -14,6 +14,7 @@ import {
   getRescueDeals,
   getResidueListings,
 } from "@/src/lib/marketplace/queries";
+import { savePlatformConfig } from "@/src/lib/config/platform";
 import { closeTestResources, truncateAll } from "./helpers/db";
 import {
   createBatch,
@@ -29,6 +30,9 @@ import {
 const NOW = new Date("2026-10-23T00:00:00.000Z");
 const plusHours = (hours: number) =>
   new Date(NOW.getTime() + hours * 60 * 60 * 1000);
+const asHours = (value: string | Date) =>
+  (value instanceof Date ? value.getTime() : new Date(value).getTime()) /
+  (60 * 60 * 1000);
 
 beforeEach(async () => {
   vi.useFakeTimers({ toFake: ["Date"] });
@@ -131,6 +135,56 @@ describe("syncBatchState transitions", () => {
     const events = await db.orm.public.CascadeEvent.where({ batchId: batch.id }).all();
     expect(events).toHaveLength(2);
     expect(events.some((event) => event.toStatus === "RESCUE")).toBe(true);
+  });
+
+  it("applies configured thresholds and rescue windows", async () => {
+    const world = await createWorld();
+    await savePlatformConfig({
+      thresholdFresh: 80,
+      thresholdRescue: 40,
+      thresholdFeed: 20,
+      thresholdResidue: 5,
+      rescueDealDurationHours: 24,
+      earlyAccessWindowHours: 6,
+    });
+
+    const { batch } = await rescueBatch(world);
+    const result = await syncBatchState(db, batch.id, { now: NOW });
+
+    expect(result).toMatchObject({
+      previousStatus: "FRESH",
+      status: "RESCUE",
+      forcedByTimer: false,
+    });
+
+    const deal = await db.orm.public.RescueDeal.where({
+      batchId: batch.id,
+    }).first();
+    expect(deal).not.toBeNull();
+    expect(deal!.earlyAccessHours).toBe(6);
+    expect(asHours(deal!.endsAt)).toBeCloseTo(asHours(NOW) + 24, 5);
+  });
+
+  it("forces the next stage using the configured timer", async () => {
+    const world = await createWorld();
+    await savePlatformConfig({ rescueTimerHours: 1 });
+
+    const { batch } = await createBatch({
+      product: world.products.rice,
+      warehouseId: world.warehouse.id,
+      receivedAt: new Date().toISOString(),
+      status: "RESCUE",
+      freshnessScore: 90,
+      cascadeCreatedAt: hoursAgoIso(2),
+    });
+
+    const result = await syncBatchState(db, batch.id, { now: NOW });
+
+    expect(result).toMatchObject({
+      previousStatus: "RESCUE",
+      status: "FEED",
+      forcedByTimer: true,
+    });
   });
 
   it("moves RESCUE -> FEED and swaps the rescue deal for a feed listing", async () => {

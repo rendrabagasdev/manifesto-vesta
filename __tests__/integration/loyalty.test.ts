@@ -1,6 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest";
 import { db } from "@/src/prisma/db";
 import { ApiError } from "@/src/lib/api/http";
+import { runCascadeTick } from "@/src/lib/cascade/service";
 import {
   addNormalSpend,
   computeTier,
@@ -14,6 +15,7 @@ import {
   getWeekStart,
   isTierName,
   progressToNextTier,
+  runLoyaltyExpiry,
   TIER_BENEFITS,
 } from "@/src/lib/loyalty/tiers";
 import { closeTestResources, truncateAll } from "./helpers/db";
@@ -422,5 +424,105 @@ describe("expireLoyaltySpend", () => {
 
     const result = await expireLoyaltySpend(db, user.id);
     expect(result).toEqual({ totalSpend30d: 0, tier: "STARTER" });
+  });
+});
+
+describe("runLoyaltyExpiry", () => {
+  it("expires stale spend across buyers and reports the downgrades", async () => {
+    const world = await createWorld();
+    const stale = world.users.consumer.id;
+    const active = world.users.business.id;
+
+    await createBuyerTier({
+      userId: stale,
+      tier: "GOLD",
+      totalSpend30d: 4_000_000,
+      points: 4000,
+    });
+    await createLoyaltyEntry({
+      userId: stale,
+      amount: 4_000_000,
+      createdAt: daysAgoIso(31),
+    });
+    await createBuyerTier({
+      userId: active,
+      tier: "SILVER",
+      totalSpend30d: 1_000_000,
+    });
+    await createLoyaltyEntry({
+      userId: active,
+      amount: 1_000_000,
+      createdAt: daysAgoIso(3),
+    });
+
+    const result = await runLoyaltyExpiry();
+
+    expect(result).toEqual({
+      processedUsers: 1,
+      downgradedUsers: 1,
+      expiredSpend: 4_000_000,
+    });
+
+    const staleTier = await db.orm.public.BuyerTier.where({
+      userId: stale,
+    }).first();
+    expect(staleTier).toMatchObject({
+      tier: "STARTER",
+      totalSpend30d: 0,
+      points: 4000,
+      rescueQuotaPerWeek: 2,
+      earlyAccessHours: 0,
+    });
+
+    const activeTier = await db.orm.public.BuyerTier.where({
+      userId: active,
+    }).first();
+    expect(activeTier).toMatchObject({
+      tier: "SILVER",
+      totalSpend30d: 1_000_000,
+    });
+  });
+
+  it("skips buyers that never spent", async () => {
+    const world = await createWorld();
+    await createBuyerTier({
+      userId: world.users.consumer.id,
+      tier: "STARTER",
+    });
+
+    const result = await runLoyaltyExpiry();
+
+    expect(result).toEqual({
+      processedUsers: 0,
+      downgradedUsers: 0,
+      expiredSpend: 0,
+    });
+  });
+
+  it("runs as part of the cascade tick using the tick clock", async () => {
+    const world = await createWorld();
+    await createBuyerTier({
+      userId: world.users.consumer.id,
+      tier: "PLATINUM",
+      totalSpend30d: 6_000_000,
+    });
+    await createLoyaltyEntry({
+      userId: world.users.consumer.id,
+      amount: 6_000_000,
+      createdAt: daysAgoIso(40),
+    });
+
+    const tick = await runCascadeTick(new Date());
+
+    expect(tick.loyalty).toEqual({
+      processedUsers: 1,
+      downgradedUsers: 1,
+      expiredSpend: 6_000_000,
+    });
+
+    const tier = await db.orm.public.BuyerTier.where({
+      userId: world.users.consumer.id,
+    }).first();
+    expect(tier).toMatchObject({ tier: "STARTER", totalSpend30d: 0 });
   });
 });

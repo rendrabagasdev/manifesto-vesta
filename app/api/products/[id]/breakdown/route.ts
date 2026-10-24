@@ -46,8 +46,8 @@ export async function GET(
 
     // Calculate prices for each cascade stage
     const stages = [
-      { status: "FRESH", discount: 0, label: "Harga Normal (Fresh)" },
-      { status: "RESCUE", discount: 35, label: "Rescue Deal" },
+      { status: "FRESH", discount: 0, label: "Harga Normal (Segar)" },
+      { status: "RESCUE", discount: 35, label: "Penawaran Layu" },
       { status: "FEED", discount: 80, label: "Pakan Ternak" },
       { status: "RESIDUE", discount: 95, label: "Residu Organik" },
       { status: "DISPOSED", discount: 100, label: "Dibuang" },
