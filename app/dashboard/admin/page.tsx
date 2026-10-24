@@ -71,7 +71,7 @@ export default async function AdminDashboardPage() {
         <div className="bg-surface p-4">
           <p className="flex items-center gap-1.5 text-xs text-ink-muted">
             <Leaf className="size-3.5" aria-hidden="true" />
-            Terselamatkan
+            Tidak terbuang
           </p>
           <p className="mt-1 text-2xl font-semibold tabular-nums tracking-tight text-ink">
             {formatNumber(impact.totalRescuedKg)}
@@ -195,7 +195,7 @@ export default async function AdminDashboardPage() {
                 <th className="px-4 py-2 font-normal">Tier</th>
                 <th className="px-4 py-2 text-right font-normal">Belanja 30 hari</th>
                 <th className="px-4 py-2 text-right font-normal">Kuota/minggu</th>
-                <th className="px-4 py-2 text-right font-normal">Early access</th>
+                <th className="px-4 py-2 text-right font-normal">Akses awal</th>
               </tr>
             </thead>
             <tbody>

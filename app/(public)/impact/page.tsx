@@ -10,20 +10,20 @@ import {
 } from "@/src/lib/marketplace/queries";
 import { formatInteger, formatNumber } from "@/src/lib/batches/format";
 import { StatusPill } from "@/src/components/status-pill";
-import { isBatchStatus } from "@/src/lib/batches/freshness";
+import { STATUS_META, isBatchStatus } from "@/src/lib/batches/freshness";
 
 export const instant = false;
 
 export const metadata: Metadata = {
   title: "Dampak — Vesta",
   description:
-    "Laporan dampak publik Vesta: kg terselamatkan, CO₂e dihindari, air dihemat, dan Waste Diversion Rate.",
+    "Laporan dampak publik Vesta: bahan tidak terbuang, CO₂e dihindari, air dihemat, dan Waste Diversion Rate.",
 };
 
 const COUNTERS = [
   {
     key: "kg",
-    label: "Bahan terselamatkan",
+    label: "Bahan tidak terbuang",
     unit: "kg",
     icon: Leaf,
   },
@@ -60,9 +60,8 @@ export default async function ImpactPage() {
           Dampak yang bisa dihitung.
         </h1>
         <p className="mt-3 text-base leading-relaxed text-ink-muted">
-          Setiap batch yang diselamatkan cascade Vesta dicatat di impact ledger —
-          angka di halaman ini hidup, publik, dan bisa diverifikasi lewat QR
-          traceability tiap batch.
+          Bahan yang tidak terbuang dari setiap transaksi, dihitung otomatis dan
+          bisa dicek lewat QR tiap batch.
         </p>
       </header>
 
@@ -108,9 +107,8 @@ export default async function ImpactPage() {
             <span className="text-lg font-semibold text-ink-muted">%</span>
           </p>
           <p className="mt-2 max-w-lg text-sm leading-relaxed text-ink-muted">
-            Dari {formatInteger(summary.totalBatchesProcessed)} batch yang pernah
-            masuk sistem, sebanyak ini tidak berakhir di tahap DISPOSED. Sisanya
-            tercatat sebagai waste di ledger.
+            Dari {formatInteger(summary.totalBatchesProcessed)} batch yang masuk
+            sistem, sebanyak ini tidak berakhir dibuang.
           </p>
 
           <ul className="mt-5 space-y-2" aria-label="Sebaran tahap cascade">
@@ -125,7 +123,7 @@ export default async function ImpactPage() {
                 return (
                   <li key={status} className="flex items-center gap-3">
                     <span className="w-20 shrink-0 text-xs font-medium text-ink-muted">
-                      {status}
+                      {STATUS_META[status].label}
                     </span>
                     <span className="h-2 min-w-0 flex-1 overflow-hidden rounded-full bg-surface-muted">
                       <span

@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { href: "/marketplace", label: "Marketplace" },
-  { href: "/rescue-deals", label: "Rescue Deal" },
+  { href: "/rescue-deals", label: "Penawaran Layu" },
   { href: "/feed", label: "Pakan" },
   { href: "/residue", label: "Residu" },
   { href: "/impact", label: "Dampak" },

@@ -1257,10 +1257,31 @@
                   "kind": "scalar"
                 }
               },
+              "deliveryCity": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "deliveryMethod": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "discount": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "estimatedDeliveryAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
                   "kind": "scalar"
                 }
               },
@@ -1454,8 +1475,17 @@
                 "deliveryAddress": {
                   "column": "deliveryAddress"
                 },
+                "deliveryCity": {
+                  "column": "deliveryCity"
+                },
+                "deliveryMethod": {
+                  "column": "deliveryMethod"
+                },
                 "discount": {
                   "column": "discount"
+                },
+                "estimatedDeliveryAt": {
+                  "column": "estimatedDeliveryAt"
                 },
                 "id": {
                   "column": "id"
@@ -3924,6 +3954,16 @@
                   "dataType": "pg/text",
                   "nullable": true
                 },
+                "deliveryCity": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "deliveryMethod": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
                 "discount": {
                   "codecId": "pg/int4@1",
                   "dataType": "pg/int4",
@@ -3932,6 +3972,11 @@
                     "value": 0
                   },
                   "nullable": false
+                },
+                "estimatedDeliveryAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": true
                 },
                 "id": {
                   "codecId": "pg/int4@1",
@@ -5348,7 +5393,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "98e72e41a2fa5341924fead770a7640eb047360e1e48eae01e035a93ecd2d5e6"
+    "storageHash": "4e6a15622fb62ea929ecba868f1a0324c0e0216546aa393d6dc620ed5d586960"
   },
   "execution": {
     "executionHash": "72a678ae5abbc20560d5d389981a277cdba90fae0226162c86ebb90e86df1123",

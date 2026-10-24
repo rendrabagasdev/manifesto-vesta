@@ -27,6 +27,10 @@ const cartLineSchema = z.object({
 const cartSchema = z.object({
   lines: z.array(cartLineSchema).min(1, "Keranjang kosong.").max(50),
   deliveryAddress: z.string().trim().min(10, "Alamat pengiriman minimal 10 karakter.").max(300),
+  deliveryCity: z.string().trim().min(1, "Pilih lokasi pengiriman.").max(60),
+  deliveryMethod: z.enum(["INSTANT", "SAME_DAY", "REGULAR"], {
+    error: "Pilih metode pengiriman.",
+  }),
   contactPhone: z.string().trim().min(8, "Nomor telepon tidak valid.").max(20),
   notes: z.string().trim().max(300).optional().transform((v) => v || undefined),
 });
@@ -47,6 +51,8 @@ export async function checkoutAction(
   const parsed = cartSchema.safeParse({
     lines: rawCart,
     deliveryAddress: formData.get("deliveryAddress"),
+    deliveryCity: formData.get("deliveryCity"),
+    deliveryMethod: formData.get("deliveryMethod"),
     contactPhone: formData.get("contactPhone") ?? undefined,
     notes: formData.get("notes") ?? undefined,
   });
@@ -65,6 +71,8 @@ export async function checkoutAction(
       buyerEmail: user.email,
       lines: parsed.data.lines,
       deliveryAddress: parsed.data.deliveryAddress,
+      deliveryCity: parsed.data.deliveryCity,
+      deliveryMethod: parsed.data.deliveryMethod,
       contactPhone: parsed.data.contactPhone,
       notes: parsed.data.notes,
     });
@@ -133,7 +141,7 @@ export async function buyRescueDealAction(
       code: result.code,
       paymentUrl: result.paymentUrl,
       message: result.paid
-        ? "Rescue deal dibeli — pembayaran demo lunas."
+        ? "Penawaran layu dibeli — pembayaran demo lunas."
         : "Mengarahkan ke halaman pembayaran Midtrans...",
     };
   } catch (error) {
@@ -286,13 +294,13 @@ export async function notifyMeAction(
   await requireSession();
   const dealId = z.coerce.number().int().positive().safeParse(formData.get("dealId"));
   if (!dealId.success) {
-    return { ok: false, message: "Deal tidak valid." };
+    return { ok: false, message: "Penawaran tidak valid." };
   }
 
   // Demo mode: the opt-in is acknowledged without a provider round-trip.
   return {
     ok: true,
     message:
-      "Notifikasi WhatsApp diaktifkan untuk deal ini. Anda akan dihubungi saat early access tier Anda terbuka.",
+      "Notifikasi WhatsApp diaktifkan untuk penawaran ini. Anda akan dihubungi saat akses awal tier Anda terbuka.",
   };
 }

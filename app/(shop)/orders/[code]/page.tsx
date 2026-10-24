@@ -13,6 +13,11 @@ import {
   formatNumber,
 } from "@/src/lib/batches/format";
 import { isBatchStatus } from "@/src/lib/batches/freshness";
+import {
+  deliveryCityLabel,
+  deliveryMethodLabel,
+  formatDeliveryEstimate,
+} from "@/src/lib/delivery/shipping";
 import { StatusPill } from "@/src/components/status-pill";
 
 export const instant = false;
@@ -146,7 +151,7 @@ export default async function OrderDetailPage({
               <li className="flex items-center justify-between gap-3">
                 <span className="flex items-center gap-2 text-ink-muted">
                   <Leaf className="size-4" aria-hidden="true" />
-                  Terselamatkan
+                  Tidak terbuang
                 </span>
                 <span className="font-semibold tabular-nums text-ink">
                   {formatKg(impact.rescuedKg)}
@@ -184,12 +189,38 @@ export default async function OrderDetailPage({
               Pengiriman
             </h2>
             <dl className="mt-3 space-y-2 text-sm">
-              <div className="flex items-start justify-between gap-3">
-                <dt className="shrink-0 text-ink-muted">Alamat</dt>
-                <dd className="min-w-0 text-right text-xs leading-relaxed text-ink">
-                  {order.deliveryAddress ?? "-"}
-                </dd>
-              </div>
+              {order.deliveryCity ? (
+                <div className="flex items-start justify-between gap-3">
+                  <dt className="shrink-0 text-ink-muted">Tujuan</dt>
+                  <dd className="min-w-0 text-right text-xs leading-relaxed text-ink">
+                    {deliveryCityLabel(order.deliveryCity)}
+                  </dd>
+                </div>
+              ) : null}
+              {order.deliveryAddress ? (
+                <div className="flex items-start justify-between gap-3">
+                  <dt className="shrink-0 text-ink-muted">Alamat</dt>
+                  <dd className="min-w-0 text-right text-xs leading-relaxed text-ink">
+                    {order.deliveryAddress}
+                  </dd>
+                </div>
+              ) : null}
+              {order.deliveryMethod ? (
+                <div className="flex items-start justify-between gap-3">
+                  <dt className="shrink-0 text-ink-muted">Metode</dt>
+                  <dd className="text-right font-semibold text-ink">
+                    {deliveryMethodLabel(order.deliveryMethod)}
+                  </dd>
+                </div>
+              ) : null}
+              {order.estimatedDeliveryAt ? (
+                <div className="flex items-start justify-between gap-3">
+                  <dt className="shrink-0 text-ink-muted">Estimasi tiba</dt>
+                  <dd className="text-right font-semibold tabular-nums text-ink">
+                    {formatDeliveryEstimate(order.estimatedDeliveryAt)}
+                  </dd>
+                </div>
+              ) : null}
               {order.scheduledFor ? (
                 <div className="flex items-start justify-between gap-3">
                   <dt className="shrink-0 text-ink-muted">Jadwal</dt>

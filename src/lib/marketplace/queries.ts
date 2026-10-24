@@ -112,9 +112,9 @@ export interface RescueDealView {
 }
 
 function discountLabelFor(score: number): string {
-  if (score >= 50) return "Rescue ringan";
-  if (score >= 30) return "Rescue sedang";
-  return "Rescue darurat";
+  if (score >= 50) return "Layu ringan";
+  if (score >= 30) return "Layu sedang";
+  return "Layu darurat";
 }
 
 export async function getRescueDeals(
@@ -339,6 +339,9 @@ export interface OrderSummaryView {
   createdAt: string;
   paidAt: string | null;
   deliveryAddress: string | null;
+  deliveryCity: string | null;
+  deliveryMethod: string | null;
+  estimatedDeliveryAt: string | null;
   scheduledFor: string | null;
   items: Array<{
     id: number;
@@ -394,6 +397,9 @@ export async function getOrdersForUser(
       createdAt: order.createdAt,
       paidAt: order.paidAt,
       deliveryAddress: order.deliveryAddress,
+      deliveryCity: order.deliveryCity,
+      deliveryMethod: order.deliveryMethod,
+      estimatedDeliveryAt: order.estimatedDeliveryAt,
       scheduledFor: order.scheduledFor,
       items: order.items.map((item) => ({
         id: item.id,

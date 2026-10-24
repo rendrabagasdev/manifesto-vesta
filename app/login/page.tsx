@@ -12,7 +12,7 @@ export const instant = false;
 
 export const metadata: Metadata = {
   title: "Masuk — Vesta",
-  description: "Masuk ke platform Freshness Cascade Vesta.",
+  description: "Masuk ke platform kaskade kesegaran Vesta.",
 };
 
 export default async function LoginPage() {

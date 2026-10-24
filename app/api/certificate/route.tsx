@@ -70,7 +70,7 @@ export async function GET() {
       <Page size="A4" style={styles.page}>
         <View>
           <Text style={styles.brand}>Vesta</Text>
-          <Text style={styles.subtitle}>Freshness Cascade Platform</Text>
+          <Text style={styles.subtitle}>Platform Kaskade Kesegaran</Text>
         </View>
 
         <View>
@@ -84,7 +84,7 @@ export async function GET() {
           <Text style={styles.sectionTitle}>Kontribusi pembelian Anda</Text>
           <View style={{ marginTop: 8 }}>
             <View style={styles.row}>
-              <Text style={styles.label}>Bahan terselamatkan</Text>
+              <Text style={styles.label}>Bahan tidak terbuang</Text>
               <Text style={styles.value}>{formatNumber(summary.totalRescuedKg)} kg</Text>
             </View>
             <View style={styles.row}>
@@ -124,7 +124,7 @@ export async function GET() {
         </Text>
 
         <Text style={styles.footer} fixed>
-          Vesta · Freshness Cascade Platform · vesta.id/impact
+          Vesta · Platform Kaskade Kesegaran · vesta.id/impact
         </Text>
       </Page>
     </Document>

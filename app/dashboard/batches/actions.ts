@@ -14,10 +14,10 @@ import { requireRole } from "@/src/lib/auth/session";
 import {
   calculateBatchPrice,
   calculateFreshnessScore,
-  DEFAULT_PRICE_COSTS,
   STATUS_META,
   statusFromScore,
 } from "@/src/lib/batches/freshness";
+import { getPlatformConfig } from "@/src/lib/config/platform";
 import { dateCompact } from "@/src/lib/batches/format";
 import {
   getProducerForUser,
@@ -93,6 +93,7 @@ export async function createBatchAction(
   }
 
   const now = new Date();
+  const config = await getPlatformConfig();
   const freshnessScore = calculateFreshnessScore({
     harvestDate: parsed.data.harvestDate,
     receivedAt: now,
@@ -101,10 +102,11 @@ export async function createBatchAction(
     shelfLifeDays: product.shelfLifeDays,
     now,
   });
-  const status = statusFromScore(freshnessScore);
+  const status = statusFromScore(freshnessScore, config.thresholds);
   const price = calculateBatchPrice({
     basePricePerKg: product.basePricePerKg,
     status,
+    costs: config.pricing,
   });
 
   let batchId: number;
@@ -194,6 +196,7 @@ export async function updateBatchAction(
   }
 
   const now = new Date();
+  const config = await getPlatformConfig();
   const freshnessScore = calculateFreshnessScore({
     harvestDate: batch.harvestDate,
     receivedAt: batch.receivedAt,
@@ -202,7 +205,7 @@ export async function updateBatchAction(
     shelfLifeDays: batch.product.shelfLifeDays,
     now,
   });
-  const status = statusFromScore(freshnessScore);
+  const status = statusFromScore(freshnessScore, config.thresholds);
   const previousStatus = batch.status;
   const price = calculateBatchPrice({
     basePricePerKg: batch.product.basePricePerKg,
@@ -213,7 +216,7 @@ export async function updateBatchAction(
           logisticsCostPerKg: batch.priceBreakdown.logisticsCostPerKg,
           marginPerKg: batch.priceBreakdown.marginPerKg,
         }
-      : DEFAULT_PRICE_COSTS,
+      : config.pricing,
   });
 
   try {

@@ -88,7 +88,7 @@ export function SimulateTimeControl() {
           <div>
             <h3 className="text-sm font-semibold text-ink">Kontrol simulasi waktu</h3>
             <p className="text-sm text-ink-muted mt-0.5">
-              Majukan waktu simulasi untuk menguji penurunan Freshness Score dan perubahan harga dinamis
+              Majukan waktu simulasi untuk menguji penurunan skor kesegaran dan perubahan harga dinamis
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -362,7 +362,7 @@ export function SimulateTimeControl() {
                   <div className="flex items-center gap-4 text-xs tabular-nums text-ink-muted">
                     <span className="inline-flex items-center gap-1.5">
                       <span className="size-1.5 rounded-full bg-stage-rescue" aria-hidden="true" />
-                      {item.data.newRescueDeals} rescue
+                      {item.data.newRescueDeals} layu
                     </span>
                     <span className="inline-flex items-center gap-1.5">
                       <span className="size-1.5 rounded-full bg-stage-feed" aria-hidden="true" />
@@ -397,15 +397,15 @@ export function SimulateTimeControl() {
           </li>
           <li className="flex items-start gap-2">
             <span className="text-brand-strong" aria-hidden="true">•</span>
-            Freshness Score dihitung ulang berdasarkan jam yang dimajukan
+            Skor kesegaran dihitung ulang berdasarkan jam yang dimajukan
           </li>
           <li className="flex items-start gap-2">
             <span className="text-brand-strong" aria-hidden="true">•</span>
-            Batch otomatis berpindah tahap (Fresh → Rescue → Pakan → Residu → Dibuang)
+            Batch otomatis berpindah tahap (Segar → Layu → Pakan → Residu → Dibuang)
           </li>
           <li className="flex items-start gap-2">
             <span className="text-brand-strong" aria-hidden="true">•</span>
-            Rescue deal, listing pakan, dan listing residu dibuat/diperbarui otomatis
+            Penawaran layu, listing pakan, dan listing residu dibuat/diperbarui otomatis
           </li>
           <li className="flex items-start gap-2">
             <span className="text-brand-strong" aria-hidden="true">•</span>

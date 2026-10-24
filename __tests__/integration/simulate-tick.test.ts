@@ -1,5 +1,24 @@
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+
+const { authState } = vi.hoisted(() => ({
+  authState: {
+    user: {
+      id: "1",
+      email: "admin@vesta.id",
+      name: "Admin Vesta",
+      role: "ADMIN",
+    } as { id: string; email: string; name: string; role: string } | null,
+  },
+}));
+
+vi.mock("@/auth", () => ({
+  auth: async () => (authState.user ? { user: authState.user } : null),
+  signIn: vi.fn(),
+  signOut: vi.fn(),
+  handlers: {},
+}));
+
 import { db } from "@/src/prisma/db";
 import { GET, POST } from "@/app/api/demo/simulate-tick/route";
 import { closeTestResources, truncateAll } from "./helpers/db";
@@ -34,6 +53,11 @@ async function readJson(response: Response) {
       newFeedListings: number;
       newResidueListings: number;
       disposedBatches: number;
+      loyalty: {
+        processedUsers: number;
+        downgradedUsers: number;
+        expiredSpend: number;
+      };
       statusTransitions: Array<{
         batchId: number;
         batchCode: string;
@@ -48,11 +72,18 @@ async function readJson(response: Response) {
 beforeEach(async () => {
   vi.useFakeTimers({ toFake: ["Date"] });
   vi.setSystemTime(new Date("2026-10-23T00:00:00.000Z"));
+  authState.user = {
+    id: "1",
+    email: "admin@vesta.id",
+    name: "Admin Vesta",
+    role: "ADMIN",
+  };
   await truncateAll();
 });
 
 afterEach(() => {
   vi.useRealTimers();
+  vi.unstubAllEnvs();
 });
 
 afterAll(async () => {
@@ -72,6 +103,46 @@ describe("GET /api/demo/simulate-tick", () => {
     expect(json.usage).toMatchObject({
       method: "POST",
       body: { hours: 24 },
+    });
+  });
+});
+
+describe("POST /api/demo/simulate-tick access control", () => {
+  it("requires a signed-in admin", async () => {
+    authState.user = null;
+
+    const response = await POST(tick({ hours: 24 }));
+    const json = await response.json();
+
+    expect(response.status).toBe(401);
+    expect(json).toMatchObject({
+      success: false,
+      error: "Silakan masuk terlebih dahulu",
+    });
+  });
+
+  it("rejects non-admin roles", async () => {
+    authState.user = {
+      id: "2",
+      email: "pembeli@vesta.id",
+      name: "Pembeli",
+      role: "CONSUMER",
+    };
+
+    const response = await POST(tick({ hours: 24 }));
+    expect(response.status).toBe(403);
+  });
+
+  it("refuses to run when simulation is disabled", async () => {
+    vi.stubEnv("SIMULATE_TIME_ENABLED", "false");
+
+    const response = await POST(tick({ hours: 24 }));
+    const json = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(json).toMatchObject({
+      success: false,
+      error: "Simulasi waktu dinonaktifkan pada lingkungan ini",
     });
   });
 });
@@ -140,6 +211,11 @@ describe("POST /api/demo/simulate-tick", () => {
       updatedPricing: 1,
       newRescueDeals: 1,
       disposedBatches: 0,
+    });
+    expect(json.data!.loyalty).toEqual({
+      processedUsers: 0,
+      downgradedUsers: 0,
+      expiredSpend: 0,
     });
     expect(json.data!.statusTransitions).toEqual([
       {

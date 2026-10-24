@@ -23,7 +23,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'98e72e41a2fa5341924fead770a7640eb047360e1e48eae01e035a93ecd2d5e6'>;
+  StorageHashBase<'4e6a15622fb62ea929ecba868f1a0324c0e0216546aa393d6dc620ed5d586960'>;
 export type ExecutionHash =
   ExecutionHashBase<'72a678ae5abbc20560d5d389981a277cdba90fae0226162c86ebb90e86df1123'>;
 export type ProfileHash =
@@ -508,7 +508,10 @@ export namespace Models {
     contactPhone: FieldOutputTypes['public']['Order']['contactPhone'];
     createdAt: FieldOutputTypes['public']['Order']['createdAt'];
     deliveryAddress: FieldOutputTypes['public']['Order']['deliveryAddress'];
+    deliveryCity: FieldOutputTypes['public']['Order']['deliveryCity'];
+    deliveryMethod: FieldOutputTypes['public']['Order']['deliveryMethod'];
     discount: FieldOutputTypes['public']['Order']['discount'];
+    estimatedDeliveryAt: FieldOutputTypes['public']['Order']['estimatedDeliveryAt'];
     id: FieldOutputTypes['public']['Order']['id'];
     kind: FieldOutputTypes['public']['Order']['kind'];
     notes: FieldOutputTypes['public']['Order']['notes'];
@@ -1470,6 +1473,18 @@ type ContractBase = Omit<
                   readonly nullable: true;
                   readonly many: false;
                 };
+                readonly deliveryCity: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly deliveryMethod: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
                 readonly discount: {
                   readonly dataType: 'pg/int4';
                   readonly codecId: 'pg/int4@1';
@@ -1478,6 +1493,12 @@ type ContractBase = Omit<
                     readonly kind: 'literal';
                     readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
                   };
+                  readonly many: false;
+                };
+                readonly estimatedDeliveryAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: true;
                   readonly many: false;
                 };
                 readonly id: {
@@ -3356,9 +3377,24 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly deliveryCity: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly deliveryMethod: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly discount: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly estimatedDeliveryAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
               };
               readonly id: {
                 readonly nullable: false;
@@ -3472,7 +3508,10 @@ type ContractBase = Omit<
                 readonly contactPhone: { readonly column: 'contactPhone' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly deliveryAddress: { readonly column: 'deliveryAddress' };
+                readonly deliveryCity: { readonly column: 'deliveryCity' };
+                readonly deliveryMethod: { readonly column: 'deliveryMethod' };
                 readonly discount: { readonly column: 'discount' };
+                readonly estimatedDeliveryAt: { readonly column: 'estimatedDeliveryAt' };
                 readonly id: { readonly column: 'id' };
                 readonly kind: { readonly column: 'kind' };
                 readonly notes: { readonly column: 'notes' };

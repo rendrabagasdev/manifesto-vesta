@@ -71,7 +71,7 @@ export default async function ImpactCertificatePage() {
             <li className="bg-surface p-4">
               <p className="flex items-center gap-1.5 text-xs text-ink-muted">
                 <Leaf className="size-3.5" aria-hidden="true" />
-                Bahan terselamatkan
+                Bahan tidak terbuang
               </p>
               <p className="mt-1 text-2xl font-semibold tabular-nums tracking-tight text-ink">
                 {formatNumber(impact.totalRescuedKg)}
@@ -150,7 +150,7 @@ export default async function ImpactCertificatePage() {
         <div className="mt-6">
           <EmptyState
             title="Belum ada dampak yang tercatat"
-            description="Sertifikat akan terisi otomatis setelah transaksi pertama Anda selesai — mulai dari marketplace segar atau Rescue Deals."
+            description="Sertifikat akan terisi otomatis setelah transaksi pertama Anda selesai — mulai dari marketplace segar atau penawaran layu."
           />
         </div>
       ) : null}

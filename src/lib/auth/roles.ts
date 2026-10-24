@@ -22,9 +22,9 @@ export const ROLE_SUMMARIES: Record<UserRole, string> = {
   PRODUCER:
     "Catat pasokan, tetapkan harga dasar, dan pantau pembayaran dari satu tempat.",
   WAREHOUSE:
-    "Terima batch, catat suhu penyimpanan, dan jaga akurasi Freshness Score.",
+    "Terima batch, catat suhu penyimpanan, dan jaga akurasi Skor Kesegaran.",
   CONSUMER:
-    "Belanja bahan segar dengan harga normal atau selamatkan Rescue Deal sesuai tier.",
+    "Belanja bahan segar dengan harga normal atau beli penawaran layu sesuai tier.",
   BUSINESS:
     "Penuhi kebutuhan usaha dalam jumlah besar, termasuk pakan dan residu.",
 };
@@ -33,7 +33,7 @@ export const ROLE_MODULES: Record<UserRole, readonly string[]> = {
   ADMIN: ["Monitoring cascade", "Tier & harga", "Audit dampak"],
   PRODUCER: ["Input stok & harga dasar", "Status batch", "Pembayaran"],
   WAREHOUSE: ["Penerimaan batch", "Suhu & kualitas", "Update status"],
-  CONSUMER: ["Marketplace segar", "Rescue Deal", "Riwayat pesanan"],
+  CONSUMER: ["Marketplace segar", "Penawaran Layu", "Riwayat pesanan"],
   BUSINESS: ["Katalog grosir", "Pakan & residu", "Sertifikat dampak"],
 };
 
@@ -54,6 +54,10 @@ export const BATCH_DELETE_ROLES: readonly UserRole[] = [
   "ADMIN",
   "PRODUCER",
 ];
+
+export const PRODUCT_MANAGE_ROLES: readonly UserRole[] = ["ADMIN", "PRODUCER"];
+
+export const ORDER_FULFILL_ROLES: readonly UserRole[] = ["ADMIN", "WAREHOUSE"];
 
 export function hasRole(
   role: UserRole,

@@ -28,7 +28,7 @@ export const instant = false;
 
 export const metadata: Metadata = {
   title: "Batch & pasokan · Vesta",
-  description: "Pantau stok, freshness score, dan tahap cascade setiap batch.",
+  description: "Pantau stok, skor kesegaran, dan tahap cascade setiap batch.",
 };
 
 type BatchesPageProps = {

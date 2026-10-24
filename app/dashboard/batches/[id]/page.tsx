@@ -36,7 +36,7 @@ export const instant = false;
 
 export const metadata: Metadata = {
   title: "Detail batch · Vesta",
-  description: "Freshness score, harga, dan jejak cascade satu batch.",
+  description: "Skor kesegaran, harga, dan jejak cascade satu batch.",
 };
 
 const CATEGORY_LABELS: Record<string, string> = {

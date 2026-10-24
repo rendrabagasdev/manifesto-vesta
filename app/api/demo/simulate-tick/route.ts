@@ -1,8 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runCascadeTick } from "@/src/lib/cascade/service";
+import { ApiError, handleApiError, requireApiUser } from "@/src/lib/api/http";
+
+function isSimulationEnabled(): boolean {
+  return process.env.SIMULATE_TIME_ENABLED?.trim().toLowerCase() === "true";
+}
 
 export async function POST(request: NextRequest) {
   try {
+    await requireApiUser(["ADMIN"]);
+
+    if (!isSimulationEnabled()) {
+      throw new ApiError(
+        "Simulasi waktu dinonaktifkan pada lingkungan ini",
+        403,
+        "SIMULATION_DISABLED",
+      );
+    }
+
     const body = await request.json().catch(() => ({}));
     const rawHours = body?.hours;
     const hoursToAdvance =
@@ -39,6 +54,7 @@ export async function POST(request: NextRequest) {
       newFeedListings: countTransitionsTo("FEED"),
       newResidueListings: countTransitionsTo("RESIDUE"),
       disposedBatches: countTransitionsTo("DISPOSED"),
+      loyalty: tick.loyalty,
     };
 
     return NextResponse.json({
@@ -47,11 +63,10 @@ export async function POST(request: NextRequest) {
       data: results,
     });
   } catch (error) {
-    console.error("simulate-tick error:", error);
-    return NextResponse.json(
-      { success: false, error: "Gagal menjalankan simulasi waktu" },
-      { status: 500 },
-    );
+    if (!(error instanceof ApiError)) {
+      console.error("simulate-tick error:", error);
+    }
+    return handleApiError(error);
   }
 }
 

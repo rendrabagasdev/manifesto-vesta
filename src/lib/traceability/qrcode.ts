@@ -252,9 +252,9 @@ const STAGES = ["FRESH", "RESCUE", "FEED", "RESIDUE", "DISPOSED"] as const;
 function stageLabel(value: string | undefined): string {
   switch (value) {
     case "FRESH":
-      return "Fresh";
+      return "Segar";
     case "RESCUE":
-      return "Rescue";
+      return "Layu";
     case "FEED":
       return "Pakan";
     case "RESIDUE":
@@ -422,7 +422,7 @@ export async function generateTraceabilityPDF(
           createElement(
             Text,
             { style: styles.subtitle },
-            "Freshness Cascade Platform",
+            "Platform Kaskade Kesegaran",
           ),
           createElement(
             Text,
@@ -546,7 +546,7 @@ export async function generateTraceabilityPDF(
           View,
           { style: styles.card },
           Row({
-            label: "Bahan terselamatkan",
+            label: "Bahan tidak terbuang",
             value: `${formatNumber(impact.rescuedKg)} kg`,
           }),
           Row({
@@ -573,7 +573,7 @@ export async function generateTraceabilityPDF(
         View,
         { style: styles.footer, fixed: true },
         createElement(Text, null, `vesta.id/trace/${batch.code}`),
-        createElement(Text, null, "Vesta · Freshness Cascade Platform"),
+        createElement(Text, null, "Vesta · Platform Kaskade Kesegaran"),
       ),
     ),
   );

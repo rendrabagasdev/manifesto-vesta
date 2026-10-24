@@ -87,13 +87,13 @@ const placeOrderOptionsSchema = z
 
 const claimSchema = z.object({
   dealId: z.coerce
-    .number({ error: "Deal tidak valid." })
-    .int("Deal tidak valid.")
-    .positive("Deal tidak valid."),
+    .number({ error: "Penawaran tidak valid." })
+    .int("Penawaran tidak valid.")
+    .positive("Penawaran tidak valid."),
   quantityKg: z.coerce
     .number({ error: "Jumlah tidak valid." })
-    .positive("Jumlah rescue harus lebih dari 0 kg.")
-    .max(100_000, "Jumlah rescue maksimal 100.000 kg."),
+    .positive("Jumlah pembelian layu harus lebih dari 0 kg.")
+    .max(100_000, "Jumlah pembelian layu maksimal 100.000 kg."),
 });
 
 const DEFAULT_ADDRESS = "Diambil langsung di gudang";
@@ -232,7 +232,7 @@ export async function placeOrderAction(
       return {
         ok: false,
         error:
-          "Pembelian Rescue/Pakan/Residu hanya dapat dilakukan satu batch per pesanan.",
+          "Pembelian Layu/Pakan/Residu hanya dapat dilakukan satu batch per pesanan.",
         errorCode: "MIXED_SOURCES",
       };
     }
@@ -346,7 +346,7 @@ export async function claimRescueDealAction(
   if (!parsed.success) {
     return {
       ok: false,
-      error: parsed.error.issues[0]?.message ?? "Deal tidak valid.",
+      error: parsed.error.issues[0]?.message ?? "Penawaran tidak valid.",
       errorCode: "VALIDATION_ERROR",
     };
   }
@@ -368,7 +368,7 @@ export async function claimRescueDealAction(
   if (!deal || !deal.batch || !deal.batch.product) {
     return {
       ok: false,
-      error: "Deal tidak ditemukan.",
+      error: "Penawaran tidak ditemukan.",
       errorCode: "DEAL_NOT_FOUND",
     };
   }
@@ -376,7 +376,7 @@ export async function claimRescueDealAction(
   if (!deal.isActive || deal.batch.status !== "RESCUE") {
     return {
       ok: false,
-      error: "Deal ini sudah tidak aktif.",
+      error: "Penawaran ini sudah tidak aktif.",
       errorCode: "DEAL_INACTIVE",
     };
   }
@@ -385,7 +385,7 @@ export async function claimRescueDealAction(
   if (quotaBefore.remaining < 1) {
     return {
       ok: false,
-      error: `Kuota Rescue mingguan Anda habis (${quotaBefore.used}/${quotaBefore.limit}). Kuota baru tersedia ${quotaBefore.resetsAt}.`,
+      error: `Kuota layu mingguan Anda habis (${quotaBefore.used}/${quotaBefore.limit}). Kuota baru tersedia ${quotaBefore.resetsAt}.`,
       errorCode: "RESCUE_QUOTA_EXHAUSTED",
       quota: quotaBefore,
       quotaRemaining: 0,
@@ -408,10 +408,10 @@ export async function claimRescueDealAction(
       ok: false,
       error:
         access.reason === "EARLY_ACCESS_LOCKED"
-          ? "Deal ini belum bisa Anda akses. Tunggu early access tier Anda terbuka."
+          ? "Penawaran ini belum bisa Anda akses. Tunggu akses awal tier Anda terbuka."
           : access.reason === "EXPIRED"
-            ? "Deal ini sudah berakhir."
-            : "Deal ini belum tersedia.",
+            ? "Penawaran ini sudah berakhir."
+            : "Penawaran ini belum tersedia.",
       errorCode: access.reason,
       quota: quotaBefore,
       quotaRemaining: quotaBefore.remaining,
@@ -446,11 +446,11 @@ export async function claimRescueDealAction(
       quota: quotaAfter,
       quotaRemaining: quotaAfter.remaining,
       message: result.paid
-        ? `Rescue deal berhasil diklaim (${quantityKg} kg dari ${availableKg} kg tersedia).`
+        ? `Penawaran layu berhasil diklaim (${quantityKg} kg dari ${availableKg} kg tersedia).`
         : "Mengarahkan ke halaman pembayaran Midtrans...",
     };
   } catch (error) {
-    const mapped = mapError(error, "Pembelian rescue gagal. Coba lagi.");
+    const mapped = mapError(error, "Pembelian layu gagal. Coba lagi.");
     if (mapped.errorCode === "RESCUE_QUOTA_EXHAUSTED") {
       mapped.quota = await getQuotaStatus(db, buyerId).catch(() => quotaBefore);
       mapped.quotaRemaining = mapped.quota?.remaining ?? 0;

@@ -52,7 +52,7 @@ export default async function TracePage({
     : null;
 
   const NEXT_STAGE: Record<string, { label: string; note: string; dot: string } | null> = {
-    FRESH: { label: "Rescue", note: "jika skor turun di bawah 70", dot: "bg-stage-rescue" },
+    FRESH: { label: "Layu", note: "jika skor turun di bawah 70", dot: "bg-stage-rescue" },
     RESCUE: { label: "Pakan", note: "jika skor turun di bawah 30", dot: "bg-stage-feed" },
     FEED: { label: "Residu", note: "jika skor turun di bawah 10", dot: "bg-stage-residue" },
     RESIDUE: { label: "Dibuang", note: "jika skor mencapai 0", dot: "bg-stage-disposed" },
@@ -221,7 +221,7 @@ export default async function TracePage({
             </h2>
             <dl className="mt-3 space-y-2 text-sm">
               <div className="flex items-center justify-between gap-3">
-                <dt className="text-ink-muted">Terselamatkan</dt>
+                <dt className="text-ink-muted">Tidak terbuang</dt>
                 <dd className="font-semibold tabular-nums text-ink">
                   {formatKg(trace.impact.rescuedKg)}
                 </dd>

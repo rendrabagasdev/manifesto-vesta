@@ -9,7 +9,7 @@ export const instant = false;
 
 export const metadata: Metadata = {
   title: "Simulasi waktu — Dashboard admin — Vesta",
-  description: "Percepat waktu demo untuk menguji perubahan Freshness Score dan cascade.",
+  description: "Percepat waktu demo untuk menguji perubahan skor kesegaran dan cascade.",
 };
 
 export default async function AdminSimulationPage() {
@@ -35,7 +35,7 @@ export default async function AdminSimulationPage() {
               Simulasi waktu
             </h1>
             <p className="mt-1 text-sm leading-relaxed text-ink-muted">
-              Halaman khusus demo untuk menguji penurunan Freshness Score,
+              Halaman khusus demo untuk menguji penurunan skor kesegaran,
               transisi cascade, dan harga dinamis tanpa mengganggu ringkasan
               monitoring admin.
             </p>

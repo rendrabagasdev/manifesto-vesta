@@ -124,8 +124,12 @@ export type BuyerTierRow = Awaited<
 export async function getOrCreateBuyerTier(
   client: QueryClient,
   userId: number,
+  options: { forUpdate?: boolean } = {},
 ) {
-  const existing = await client.orm.public.BuyerTier.where({ userId }).first();
+  const query = client.orm.public.BuyerTier.where({ userId });
+  const existing = options.forUpdate
+    ? await query.forUpdate().first()
+    : await query.first();
   if (existing) return existing;
 
   const tier = "STARTER";
@@ -190,12 +194,15 @@ export async function consumeRescueQuota(
   userId: number,
   at = new Date(),
   count = 1,
+  options: { lockTier?: boolean } = {},
 ) {
   if (!Number.isInteger(count) || count <= 0) {
     throw new ApiError("Jumlah kuota tidak valid", 400, "INVALID_QUOTA_COUNT");
   }
 
-  const tier = await getOrCreateBuyerTier(client, userId);
+  const tier = await getOrCreateBuyerTier(client, userId, {
+    forUpdate: options.lockTier,
+  });
   const benefit = getTierBenefit(tier.tier);
   const limit = tier.rescueQuotaPerWeek ?? benefit.rescueQuotaPerWeek;
   const weekStart = getWeekStart(at);
@@ -244,11 +251,14 @@ export async function addNormalSpend(
     orderId?: number;
     description?: string;
     at?: Date;
+    lockTier?: boolean;
   },
 ) {
   const { userId, amount, orderId, description, at = new Date() } = options;
   const safeAmount = Math.max(0, Math.round(amount));
-  const tier = await getOrCreateBuyerTier(client, userId);
+  const tier = await getOrCreateBuyerTier(client, userId, {
+    forUpdate: options.lockTier,
+  });
   const pointsDelta = Math.floor(safeAmount * POINTS_PER_RUPIAH);
   const totalSpend30d = tier.totalSpend30d + safeAmount;
   const nextTier = computeTier(totalSpend30d);
@@ -312,4 +322,57 @@ export async function expireLoyaltySpend(
   });
 
   return { totalSpend30d: spend30d, tier: nextTier };
+}
+
+export interface LoyaltyExpiryResult {
+  processedUsers: number;
+  downgradedUsers: number;
+  expiredSpend: number;
+}
+
+function tierRank(tier: string): number {
+  return isTierName(tier) ? TIER_NAMES.indexOf(tier) : 0;
+}
+
+/**
+ * Recomputes the rolling 30-day spend for every buyer so old purchases stop
+ * counting. Runs hourly with the cascade tick; locking the tier row keeps a
+ * concurrent checkout from writing stale totals.
+ */
+export async function runLoyaltyExpiry(
+  now = new Date(),
+): Promise<LoyaltyExpiryResult> {
+  const tiers = await db.orm.public.BuyerTier.all();
+  let processedUsers = 0;
+  let downgradedUsers = 0;
+  let expiredSpend = 0;
+
+  for (const tier of tiers) {
+    if (tier.totalSpend30d <= 0) continue;
+
+    const outcome = await db.transaction(async (tx) => {
+      const before = await getOrCreateBuyerTier(tx, tier.userId, {
+        forUpdate: true,
+      });
+      if (before.totalSpend30d <= 0) return null;
+
+      const result = await expireLoyaltySpend(tx, tier.userId, now);
+      if (result.totalSpend30d === before.totalSpend30d) return null;
+
+      return {
+        previousTier: before.tier,
+        tier: result.tier,
+        expiredSpend: Math.max(0, before.totalSpend30d - result.totalSpend30d),
+      };
+    });
+
+    if (!outcome) continue;
+    processedUsers += 1;
+    expiredSpend += outcome.expiredSpend;
+    if (tierRank(outcome.tier) < tierRank(outcome.previousTier)) {
+      downgradedUsers += 1;
+    }
+  }
+
+  return { processedUsers, downgradedUsers, expiredSpend };
 }

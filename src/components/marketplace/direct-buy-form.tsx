@@ -19,7 +19,7 @@ export function DirectBuyForm({
   pricePerKg,
   maxKg,
   unit,
-  label = "Beli langsung",
+  label = "Beli",
   locked = false,
   lockedHint,
 }: {

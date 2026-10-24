@@ -7,7 +7,17 @@
  * structured result they can log instead of an exception.
  */
 
+import { STATUS_META, isBatchStatus } from "@/src/lib/batches/freshness";
+
 const FONNTE_ENDPOINT = "https://api.fonnte.com/send";
+
+const ORDER_STATUS_LABELS: Record<string, string> = {
+  PENDING: "Menunggu bayar",
+  PAID: "Lunas",
+  SHIPPED: "Dikirim",
+  COMPLETED: "Selesai",
+  CANCELLED: "Dibatalkan",
+};
 
 /** Fonnte sometimes takes a few seconds; 1.5s keeps the demo responsive. */
 export const FONNTE_TIMEOUT_MS = 1_500;
@@ -158,15 +168,15 @@ export function buildRescueDealMessage(
   const accessHours = Math.max(0, earlyAccessHours || deal.earlyAccessHours || 0);
 
   return [
-    "*Vesta — Rescue Deal baru*",
+    "*Vesta — Penawaran Layu baru*",
     `${name} (${code})`,
-    `Harga rescue: ${formatIdr(deal.rescuePricePerKg)}/kg`,
+    `Harga layu: ${formatIdr(deal.rescuePricePerKg)}/kg`,
     `Diskon: ${numberFormatter.format(deal.discountPct ?? 0)}%`,
     `Stok tersisa: ${formatKg(batch?.quantityKg)}`,
     warehouse ? `Lokasi: ${warehouse}` : null,
     `Berlaku sampai: ${formatDateTime(deal.endsAt)}`,
     accessHours > 0
-      ? `Early access tier Anda terbuka ${accessHours} jam lebih awal.`
+      ? `Akses awal tier Anda terbuka ${accessHours} jam lebih awal.`
       : null,
     "Balas pesan ini untuk dibantu tim Vesta.",
   ]
@@ -180,7 +190,7 @@ export function buildOrderConfirmationMessage(order: OrderNotification): string 
 
   return [
     `*Vesta — Konfirmasi pesanan ${order.code}*`,
-    `Status: ${order.status ?? "PENDING"}`,
+    `Status: ${ORDER_STATUS_LABELS[order.status ?? "PENDING"] ?? order.status ?? "PENDING"}`,
     itemCount > 0 ? `${itemCount} jenis komoditas` : null,
     `Total: ${formatIdr(total)}`,
     order.deliveryAddress ? `Kirim ke: ${order.deliveryAddress}` : null,
@@ -206,11 +216,11 @@ export function buildCascadeAlertMessage(
   return [
     "*Vesta — Peringatan cascade*",
     `Batch ${batch.code} (${name})${warehouse}`,
-    `Tahap baru: *${newStatus}*`,
+    `Tahap baru: *${isBatchStatus(newStatus) ? STATUS_META[newStatus].label : newStatus}*`,
     `Skor kesegaran: ${score}`,
     `Stok: ${formatKg(batch.quantityKg)}`,
     newStatus === "RESCUE"
-      ? "Rescue Deal sudah dibuka di marketplace."
+      ? "Penawaran layu sudah dibuka di marketplace."
       : newStatus === "FEED"
         ? "Batch dialihkan ke pakan ternak."
         : newStatus === "RESIDUE"

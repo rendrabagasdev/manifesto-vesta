@@ -5,6 +5,7 @@ import { testDatabaseUrl } from "./test-db-url";
 const { Pool } = pg;
 
 const TABLES = [
+  "PlatformConfig",
   "ImpactLog",
   "LoyaltyLedger",
   "OrderItem",

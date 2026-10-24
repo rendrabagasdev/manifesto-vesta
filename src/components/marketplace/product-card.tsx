@@ -62,6 +62,7 @@ export function ProductCard({ listing }: { listing: MarketplaceListing }) {
             pricePerKg: listing.pricePerKg,
             maxKg: listing.availableKg,
             warehouseName: listing.warehouseName,
+            warehouseCity: listing.warehouseCity,
           }}
         />
         <div className="mt-2 flex items-center justify-between gap-2">

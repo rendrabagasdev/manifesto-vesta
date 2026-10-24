@@ -4,7 +4,8 @@ import { connection } from "next/server";
 import { ArrowRight } from "lucide-react";
 import { requireSession } from "@/src/lib/auth/session";
 import { getOrdersForUser } from "@/src/lib/marketplace/queries";
-import { formatDateTime, formatIdr, formatKg } from "@/src/lib/batches/format";
+import { formatDateTime, formatIdr } from "@/src/lib/batches/format";
+import { formatDeliveryEstimate } from "@/src/lib/delivery/shipping";
 import { EmptyState } from "@/src/components/shop/empty-state";
 
 export const instant = false;
@@ -34,7 +35,7 @@ export default async function OrdersPage() {
           Pesanan
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-ink-muted">
-          Semua pembelian Anda — marketplace, rescue deal, pakan, dan residu.
+          Semua pembelian Anda — marketplace, penawaran layu, pakan, dan residu.
         </p>
       </header>
 
@@ -42,7 +43,7 @@ export default async function OrdersPage() {
         <div className="mt-6">
           <EmptyState
             title="Belum ada pesanan"
-            description="Mulai dari marketplace segar atau selamatkan batch lewat Rescue Deals."
+            description="Mulai dari marketplace segar atau penawaran layu."
             action={
               <Link
                 href="/marketplace"
@@ -77,6 +78,14 @@ export default async function OrdersPage() {
                     {order.items.map((item) => item.productName).join(", ")} ·{" "}
                     {formatDateTime(order.createdAt)}
                   </p>
+                  {order.estimatedDeliveryAt &&
+                  (order.status === "PENDING" ||
+                    order.status === "PAID" ||
+                    order.status === "SHIPPED") ? (
+                    <p className="mt-0.5 text-xs font-medium text-brand-strong">
+                      Estimasi tiba {formatDeliveryEstimate(order.estimatedDeliveryAt)}
+                    </p>
+                  ) : null}
                 </div>
                 <div className="flex shrink-0 items-center gap-3">
                   <span className="text-sm font-semibold tabular-nums text-ink">
