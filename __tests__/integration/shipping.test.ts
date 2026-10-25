@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   formatDeliveryEstimate,
   getDeliveryOptions,
+  matchDeliveryCity,
   resolveDeliverySelection,
 } from "@/src/lib/delivery/shipping";
 
@@ -49,6 +50,21 @@ describe("getDeliveryOptions", () => {
 
   it("returns no options for an unknown destination", () => {
     expect(getDeliveryOptions("atlantis", ["Bandung"])).toEqual([]);
+  });
+});
+
+describe("matchDeliveryCity", () => {
+  it("matches profile city text with or without the Kota/Kab. prefix", () => {
+    expect(matchDeliveryCity("Kota Bandung")?.id).toBe("bandung");
+    expect(matchDeliveryCity("Bandung")?.id).toBe("bandung");
+    expect(matchDeliveryCity("Kab. Bandung Barat")?.id).toBe("bandung-barat");
+    expect(matchDeliveryCity("bandung barat")?.id).toBe("bandung-barat");
+  });
+
+  it("returns null for empty or unknown cities", () => {
+    expect(matchDeliveryCity(null)).toBeNull();
+    expect(matchDeliveryCity("  ")).toBeNull();
+    expect(matchDeliveryCity("Atlantis")).toBeNull();
   });
 });
 

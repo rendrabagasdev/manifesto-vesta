@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
 import { requireSession } from "@/src/lib/auth/session";
+import { db } from "@/src/prisma/db";
+import { matchDeliveryCity } from "@/src/lib/delivery/shipping";
 import { CartView } from "@/src/components/marketplace/cart-view";
 
 export const instant = false;
@@ -12,7 +14,13 @@ export const metadata: Metadata = {
 
 export default async function CartPage() {
   await connection();
-  await requireSession();
+  const user = await requireSession();
+  const profile = await db.orm.public.User.where({
+    id: Number(user.id),
+  })
+    .select("phone", "city", "address")
+    .first();
+  const deliveryCity = matchDeliveryCity(profile?.city);
 
   return (
     <div>
@@ -26,7 +34,13 @@ export default async function CartPage() {
       </header>
 
       <div className="mt-6">
-        <CartView />
+        <CartView
+          defaults={{
+            cityId: deliveryCity?.id,
+            phone: profile?.phone ?? undefined,
+            address: profile?.address ?? undefined,
+          }}
+        />
       </div>
     </div>
   );

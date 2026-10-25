@@ -52,18 +52,23 @@ export function AppShell({
           </div>
 
           <div className="mt-auto shrink-0 rounded-xl bg-surface/70 p-3">
-            <div className="flex items-center gap-2.5">
-              <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-soft text-xs font-bold text-brand-strong">
-                {initials(displayName)}
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-ink">
-                  {displayName}
-                </p>
-                <p className="truncate text-xs text-ink-muted">
-                  {ROLE_LABELS[user.role]}
-                </p>
-              </div>
+            <div className="flex items-center gap-1">
+              <Link
+                href="/dashboard/profile"
+                className="flex min-w-0 flex-1 items-center gap-2.5 rounded-lg transition-colors hover:bg-surface-muted/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+              >
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-soft text-xs font-bold text-brand-strong">
+                  {initials(displayName)}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-semibold text-ink">
+                    {displayName}
+                  </p>
+                  <p className="truncate text-xs text-ink-muted">
+                    {ROLE_LABELS[user.role]}
+                  </p>
+                </div>
+              </Link>
               <form action={signOutAction}>
                 <button
                   type="submit"

@@ -1,6 +1,13 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { connection } from "next/server";
-import { AlarmClock, Lock, ShoppingBasket, Timer } from "lucide-react";
+import {
+  AlarmClock,
+  Flame,
+  Lock,
+  ShoppingBasket,
+  Timer,
+} from "lucide-react";
 import { requireSession } from "@/src/lib/auth/session";
 import {
   getBuyerQuotaStatus,
@@ -40,15 +47,36 @@ function DealCard({ deal, earlyAccessHours }: { deal: RescueDealView; earlyAcces
   return (
     <article className="flex h-full flex-col rounded-xl border border-line bg-surface p-4">
       <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <p className="text-xs font-medium text-ink-muted">
-            {deal.discountLabel}
-          </p>
-          <h2 className="mt-0.5 truncate text-sm font-semibold text-ink">{deal.productName}</h2>
+        <div className="flex min-w-0 items-start gap-3">
+          <div className="relative size-14 shrink-0 overflow-hidden rounded-lg bg-stage-rescue/25">
+            {deal.imageUrl ? (
+              <Image
+                src={deal.imageUrl}
+                alt=""
+                fill
+                sizes="56px"
+                className="object-cover"
+              />
+            ) : (
+              <Flame
+                className="absolute inset-0 m-auto size-5 text-ink/50"
+                strokeWidth={1.5}
+                aria-hidden="true"
+              />
+            )}
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs font-medium text-ink-muted">
+              {deal.discountLabel}
+            </p>
+            <h2 className="mt-0.5 truncate text-sm font-semibold text-ink">{deal.productName}</h2>
+          </div>
         </div>
-        <p className="shrink-0 rounded-lg bg-stage-rescue/25 px-2 py-1 text-sm font-bold tabular-nums text-ink">
-          −{formatNumber(deal.discountPct)}%
-        </p>
+        {deal.discountPct > 0 ? (
+          <p className="shrink-0 rounded-lg bg-stage-rescue/25 px-2 py-1 text-sm font-bold tabular-nums text-ink">
+            −{formatNumber(deal.discountPct)}%
+          </p>
+        ) : null}
       </div>
 
       <p className="mt-1.5 truncate text-[13px] text-ink-muted">
@@ -61,9 +89,11 @@ function DealCard({ deal, earlyAccessHours }: { deal: RescueDealView; earlyAcces
           {formatIdr(deal.rescuePricePerKg)}
         </span>
         <span className="text-sm text-ink-muted">/ {deal.unit}</span>
-        <span className="text-xs tabular-nums text-ink-muted line-through">
-          {formatIdr(deal.originalPricePerKg)}
-        </span>
+        {deal.originalPricePerKg > deal.rescuePricePerKg ? (
+          <span className="text-xs tabular-nums text-ink-muted line-through">
+            {formatIdr(deal.originalPricePerKg)}
+          </span>
+        ) : null}
       </div>
 
       <div className="mt-3">

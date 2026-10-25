@@ -147,6 +147,9 @@ async function main() {
       await db.orm.public.User.where({ id: existing.id }).update({
         name: account.name,
         role: account.role,
+        phone: account.phone,
+        city: account.city,
+        address: account.address,
         passwordHash,
       });
     } else {
@@ -154,6 +157,9 @@ async function main() {
         email: account.email,
         name: account.name,
         role: account.role,
+        phone: account.phone,
+        city: account.city,
+        address: account.address,
         passwordHash,
       });
     }
@@ -405,7 +411,7 @@ async function main() {
         logisticsCostPerKg: 1500,
         marginPerKg: 1500,
         rescueDiscountPct: 35,
-        finalPricePerKg: 7800,
+        finalPricePerKg: 10400,
       },
     },
     warehouseUser.id,
@@ -622,7 +628,7 @@ async function main() {
   await db.orm.public.RescueDeal.create({
     batchId: rescueSpinach.id,
     discountPct: 35,
-    rescuePricePerKg: 7800,
+    rescuePricePerKg: 10400,
     startsAt: hoursFromNow(-1),
     endsAt: hoursFromNow(35),
     earlyAccessHours: 12,
@@ -651,9 +657,9 @@ async function main() {
     code: DEMO_ORDER_CODE,
     buyerId: b2cUser.id,
     status: "PAID",
-    subtotal: 71000,
+    subtotal: 84000,
     discount: 0,
-    total: 71000,
+    total: 84000,
     tierAtPurchase: "SILVER",
     deliveryAddress: "Jl. Cihampelas No. 45, Bandung",
   });
@@ -662,8 +668,8 @@ async function main() {
     orderId: order.id,
     batchId: rescueSpinach.id,
     quantityKg: 5,
-    pricePerKg: 7800,
-    lineTotal: 39000,
+    pricePerKg: 10400,
+    lineTotal: 52000,
     stage: "RESCUE",
   });
 
@@ -698,8 +704,8 @@ async function main() {
     userId: b2cUser.id,
     orderId: order.id,
     type: "EARN",
-    amount: 71000,
-    pointsDelta: 71,
+    amount: 84000,
+    pointsDelta: 84,
     description: "Pembelian demo penawaran layu dan beras.",
   });
 

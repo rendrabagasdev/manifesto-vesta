@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   Briefcase,
   ClipboardList,
+  IdCard,
   LayoutDashboard,
   Package,
   Settings2,
@@ -69,6 +70,7 @@ export function DashboardNav({ role, canViewBatches, variant }: DashboardNavProp
         ]
       : []),
     ...(roleModule ? [{ ...roleModule }] : []),
+    { href: "/dashboard/profile", label: "Profil", icon: IdCard },
     ...(BUYER_ROLES.includes(role)
       ? [{ href: "/marketplace", label: "Belanja", icon: ShoppingBasket }]
       : []),
@@ -86,7 +88,9 @@ export function DashboardNav({ role, canViewBatches, variant }: DashboardNavProp
       aria-label="Navigasi utama"
       className={cn(
         "min-w-0",
-        variant === "sidebar" ? "space-y-1" : "flex items-center gap-1",
+        variant === "sidebar"
+          ? "space-y-1"
+          : "flex items-center gap-1 overflow-x-auto",
       )}
     >
       {items.map((item) => {

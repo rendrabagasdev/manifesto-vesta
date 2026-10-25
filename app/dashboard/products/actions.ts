@@ -12,11 +12,20 @@ import {
   updateProductSchema,
   type ProductFormState,
 } from "@/src/lib/products/validation";
+import {
+  deleteProductImage,
+  saveProductImage,
+} from "@/src/lib/products/image-upload";
 
 function toFieldErrors(
   error: z.ZodError,
 ): Record<string, string[] | undefined> {
   return error.flatten().fieldErrors;
+}
+
+function getImageFile(formData: FormData): File | null {
+  const value = formData.get("image");
+  return value instanceof File && value.size > 0 ? value : null;
 }
 
 function revalidateProductViews() {
@@ -25,6 +34,7 @@ function revalidateProductViews() {
   revalidatePath("/dashboard/batches/new");
   revalidatePath("/dashboard/producer");
   revalidatePath("/marketplace");
+  revalidatePath("/rescue-deals");
 }
 
 export async function createProductAction(
@@ -79,6 +89,25 @@ export async function createProductAction(
     producerId = producer.id;
   }
 
+  const imageFile = getImageFile(formData);
+  let imageUrl: string | null = null;
+
+  if (imageFile) {
+    try {
+      const saved = await saveProductImage(imageFile);
+      if (!saved.ok) {
+        return {
+          error: "Foto produk tidak valid.",
+          fieldErrors: { image: [saved.error] },
+        };
+      }
+      imageUrl = saved.url;
+    } catch (error) {
+      console.error("createProductAction image", error);
+      return { error: "Foto produk gagal diunggah. Coba lagi." };
+    }
+  }
+
   try {
     await db.orm.public.Product.create({
       producerId,
@@ -89,9 +118,11 @@ export async function createProductAction(
       idealTempC: parsed.data.idealTempC,
       basePricePerKg: parsed.data.basePricePerKg,
       description: parsed.data.description ?? null,
+      imageUrl,
     });
   } catch (error) {
     console.error("createProductAction", error);
+    await deleteProductImage(imageUrl);
     return { error: "Produk gagal disimpan. Coba lagi." };
   }
 
@@ -138,6 +169,29 @@ export async function updateProductAction(
     }
   }
 
+  const imageFile = getImageFile(formData);
+  const removeImage = formData.get("removeImage") === "on";
+  let uploadedImageUrl: string | null = null;
+
+  if (imageFile) {
+    try {
+      const saved = await saveProductImage(imageFile);
+      if (!saved.ok) {
+        return {
+          error: "Foto produk tidak valid.",
+          fieldErrors: { image: [saved.error] },
+        };
+      }
+      uploadedImageUrl = saved.url;
+    } catch (error) {
+      console.error("updateProductAction image", error);
+      return { error: "Foto produk gagal diunggah. Coba lagi." };
+    }
+  }
+
+  const nextImageUrl =
+    uploadedImageUrl ?? (removeImage ? null : product.imageUrl);
+
   try {
     await db.orm.public.Product.where({ id: product.id }).update({
       name: parsed.data.name,
@@ -147,10 +201,16 @@ export async function updateProductAction(
       idealTempC: parsed.data.idealTempC,
       basePricePerKg: parsed.data.basePricePerKg,
       description: parsed.data.description ?? null,
+      imageUrl: nextImageUrl,
     });
   } catch (error) {
     console.error("updateProductAction", error);
+    await deleteProductImage(uploadedImageUrl);
     return { error: "Perubahan produk gagal disimpan. Coba lagi." };
+  }
+
+  if (product.imageUrl && product.imageUrl !== nextImageUrl) {
+    await deleteProductImage(product.imageUrl);
   }
 
   revalidateProductViews();
@@ -195,6 +255,8 @@ export async function deleteProductAction(
     console.error("deleteProductAction", error);
     return { error: "Produk gagal dihapus. Coba lagi." };
   }
+
+  await deleteProductImage(product.imageUrl);
 
   revalidateProductViews();
   return { success: `Produk ${product.name} dihapus.` };

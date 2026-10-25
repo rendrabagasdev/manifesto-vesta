@@ -16,6 +16,7 @@ export interface MarketplaceListing {
   category: string;
   unit: string;
   productDescription: string | null;
+  imageUrl: string | null;
   warehouseName: string;
   warehouseCity: string | null;
   producerFarmName: string | null;
@@ -41,6 +42,7 @@ export async function getFreshListings(
           "category",
           "unit",
           "description",
+          "imageUrl",
           "basePricePerKg",
           "producerId",
         ),
@@ -76,6 +78,7 @@ export async function getFreshListings(
         category: batch.product.category,
         unit: batch.product.unit,
         productDescription: batch.product.description,
+        imageUrl: batch.product.imageUrl,
         warehouseName: batch.warehouse.name,
         warehouseCity: batch.warehouse.city,
         producerFarmName: batch.product.producer?.farmName ?? null,
@@ -97,6 +100,7 @@ export interface RescueDealView {
   productName: string;
   category: string;
   unit: string;
+  imageUrl: string | null;
   warehouseName: string;
   warehouseCity: string | null;
   freshnessScore: number;
@@ -125,7 +129,14 @@ export async function getRescueDeals(
     .include("batch", (batch) =>
       batch
         .include("product", (product) =>
-          product.select("id", "name", "category", "unit", "basePricePerKg"),
+          product.select(
+            "id",
+            "name",
+            "category",
+            "unit",
+            "imageUrl",
+            "basePricePerKg",
+          ),
         )
         .include("warehouse", (warehouse) =>
           warehouse.select("id", "name", "city"),
@@ -160,7 +171,21 @@ export async function getRescueDeals(
     .map((deal) => {
       const batch = deal.batch;
       const availableKg = Math.max(0, batch.quantityKg - batch.reservedKg);
-      const originalPricePerKg = batch.priceBreakdown.finalPricePerKg;
+      const breakdown = batch.priceBreakdown;
+      const originalPricePerKg =
+        breakdown.basePricePerKg +
+        breakdown.warehouseCostPerKg +
+        breakdown.logisticsCostPerKg +
+        breakdown.marginPerKg;
+      const discountPct =
+        originalPricePerKg > 0
+          ? Math.max(
+              0,
+              Math.round(
+                (1 - deal.rescuePricePerKg / originalPricePerKg) * 1000,
+              ) / 10,
+            )
+          : 0;
 
       return {
         id: deal.id,
@@ -169,10 +194,11 @@ export async function getRescueDeals(
         productName: batch.product.name,
         category: batch.product.category,
         unit: batch.product.unit,
+        imageUrl: batch.product.imageUrl,
         warehouseName: batch.warehouse.name,
         warehouseCity: batch.warehouse.city,
         freshnessScore: batch.freshnessScore,
-        discountPct: deal.discountPct,
+        discountPct,
         rescuePricePerKg: deal.rescuePricePerKg,
         originalPricePerKg,
         availableKg,
