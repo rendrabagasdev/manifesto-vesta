@@ -53,7 +53,7 @@ export default async function ResiduePage({
             aria-current={active === null ? "true" : undefined}
             className={`inline-flex h-9 items-center rounded-lg border px-3.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
               active === null
-                ? "border-brand bg-brand-soft text-brand-strong"
+                ? "border-brand bg-brand-soft text-brand-ink"
                 : "border-line bg-surface text-ink-muted hover:bg-surface-muted hover:text-ink"
             }`}
           >
@@ -66,7 +66,7 @@ export default async function ResiduePage({
               aria-current={active === type ? "true" : undefined}
               className={`inline-flex h-9 items-center rounded-lg border px-3.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
                 active === type
-                  ? "border-brand bg-brand-soft text-brand-strong"
+                  ? "border-brand bg-brand-soft text-brand-ink"
                   : "border-line bg-surface text-ink-muted hover:bg-surface-muted hover:text-ink"
               }`}
             >

@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
   { href: "/marketplace", label: "Marketplace" },
-  { href: "/rescue-deals", label: "Penawaran Layu" },
+  { href: "/rescue-deals", label: "Penawaran Diskon" },
   { href: "/feed", label: "Pakan" },
   { href: "/residue", label: "Residu" },
   { href: "/impact", label: "Dampak" },
@@ -40,7 +40,7 @@ export function MarketplaceNav({ variant }: { variant: "desktop" | "mobile" }) {
                 ? "h-9 px-3"
                 : "h-10 px-3.5 border border-line bg-surface",
               active
-                ? "bg-brand-soft text-brand-strong"
+                ? "bg-brand-soft text-brand-ink"
                 : "text-ink-muted hover:bg-surface-muted hover:text-ink",
             )}
           >

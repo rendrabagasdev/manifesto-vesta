@@ -11,29 +11,20 @@ import {
   Search,
   Sparkles,
   Store,
-  Trophy,
   Wheat,
   type LucideIcon,
 } from "lucide-react";
 import { requireSession } from "@/src/lib/auth/session";
 import {
-  getBuyerQuotaStatus,
   getFreshListings,
   getRescueDeals,
 } from "@/src/lib/marketplace/queries";
-import {
-  getNextTier,
-  progressToNextTier,
-  TIER_BENEFITS,
-  type TierName,
-} from "@/src/lib/loyalty/tiers";
-import { formatIdr, formatInteger, formatNumber } from "@/src/lib/batches/format";
+import { formatIdr, formatNumber } from "@/src/lib/batches/format";
 import {
   CATEGORY_ORDER,
   categoryLabel,
 } from "@/src/lib/marketplace/categories";
 import { ProductCard } from "@/src/components/marketplace/product-card";
-import { Countdown } from "@/src/components/marketplace/countdown";
 import { EmptyState } from "@/src/components/shop/empty-state";
 
 export const instant = false;
@@ -41,7 +32,7 @@ export const instant = false;
 export const metadata: Metadata = {
   title: "Beranda — Vesta",
   description:
-    "Bahan segar langsung dari petani, penawaran layu, dan grosir untuk usaha.",
+    "Bahan segar langsung dari petani, penawaran diskon, dan grosir untuk usaha.",
 };
 
 interface QuickAction {
@@ -77,11 +68,9 @@ export default async function MarketplacePage({
   const rawCategory =
     typeof params.category === "string" ? params.category : "";
 
-  const userId = Number(user.id);
-  const [listings, deals, quota] = await Promise.all([
+  const [listings, deals] = await Promise.all([
     getFreshListings(),
     getRescueDeals(),
-    getBuyerQuotaStatus(userId),
   ]);
 
   const availableCategories = CATEGORY_ORDER.filter((category) =>
@@ -106,15 +95,6 @@ export default async function MarketplacePage({
     ].some((value) => value.toLowerCase().includes(normalizedQuery));
   });
 
-  const tier = quota.tier as TierName;
-  const benefit = TIER_BENEFITS[tier];
-  const { nextTier, threshold } = getNextTier(tier);
-  const progress = progressToNextTier(tier, quota.totalSpend30d);
-  const remainingToNext =
-    nextTier && threshold !== null
-      ? Math.max(0, threshold - quota.totalSpend30d)
-      : 0;
-
   const topDeals = deals.slice(0, 4);
   const maxDiscount = deals.reduce(
     (max, deal) => Math.max(max, deal.discountPct),
@@ -129,11 +109,11 @@ export default async function MarketplacePage({
           href: "/marketplace/bulk",
           label: "Grosir",
           icon: Store,
-          tone: "bg-brand-soft text-brand-strong",
+          tone: "bg-brand-soft text-brand-ink",
         },
         {
           href: "/rescue-deals",
-          label: "Layu",
+          label: "Diskon",
           icon: Flame,
           tone: "bg-stage-rescue/30 text-ink",
         },
@@ -147,13 +127,13 @@ export default async function MarketplacePage({
           href: "/impact",
           label: "Dampak",
           icon: Leaf,
-          tone: "bg-brand-soft text-brand-strong",
+          tone: "bg-brand-soft text-brand-ink",
         },
       ]
     : [
         {
           href: "/rescue-deals",
-          label: "Layu",
+          label: "Diskon",
           icon: Flame,
           tone: "bg-stage-rescue/30 text-ink",
         },
@@ -173,7 +153,7 @@ export default async function MarketplacePage({
           href: "/impact",
           label: "Dampak",
           icon: Leaf,
-          tone: "bg-brand-soft text-brand-strong",
+          tone: "bg-brand-soft text-brand-ink",
         },
       ];
 
@@ -223,8 +203,8 @@ export default async function MarketplacePage({
         </form>
       </header>
 
-      <div className="mt-5 grid gap-4 lg:grid-cols-3">
-        <div className="space-y-4 lg:col-span-2">
+      <div className="mt-5 space-y-4">
+        <div className="space-y-4">
           <Link
             href={hasDeals ? "/rescue-deals" : "#produk"}
             className="group relative isolate flex min-h-36 overflow-hidden rounded-2xl bg-brand-strong text-on-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand sm:min-h-44"
@@ -249,10 +229,10 @@ export default async function MarketplacePage({
               </p>
               <p className="mt-1 max-w-[16rem] text-xs leading-relaxed text-on-brand/80 sm:text-sm">
                 {hasDeals
-                  ? "Bahan layu berkualitas dengan harga lebih murah."
+                  ? "Bahan segar berkualitas dengan harga lebih murah."
                   : "Belanja sayur, buah, dan protein tanpa tengkulak."}
               </p>
-              <span className="mt-3 inline-flex w-fit items-center gap-1 rounded-full bg-on-brand px-3 py-1.5 text-[11px] font-bold text-brand-strong sm:text-xs">
+              <span className="mt-3 inline-flex w-fit items-center gap-1 rounded-full bg-on-brand px-3 py-1.5 text-[11px] font-bold text-brand-ink sm:text-xs">
                 {hasDeals ? "Lihat penawaran" : "Lihat produk"}
                 <ArrowRight
                   className="size-3.5 transition-transform group-hover:translate-x-0.5"
@@ -298,92 +278,6 @@ export default async function MarketplacePage({
             })}
           </nav>
         </div>
-
-        <section
-          aria-labelledby="member-heading"
-          className="flex h-full flex-col rounded-2xl border border-line bg-surface p-5"
-        >
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0">
-              <p className="text-xs text-ink-muted">Member Vesta</p>
-              <h2
-                id="member-heading"
-                className="mt-0.5 font-heading text-xl font-bold tracking-tight text-ink"
-              >
-                {benefit.label}
-              </h2>
-            </div>
-            <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-stage-rescue/30 px-2.5 py-1 text-xs font-bold tabular-nums text-ink">
-              <Trophy className="size-3.5" aria-hidden="true" />
-              {formatInteger(quota.points)} poin
-            </span>
-          </div>
-
-          <div className="mt-4">
-            <div className="flex items-center justify-between gap-2 text-[11px] text-ink-muted">
-              <span>Progres tier</span>
-              <span className="tabular-nums">{progress}%</span>
-            </div>
-            <div
-              className="mt-1.5 h-2 overflow-hidden rounded-full bg-surface-muted"
-              role="meter"
-              aria-valuenow={progress}
-              aria-valuemin={0}
-              aria-valuemax={100}
-              aria-label={`Progres tier ${progress}%`}
-            >
-              <span
-                className="block h-full rounded-full bg-brand"
-                style={{ width: `${Math.max(progress > 0 ? 3 : 0, progress)}%` }}
-              />
-            </div>
-            <p className="mt-1.5 text-xs leading-relaxed text-ink-muted">
-              {nextTier && threshold !== null
-                ? `${formatIdr(remainingToNext)} lagi untuk ${TIER_BENEFITS[nextTier].label}.`
-                : "Anda sudah di tier tertinggi."}
-            </p>
-          </div>
-
-          <dl className="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-line bg-line">
-            <div className="bg-surface p-3">
-              <dt className="text-[11px] text-ink-muted">Kuota layu</dt>
-              <dd className="mt-0.5 font-heading text-lg font-bold tabular-nums tracking-tight text-ink">
-                {quota.remaining}
-                <span className="text-xs font-normal text-ink-muted">
-                  {" "}
-                  / {quota.limit}
-                </span>
-              </dd>
-            </div>
-            <div className="bg-surface p-3">
-              <dt className="text-[11px] text-ink-muted">Akses awal</dt>
-              <dd className="mt-0.5 font-heading text-lg font-bold tabular-nums tracking-tight text-ink">
-                +{quota.earlyAccessHours}
-                <span className="text-xs font-normal text-ink-muted"> jam</span>
-              </dd>
-            </div>
-          </dl>
-
-          {nextTier ? (
-            <p className="mt-3 rounded-lg bg-surface-muted px-3 py-2 text-[11px] leading-relaxed text-ink-muted">
-              <span className="font-semibold text-ink">
-                {TIER_BENEFITS[nextTier].label}:
-              </span>{" "}
-              {TIER_BENEFITS[nextTier].rescueQuotaPerWeek} kuota layu + akses{" "}
-              {TIER_BENEFITS[nextTier].earlyAccessHours} jam lebih awal.
-            </p>
-          ) : null}
-
-          <div className="mt-auto pt-4">
-            <Link
-              href="/rescue-deals"
-              className="inline-flex h-9 w-full items-center justify-center gap-1 rounded-lg bg-brand-soft text-xs font-semibold text-brand-strong transition-colors hover:bg-brand-soft/70 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-            >
-              Pakai kuota layu
-              <ChevronRight className="size-3.5" aria-hidden="true" />
-            </Link>
-          </div>
-        </section>
       </div>
 
       <section aria-labelledby="deals-heading" className="mt-6">
@@ -393,7 +287,7 @@ export default async function MarketplacePage({
               id="deals-heading"
               className="font-heading text-lg font-bold tracking-tight text-ink"
             >
-              Penawaran layu
+              Penawaran diskon
             </h2>
             <p className="mt-0.5 text-xs text-ink-muted">
               Harga turun, kualitas tetap terjaga.
@@ -401,7 +295,7 @@ export default async function MarketplacePage({
           </div>
           <Link
             href="/rescue-deals"
-            className="inline-flex shrink-0 items-center gap-0.5 text-xs font-semibold text-brand-strong hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+            className="inline-flex shrink-0 items-center gap-0.5 text-xs font-semibold text-brand-ink hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
           >
             Lihat semua
             <ChevronRight className="size-3.5" aria-hidden="true" />
@@ -410,7 +304,7 @@ export default async function MarketplacePage({
 
         {!hasDeals ? (
           <p className="mt-3 rounded-xl border border-dashed border-line bg-surface px-4 py-6 text-center text-sm text-ink-muted">
-            Belum ada penawaran layu hari ini.
+            Belum ada penawaran diskon hari ini.
           </p>
         ) : (
           <ul className="-mx-4 mt-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-4">
@@ -466,12 +360,7 @@ export default async function MarketplacePage({
                       ) : null}
                     </p>
                     <p className="mt-auto pt-1.5 text-[11px] text-ink-muted">
-                      <Countdown
-                        targetIso={deal.endsAt}
-                        prefix="Berakhir"
-                        expiredLabel="Berakhir"
-                        className="font-medium text-ink"
-                      />
+                      Selama stok tersedia
                     </p>
                   </div>
                 </Link>
@@ -566,11 +455,11 @@ export default async function MarketplacePage({
 
       <section className="mt-6 flex flex-col gap-3 rounded-2xl border border-line bg-brand-soft p-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-surface text-brand-strong">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-surface text-brand-ink">
             <Leaf className="size-5" aria-hidden="true" />
           </span>
           <div>
-            <p className="text-sm font-semibold text-brand-strong">
+            <p className="text-sm font-semibold text-brand-ink">
               Dampak belanja Anda
             </p>
             <p className="mt-0.5 text-xs text-ink-muted">
@@ -580,7 +469,7 @@ export default async function MarketplacePage({
         </div>
         <Link
           href="/impact"
-          className="inline-flex h-9 shrink-0 items-center justify-center gap-1 rounded-lg bg-surface px-4 text-xs font-semibold text-brand-strong transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          className="inline-flex h-9 shrink-0 items-center justify-center gap-1 rounded-lg bg-surface px-4 text-xs font-semibold text-brand-ink transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
         >
           Lihat dampak
           <ArrowRight className="size-3.5" aria-hidden="true" />

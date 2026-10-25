@@ -344,7 +344,7 @@ export async function createSinglePurchase(options: {
       );
       if (!access.accessible) {
         throw new ApiError(
-          "Penawaran ini belum bisa Anda akses. Tunggu akses awal tier Anda terbuka.",
+          "Penawaran ini belum bisa Anda akses. Coba lagi nanti.",
           403,
           "DEAL_LOCKED",
         );

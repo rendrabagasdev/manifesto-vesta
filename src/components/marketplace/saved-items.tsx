@@ -56,7 +56,7 @@ export function SavedItems() {
           <div className="flex shrink-0 items-center gap-2">
             <Link
               href="/marketplace"
-              className="text-xs font-semibold text-brand-strong hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+              className="text-xs font-semibold text-brand-ink hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
             >
               Cari batch
             </Link>

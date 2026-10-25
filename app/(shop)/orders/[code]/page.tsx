@@ -178,7 +178,7 @@ export default async function OrderDetailPage({
             </ul>
             <Link
               href="/impact"
-              className="mt-3 inline-block border-t border-line pt-3 text-xs font-semibold text-brand-strong hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+              className="mt-3 inline-block border-t border-line pt-3 text-xs font-semibold text-brand-ink hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
             >
               Lihat laporan dampak publik
             </Link>

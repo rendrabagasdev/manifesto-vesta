@@ -141,7 +141,7 @@ export async function buyRescueDealAction(
       code: result.code,
       paymentUrl: result.paymentUrl,
       message: result.paid
-        ? "Penawaran layu dibeli — pembayaran demo lunas."
+        ? "Penawaran diskon dibeli — pembayaran demo lunas."
         : "Mengarahkan ke halaman pembayaran Midtrans...",
     };
   } catch (error) {
@@ -301,6 +301,6 @@ export async function notifyMeAction(
   return {
     ok: true,
     message:
-      "Notifikasi WhatsApp diaktifkan untuk penawaran ini. Anda akan dihubungi saat akses awal tier Anda terbuka.",
+      "Notifikasi WhatsApp diaktifkan untuk penawaran ini. Anda akan dihubungi saat penawaran dibuka.",
   };
 }

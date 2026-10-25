@@ -146,7 +146,7 @@ export function AddToCart({
               <span
                 className={
                   feedback.ok
-                    ? "font-medium text-brand-strong"
+                    ? "font-medium text-brand-ink"
                     : "font-medium text-danger"
                 }
               >
@@ -169,7 +169,7 @@ export function AddToCart({
             className="inline-flex size-6 shrink-0 items-center justify-center rounded-md text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
           >
             {saved ? (
-              <BookmarkCheck className="size-3.5 text-brand-strong" aria-hidden="true" />
+              <BookmarkCheck className="size-3.5 text-brand-ink" aria-hidden="true" />
             ) : (
               <Bookmark className="size-3.5" aria-hidden="true" />
             )}
@@ -221,7 +221,7 @@ export function AddToCart({
           className="ml-auto inline-flex size-9 shrink-0 items-center justify-center rounded-lg border border-line text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
         >
           {saved ? (
-            <BookmarkCheck className="size-4 text-brand-strong" aria-hidden="true" />
+            <BookmarkCheck className="size-4 text-brand-ink" aria-hidden="true" />
           ) : (
             <Bookmark className="size-4" aria-hidden="true" />
           )}
@@ -239,7 +239,7 @@ export function AddToCart({
 
       <p className="mt-1.5 text-xs text-ink-muted" aria-live="polite">
         {feedback ? (
-          <span className={feedback.ok ? "font-medium text-brand-strong" : "font-medium text-danger"}>
+          <span className={feedback.ok ? "font-medium text-brand-ink" : "font-medium text-danger"}>
             {feedback.ok ? <Check className="mr-1 inline size-3.5 -translate-y-px" aria-hidden="true" /> : null}
             {feedback.message}
           </span>

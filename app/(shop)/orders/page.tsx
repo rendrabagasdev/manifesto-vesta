@@ -35,7 +35,7 @@ export default async function OrdersPage() {
           Pesanan
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-ink-muted">
-          Semua pembelian Anda — marketplace, penawaran layu, pakan, dan residu.
+          Semua pembelian Anda — marketplace, penawaran diskon, pakan, dan residu.
         </p>
       </header>
 
@@ -43,7 +43,7 @@ export default async function OrdersPage() {
         <div className="mt-6">
           <EmptyState
             title="Belum ada pesanan"
-            description="Mulai dari marketplace segar atau penawaran layu."
+            description="Mulai dari marketplace segar atau penawaran diskon."
             action={
               <Link
                 href="/marketplace"
@@ -69,7 +69,7 @@ export default async function OrdersPage() {
                       {STATUS_LABELS[order.status] ?? order.status}
                     </span>
                     {order.kind === "PREORDER" ? (
-                      <span className="rounded-full bg-brand-soft px-2 py-0.5 text-[11px] font-medium text-brand-strong">
+                      <span className="rounded-full bg-brand-soft px-2 py-0.5 text-[11px] font-medium text-brand-ink">
                         Pre-order
                       </span>
                     ) : null}
@@ -82,7 +82,7 @@ export default async function OrdersPage() {
                   (order.status === "PENDING" ||
                     order.status === "PAID" ||
                     order.status === "SHIPPED") ? (
-                    <p className="mt-0.5 text-xs font-medium text-brand-strong">
+                    <p className="mt-0.5 text-xs font-medium text-brand-ink">
                       Estimasi tiba {formatDeliveryEstimate(order.estimatedDeliveryAt)}
                     </p>
                   ) : null}

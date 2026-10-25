@@ -5,7 +5,7 @@ export function freshnessTone(score: number): {
   label: string;
 } {
   if (score >= 70) return { barClassName: "bg-stage-fresh", label: "Segar" };
-  if (score >= 30) return { barClassName: "bg-stage-rescue", label: "Layu" };
+  if (score >= 30) return { barClassName: "bg-stage-rescue", label: "Diskon" };
   if (score >= 10) return { barClassName: "bg-stage-feed", label: "Layak pakan" };
   if (score > 0) return { barClassName: "bg-stage-residue", label: "Layak residu" };
   return { barClassName: "bg-stage-disposed", label: "Akhir siklus" };

@@ -156,7 +156,7 @@ export function BulkOrderForm({
         </p>
       ) : null}
       {state.ok && state.message ? (
-        <p role="status" className="rounded-lg bg-brand-soft px-3.5 py-3 text-sm font-medium text-brand-strong">
+        <p role="status" className="rounded-lg bg-brand-soft px-3.5 py-3 text-sm font-medium text-brand-ink">
           {state.message}{" "}
           {state.code ? (
             <a href={`/orders/${state.code}`} className="underline">

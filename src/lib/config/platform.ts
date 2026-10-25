@@ -175,7 +175,7 @@ export function assertValidThresholds(
     fresh <= 100;
   if (!valid) {
     throw new Error(
-      "Ambang cascade harus memenuhi segar > layu > pakan ≥ residu ≥ 0.",
+      "Ambang cascade harus memenuhi segar > diskon > pakan ≥ residu ≥ 0.",
     );
   }
 }

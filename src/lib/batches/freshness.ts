@@ -35,7 +35,7 @@ export const STATUS_META: Record<
     dotClassName: "bg-brand",
   },
   RESCUE: {
-    label: "Layu",
+    label: "Diskon",
     description: "Harga lebih murah sebelum kualitas turun lagi.",
     className: "bg-stage-rescue/25 text-ink",
     dotClassName: "bg-stage-rescue",

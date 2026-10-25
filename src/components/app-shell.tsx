@@ -4,12 +4,14 @@ import { ChevronRight, Leaf, LogOut } from "lucide-react";
 import { signOutAction } from "@/app/dashboard/actions";
 import {
   BATCH_VIEW_ROLES,
+  BUYER_ROLES,
   hasRole,
   ROLE_LABELS,
 } from "@/src/lib/auth/roles";
 import type { SessionUser } from "@/src/lib/auth/session";
 import { initials } from "@/src/lib/batches/format";
 import { DashboardNav } from "@/src/components/dashboard-nav";
+import { BottomNav } from "@/src/components/shop/bottom-nav";
 
 export function AppShell({
   user,
@@ -19,10 +21,13 @@ export function AppShell({
   children: ReactNode;
 }) {
   const canViewBatches = hasRole(user.role, BATCH_VIEW_ROLES);
+  const isBuyer = hasRole(user.role, BUYER_ROLES);
   const displayName = user.name ?? user.email ?? "Pengguna Vesta";
 
   return (
-    <div className="min-h-dvh bg-surface-muted lg:h-dvh lg:overflow-hidden lg:p-2">
+    <div
+      className={`min-h-dvh bg-surface-muted lg:h-dvh lg:overflow-hidden lg:p-2${isBuyer ? " theme-buyer" : ""}`}
+    >
       <div className="mx-auto flex min-h-dvh max-w-[1560px] lg:h-full lg:min-h-0 lg:gap-2">
         <aside className="hidden w-56 shrink-0 flex-col px-2 py-3 lg:flex lg:h-full lg:min-h-0">
           <Link
@@ -57,7 +62,7 @@ export function AppShell({
                 href="/dashboard/profile"
                 className="flex min-w-0 flex-1 items-center gap-2.5 rounded-lg transition-colors hover:bg-surface-muted/60 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
               >
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-soft text-xs font-bold text-brand-strong">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-soft text-xs font-bold text-brand-ink">
                   {initials(displayName)}
                 </span>
                 <div className="min-w-0 flex-1">
@@ -126,13 +131,19 @@ export function AppShell({
             </div>
           </header>
 
-          <div className="flex-1 bg-surface lg:mb-2 lg:mr-2 lg:min-h-0 lg:overflow-y-auto lg:rounded-2xl lg:border lg:border-line">
-            <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+          <main className="flex-1 bg-surface lg:mb-2 lg:mr-2 lg:min-h-0 lg:overflow-y-auto lg:rounded-2xl lg:border lg:border-line">
+            <div
+              className={`mx-auto w-full max-w-6xl px-4 pt-6 sm:px-6 lg:px-8 lg:pt-8 ${
+                isBuyer ? "pb-24 md:pb-6 lg:pb-8" : "pb-6 lg:pb-8"
+              }`}
+            >
               {children}
             </div>
-          </div>
+          </main>
         </div>
       </div>
+
+      {isBuyer ? <BottomNav /> : null}
     </div>
   );
 }

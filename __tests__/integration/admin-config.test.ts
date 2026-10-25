@@ -136,7 +136,7 @@ describe("saveConfigAction", () => {
       configForm({ thresholdFresh: "10", thresholdRescue: "20" }),
     );
 
-    expect(result.error).toContain("segar > layu");
+    expect(result.error).toContain("segar > diskon");
     const row = await db.orm.public.PlatformConfig.where({ id: 1 }).first();
     expect(row).toBeNull();
   });

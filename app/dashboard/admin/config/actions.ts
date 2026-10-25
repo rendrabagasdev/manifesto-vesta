@@ -39,10 +39,10 @@ const configSchema = z.object({
   logisticsCostPerKg: rupiah,
   marginPerKg: rupiah,
   rescueDealDurationHours: z.coerce
-    .number({ error: "Isi durasi penawaran layu." })
+    .number({ error: "Isi durasi penawaran diskon." })
     .int("Durasi harus bilangan bulat.")
-    .min(1, "Durasi penawaran layu minimal 1 jam.")
-    .max(720, "Durasi penawaran layu maksimal 720 jam."),
+    .min(1, "Durasi penawaran diskon minimal 1 jam.")
+    .max(720, "Durasi penawaran diskon maksimal 720 jam."),
   earlyAccessWindowHours: z.coerce
     .number({ error: "Isi jendela akses awal." })
     .int("Jendela harus bilangan bulat.")

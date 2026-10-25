@@ -209,7 +209,7 @@ describe("buyRescueDealAction", () => {
 
     const result = await buyRescueDealAction({ ok: false }, form);
     expect(result.ok).toBe(true);
-    expect(result.message).toContain("Penawaran layu dibeli");
+    expect(result.message).toContain("Penawaran diskon dibeli");
   });
 
   it("validates the quantity and reports locked deals", async () => {

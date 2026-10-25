@@ -254,7 +254,7 @@ function stageLabel(value: string | undefined): string {
     case "FRESH":
       return "Segar";
     case "RESCUE":
-      return "Layu";
+      return "Diskon";
     case "FEED":
       return "Pakan";
     case "RESIDUE":

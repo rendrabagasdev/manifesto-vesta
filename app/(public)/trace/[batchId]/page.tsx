@@ -52,7 +52,7 @@ export default async function TracePage({
     : null;
 
   const NEXT_STAGE: Record<string, { label: string; note: string; dot: string } | null> = {
-    FRESH: { label: "Layu", note: "jika skor turun di bawah 70", dot: "bg-stage-rescue" },
+    FRESH: { label: "Diskon", note: "jika skor turun di bawah 70", dot: "bg-stage-rescue" },
     RESCUE: { label: "Pakan", note: "jika skor turun di bawah 30", dot: "bg-stage-feed" },
     FEED: { label: "Residu", note: "jika skor turun di bawah 10", dot: "bg-stage-residue" },
     RESIDUE: { label: "Dibuang", note: "jika skor mencapai 0", dot: "bg-stage-disposed" },

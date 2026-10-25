@@ -13,6 +13,7 @@
   --background-orange: #FF9900;
   --ornamen-orange: #FFD8A8;
   --brand-strong: oklch(0.3 0.07 160);
+  --brand-ink: var(--brand-strong);
   --brand-soft: oklch(0.94 0.03 160);
   --on-brand: oklch(0.98 0.01 160);
   --danger: oklch(0.52 0.18 27);
@@ -67,6 +68,7 @@
   --color-line: var(--line);
   --color-brand: var(--brand);
   --color-brand-strong: var(--brand-strong);
+  --color-brand-ink: var(--brand-ink);
   --color-brand-soft: var(--brand-soft);
   --color-on-brand: var(--on-brand);
   --color-danger: var(--danger);
@@ -120,6 +122,22 @@
 
 .background-orange {
   background-color: var(--background-orange);
+}
+
+/* Warna primary khusus pengalaman pembeli B2C/B2B. */
+.theme-buyer {
+  --brand: #e68a00;
+  --brand-strong: var(--background-orange);
+  --brand-ink: #b45309;
+  --brand-soft: #fff1e0;
+  --on-brand: #fff8f0;
+  --primary: var(--background-orange);
+  --primary-foreground: var(--on-brand);
+  --ring: var(--background-orange);
+  --accent: var(--brand-soft);
+  --accent-foreground: var(--brand-ink);
+  --sidebar-primary: var(--background-orange);
+  --sidebar-ring: var(--background-orange);
 }
 
 body {

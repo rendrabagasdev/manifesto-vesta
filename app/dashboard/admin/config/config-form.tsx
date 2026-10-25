@@ -105,7 +105,7 @@ export function ConfigForm({ config }: { config: PlatformConfigView }) {
         <h2 className="text-sm font-semibold text-ink">Ambang cascade</h2>
         <p className="mt-1 text-sm leading-relaxed text-ink-muted">
           Skor kesegaran dipetakan ke tahap berdasarkan ambang ini. Nilai harus
-          memenuhi segar &gt; layu &gt; pakan ≥ residu.
+          memenuhi segar &gt; diskon &gt; pakan ≥ residu.
         </p>
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <NumberField
@@ -119,7 +119,7 @@ export function ConfigForm({ config }: { config: PlatformConfigView }) {
           />
           <NumberField
             name="thresholdRescue"
-            label="Layu minimal"
+            label="Diskon minimal"
             defaultValue={config.thresholds.rescue}
             min={0}
             max={100}
@@ -157,7 +157,7 @@ export function ConfigForm({ config }: { config: PlatformConfigView }) {
         <div className="mt-4 grid gap-4 sm:grid-cols-3">
           <NumberField
             name="rescueTimerHours"
-            label="Timer layu"
+            label="Timer diskon"
             defaultValue={timers.RESCUE ?? 48}
             min={0}
             max={8760}
@@ -223,15 +223,15 @@ export function ConfigForm({ config }: { config: PlatformConfigView }) {
       </section>
 
       <section className="rounded-xl border border-line bg-surface p-4 sm:p-5">
-        <h2 className="text-sm font-semibold text-ink">Layu & akses awal</h2>
+        <h2 className="text-sm font-semibold text-ink">Diskon & akses awal</h2>
         <p className="mt-1 text-sm leading-relaxed text-ink-muted">
-          Durasi penawaran layu dan jendela akses awal untuk tier Gold/Platinum
-          saat batch masuk tahap layu.
+          Durasi penawaran diskon dan jendela akses awal untuk tier Gold/Platinum
+          saat batch masuk tahap diskon.
         </p>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <NumberField
             name="rescueDealDurationHours"
-            label="Durasi penawaran layu"
+            label="Durasi penawaran diskon"
             defaultValue={config.rescueDealDurationHours}
             min={1}
             max={720}
