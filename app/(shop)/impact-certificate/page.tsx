@@ -2,10 +2,7 @@ import type { Metadata } from "next";
 import { connection } from "next/server";
 import { Download, Droplets, Leaf, Recycle } from "lucide-react";
 import { requireSession } from "@/src/lib/auth/session";
-import {
-  getBuyerQuotaStatus,
-  getImpactSummaryFor,
-} from "@/src/lib/marketplace/queries";
+import { getImpactSummaryFor } from "@/src/lib/marketplace/queries";
 import {
   formatInteger,
   formatNumber,
@@ -23,10 +20,7 @@ export const metadata: Metadata = {
 export default async function ImpactCertificatePage() {
   await connection();
   const user = await requireSession();
-  const [impact, quota] = await Promise.all([
-    getImpactSummaryFor(undefined, Number(user.id)),
-    getBuyerQuotaStatus(Number(user.id)),
-  ]);
+  const impact = await getImpactSummaryFor(undefined, Number(user.id));
 
   const hasActivity = impact.totalTransactions > 0;
   const displayName = user.name ?? user.email;
@@ -54,7 +48,6 @@ export default async function ImpactCertificatePage() {
                 Kontribusi pembelian Anda
               </h2>
               <p className="mt-0.5 text-xs text-ink-muted">
-                Tier {quota.tierLabel} ·{" "}
                 {formatInteger(impact.totalTransactions)} transaksi tercatat
               </p>
             </div>
@@ -150,7 +143,7 @@ export default async function ImpactCertificatePage() {
         <div className="mt-6">
           <EmptyState
             title="Belum ada dampak yang tercatat"
-            description="Sertifikat akan terisi otomatis setelah transaksi pertama Anda selesai — mulai dari marketplace segar atau penawaran layu."
+            description="Sertifikat akan terisi otomatis setelah transaksi pertama Anda selesai — mulai dari marketplace segar atau penawaran diskon."
           />
         </div>
       ) : null}

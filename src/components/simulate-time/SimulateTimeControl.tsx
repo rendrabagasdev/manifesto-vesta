@@ -362,7 +362,7 @@ export function SimulateTimeControl() {
                   <div className="flex items-center gap-4 text-xs tabular-nums text-ink-muted">
                     <span className="inline-flex items-center gap-1.5">
                       <span className="size-1.5 rounded-full bg-stage-rescue" aria-hidden="true" />
-                      {item.data.newRescueDeals} layu
+                      {item.data.newRescueDeals} diskon
                     </span>
                     <span className="inline-flex items-center gap-1.5">
                       <span className="size-1.5 rounded-full bg-stage-feed" aria-hidden="true" />
@@ -401,11 +401,11 @@ export function SimulateTimeControl() {
           </li>
           <li className="flex items-start gap-2">
             <span className="text-brand-strong" aria-hidden="true">•</span>
-            Batch otomatis berpindah tahap (Segar → Layu → Pakan → Residu → Dibuang)
+            Batch otomatis berpindah tahap (Segar → Diskon → Pakan → Residu → Dibuang)
           </li>
           <li className="flex items-start gap-2">
             <span className="text-brand-strong" aria-hidden="true">•</span>
-            Penawaran layu, listing pakan, dan listing residu dibuat/diperbarui otomatis
+            Penawaran diskon, listing pakan, dan listing residu dibuat/diperbarui otomatis
           </li>
           <li className="flex items-start gap-2">
             <span className="text-brand-strong" aria-hidden="true">•</span>

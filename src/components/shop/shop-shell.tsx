@@ -2,7 +2,11 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { Leaf, LogOut, Store } from "lucide-react";
 import { signOutAction } from "@/app/dashboard/actions";
-import { ROLE_LABELS } from "@/src/lib/auth/roles";
+import {
+  BUYER_ROLES,
+  hasRole,
+  ROLE_LABELS,
+} from "@/src/lib/auth/roles";
 import type { SessionUser } from "@/src/lib/auth/session";
 import { initials } from "@/src/lib/batches/format";
 import { CartBadge } from "./cart-badge";
@@ -17,9 +21,12 @@ export function ShopShell({
   children: ReactNode;
 }) {
   const displayName = user.name ?? user.email ?? "Pengguna Vesta";
+  const isBuyer = hasRole(user.role, BUYER_ROLES);
 
   return (
-    <div className="min-h-dvh bg-background-orange md:bg-surface-muted">
+    <div
+      className={`min-h-dvh bg-surface-muted${isBuyer ? " theme-buyer" : ""}`}
+    >
       <header className="sticky top-0 z-40 border-b border-line bg-surface">
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 sm:px-6">
           <Link
@@ -53,7 +60,7 @@ export function ShopShell({
                 href="/dashboard/profile"
                 className="flex items-center gap-2.5 rounded-lg py-1 pl-1 pr-1 transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
               >
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-soft text-xs font-bold text-brand-strong">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-soft text-xs font-bold text-brand-ink">
                   {initials(displayName)}
                 </span>
                 <div className="min-w-0 leading-tight">

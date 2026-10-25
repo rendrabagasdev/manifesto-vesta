@@ -82,7 +82,7 @@ export default async function ProductsPage() {
             </h1>
             <p className="mt-1 text-sm leading-relaxed text-ink-muted">
               Harga dasar menjadi titik awal perhitungan biaya gudang, logistik,
-              margin, dan diskon layu untuk setiap batch.
+              margin, dan diskon untuk setiap batch.
             </p>
           </div>
         </div>

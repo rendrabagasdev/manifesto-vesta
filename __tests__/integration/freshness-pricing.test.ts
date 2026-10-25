@@ -335,11 +335,11 @@ describe("calculateDynamicPricing", () => {
 
 describe("rescue labels and profiles", () => {
   it("labels the rescue bands", () => {
-    expect(getRescueDiscountLabel(70)).toBe("Layu Ringan");
-    expect(getRescueDiscountLabel(55)).toBe("Layu Ringan");
-    expect(getRescueDiscountLabel(54)).toBe("Layu Sedang");
-    expect(getRescueDiscountLabel(35)).toBe("Layu Sedang");
-    expect(getRescueDiscountLabel(34)).toBe("Layu Darurat");
+    expect(getRescueDiscountLabel(70)).toBe("Diskon Ringan");
+    expect(getRescueDiscountLabel(55)).toBe("Diskon Ringan");
+    expect(getRescueDiscountLabel(54)).toBe("Diskon Sedang");
+    expect(getRescueDiscountLabel(35)).toBe("Diskon Sedang");
+    expect(getRescueDiscountLabel(34)).toBe("Diskon Darurat");
   });
 
   it("returns a profile for every known category and a fallback", () => {

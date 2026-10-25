@@ -116,9 +116,9 @@ export interface RescueDealView {
 }
 
 function discountLabelFor(score: number): string {
-  if (score >= 50) return "Layu ringan";
-  if (score >= 30) return "Layu sedang";
-  return "Layu darurat";
+  if (score >= 50) return "Diskon ringan";
+  if (score >= 30) return "Diskon sedang";
+  return "Diskon darurat";
 }
 
 export async function getRescueDeals(

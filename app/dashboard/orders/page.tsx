@@ -22,7 +22,7 @@ const STATUS_LABELS: Record<"PAID" | "SHIPPED", string> = {
 
 const STAGE_LABELS: Record<string, string> = {
   FRESH: "Segar",
-  RESCUE: "Layu",
+  RESCUE: "Diskon",
   FEED: "Pakan",
   RESIDUE: "Residu",
   DISPOSED: "Dibuang",

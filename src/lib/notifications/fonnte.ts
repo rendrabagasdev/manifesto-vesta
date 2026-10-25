@@ -155,29 +155,22 @@ function productNameOf(
   return "Komoditas segar";
 }
 
-export function buildRescueDealMessage(
-  deal: RescueDealNotification,
-  earlyAccessHours: number,
-): string {
+export function buildRescueDealMessage(deal: RescueDealNotification): string {
   const batch = deal.batch ?? null;
   const name = productNameOf(deal);
   const code = batch?.code ?? "-";
   const warehouse = batch?.warehouse
     ? [batch.warehouse.name, batch.warehouse.city].filter(Boolean).join(", ")
     : null;
-  const accessHours = Math.max(0, earlyAccessHours || deal.earlyAccessHours || 0);
 
   return [
-    "*Vesta — Penawaran Layu baru*",
+    "*Vesta — Penawaran Diskon baru*",
     `${name} (${code})`,
-    `Harga layu: ${formatIdr(deal.rescuePricePerKg)}/kg`,
+    `Harga diskon: ${formatIdr(deal.rescuePricePerKg)}/kg`,
     `Diskon: ${numberFormatter.format(deal.discountPct ?? 0)}%`,
     `Stok tersisa: ${formatKg(batch?.quantityKg)}`,
     warehouse ? `Lokasi: ${warehouse}` : null,
     `Berlaku sampai: ${formatDateTime(deal.endsAt)}`,
-    accessHours > 0
-      ? `Akses awal tier Anda terbuka ${accessHours} jam lebih awal.`
-      : null,
     "Balas pesan ini untuk dibantu tim Vesta.",
   ]
     .filter((line): line is string => Boolean(line))
@@ -220,7 +213,7 @@ export function buildCascadeAlertMessage(
     `Skor kesegaran: ${score}`,
     `Stok: ${formatKg(batch.quantityKg)}`,
     newStatus === "RESCUE"
-      ? "Penawaran layu sudah dibuka di marketplace."
+      ? "Penawaran diskon sudah dibuka di marketplace."
       : newStatus === "FEED"
         ? "Batch dialihkan ke pakan ternak."
         : newStatus === "RESIDUE"
@@ -318,9 +311,8 @@ export async function sendWhatsAppMessage(
 export async function sendRescueDealNotification(
   to: string,
   deal: RescueDealNotification,
-  earlyAccessHours = 0,
 ): Promise<NotificationResult> {
-  return sendWhatsAppMessage(to, buildRescueDealMessage(deal, earlyAccessHours));
+  return sendWhatsAppMessage(to, buildRescueDealMessage(deal));
 }
 
 export async function sendOrderConfirmation(

@@ -53,7 +53,7 @@ export function ProductCard({ listing }: { listing: MarketplaceListing }) {
               className="absolute -right-6 -top-8 size-24 rounded-full bg-surface/50"
             />
             <Icon
-              className="relative size-9 text-brand-strong/70 transition-transform duration-200 group-hover:scale-110 sm:size-10"
+              className="relative size-9 text-brand-ink/70 transition-transform duration-200 group-hover:scale-110 sm:size-10"
               strokeWidth={1.5}
               aria-hidden="true"
             />

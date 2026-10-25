@@ -255,9 +255,9 @@ export function calculateDynamicPricing(input: PricingInput): PricingResult {
 }
 
 export function getRescueDiscountLabel(freshnessScore: number): string {
-  if (freshnessScore >= 55) return "Layu Ringan";
-  if (freshnessScore >= 35) return "Layu Sedang";
-  return "Layu Darurat";
+  if (freshnessScore >= 55) return "Diskon Ringan";
+  if (freshnessScore >= 35) return "Diskon Sedang";
+  return "Diskon Darurat";
 }
 
 export function getCommodityProfile(category: string): CommodityProfile {

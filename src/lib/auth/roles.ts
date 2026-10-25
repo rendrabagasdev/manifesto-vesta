@@ -24,7 +24,7 @@ export const ROLE_SUMMARIES: Record<UserRole, string> = {
   WAREHOUSE:
     "Terima batch, catat suhu penyimpanan, dan jaga akurasi Skor Kesegaran.",
   CONSUMER:
-    "Belanja bahan segar dengan harga normal atau beli penawaran layu sesuai tier.",
+    "Belanja bahan segar dengan harga normal atau beli penawaran diskon.",
   BUSINESS:
     "Penuhi kebutuhan usaha dalam jumlah besar, termasuk pakan dan residu.",
 };
@@ -33,7 +33,7 @@ export const ROLE_MODULES: Record<UserRole, readonly string[]> = {
   ADMIN: ["Monitoring cascade", "Tier & harga", "Audit dampak"],
   PRODUCER: ["Input stok & harga dasar", "Status batch", "Pembayaran"],
   WAREHOUSE: ["Penerimaan batch", "Suhu & kualitas", "Update status"],
-  CONSUMER: ["Marketplace segar", "Penawaran Layu", "Riwayat pesanan"],
+  CONSUMER: ["Marketplace segar", "Penawaran Diskon", "Riwayat pesanan"],
   BUSINESS: ["Katalog grosir", "Pakan & residu", "Sertifikat dampak"],
 };
 
@@ -42,6 +42,8 @@ export const BATCH_VIEW_ROLES: readonly UserRole[] = [
   "PRODUCER",
   "WAREHOUSE",
 ];
+
+export const BUYER_ROLES: readonly UserRole[] = ["CONSUMER", "BUSINESS"];
 
 export const BATCH_CREATE_ROLES: readonly UserRole[] = [
   "ADMIN",

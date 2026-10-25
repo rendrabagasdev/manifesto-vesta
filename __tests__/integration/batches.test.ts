@@ -267,7 +267,7 @@ describe("updateBatchAction", () => {
       .first();
 
     expect(result.error).toBeUndefined();
-    expect(result.success).toContain("Layu");
+    expect(result.success).toContain("Diskon");
     expect(updated!.freshnessScore).toBe(53);
     expect(updated!.status).toBe("RESCUE");
     expect(updated!.storageTempC).toBe(20);
@@ -317,7 +317,7 @@ describe("updateBatchAction", () => {
     form.set("storageTempC", "20");
 
     const result = await updateBatchAction({}, form);
-    expect(result.success).toContain("Layu");
+    expect(result.success).toContain("Diskon");
   });
 
   it("blocks producers from updating storage temperature", async () => {

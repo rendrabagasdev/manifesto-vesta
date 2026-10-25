@@ -49,7 +49,7 @@ export function ShareLink({ label }: { label?: string }) {
         >
           {copied ? (
             <>
-              <Check className="size-3.5 text-brand-strong" aria-hidden="true" />
+              <Check className="size-3.5 text-brand-ink" aria-hidden="true" />
               Tersalin
             </>
           ) : (

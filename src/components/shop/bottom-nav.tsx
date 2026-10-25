@@ -14,7 +14,7 @@ import { useCart } from "./cart-context";
 
 const ITEMS = [
   { href: "/marketplace", label: "Beranda", icon: House },
-  { href: "/rescue-deals", label: "Layu", icon: Flame },
+  { href: "/rescue-deals", label: "Diskon", icon: Flame },
   { href: "/cart", label: "Keranjang", icon: ShoppingCart },
   { href: "/orders", label: "Pesanan", icon: ReceiptText },
   { href: "/dashboard/profile", label: "Profil", icon: UserRound },
@@ -26,7 +26,7 @@ export function BottomNav() {
 
   return (
     <nav
-      aria-label="Navigasi utama"
+      aria-label="Navigasi belanja"
       className="fixed inset-x-0 bottom-0 z-50 border-t border-line bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
     >
       <ul className="mx-auto grid max-w-md grid-cols-5">
@@ -34,9 +34,13 @@ export function BottomNav() {
           const Icon = item.icon;
           const active =
             item.href === "/marketplace"
-              ? pathname === item.href
-              : pathname === item.href ||
-                pathname.startsWith(`${item.href}/`);
+              ? pathname === item.href ||
+                pathname.startsWith(`${item.href}/`)
+              : item.href === "/dashboard/profile"
+                ? pathname === "/dashboard" ||
+                  pathname.startsWith("/dashboard/")
+                : pathname === item.href ||
+                  pathname.startsWith(`${item.href}/`);
           const showBadge = item.href === "/cart" && ready && count > 0;
 
           return (
@@ -55,7 +59,7 @@ export function BottomNav() {
                   className={cn(
                     "relative flex size-8 items-center justify-center rounded-full transition-colors",
                     active
-                      ? "bg-brand-soft text-brand-strong"
+                      ? "bg-brand-soft text-brand-ink"
                       : "text-ink-muted",
                   )}
                 >
@@ -69,7 +73,7 @@ export function BottomNav() {
                 <span
                   className={cn(
                     "text-[10px] font-medium leading-none",
-                    active ? "text-brand-strong" : "text-ink-muted",
+                    active ? "text-brand-ink" : "text-ink-muted",
                   )}
                 >
                   {item.label}

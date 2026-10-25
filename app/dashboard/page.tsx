@@ -55,7 +55,7 @@ export default async function DashboardPage() {
       },
       {
         href: "/rescue-deals",
-        title: "Penawaran layu",
+        title: "Penawaran diskon",
         description: "Harga lebih murah untuk batch dengan skor turun.",
       },
       user.role === "BUSINESS"
@@ -241,7 +241,7 @@ export default async function DashboardPage() {
           <p className="mt-1 text-2xl font-semibold tabular-nums tracking-tight text-ink">
             {formatInteger(summary.needingAction)}
           </p>
-          <p className="mt-0.5 text-xs text-ink-muted">Layu, pakan, residu</p>
+          <p className="mt-0.5 text-xs text-ink-muted">Diskon, pakan, residu</p>
         </div>
         <div className="bg-surface p-4">
           <p className="text-xs text-ink-muted">Rata-rata skor</p>

@@ -215,7 +215,7 @@ export async function consumeRescueQuota(
   const used = usage?.used ?? 0;
   if (used + count > limit) {
     throw new ApiError(
-      `Kuota Rescue mingguan Anda habis (${used}/${limit}). Kuota baru tersedia ${getWeekEnd(at)}.`,
+      "Batas pembelian penawaran diskon minggu ini sudah tercapai. Coba lagi minggu depan.",
       409,
       "RESCUE_QUOTA_EXHAUSTED",
       { limit, used, remaining: Math.max(0, limit - used) },

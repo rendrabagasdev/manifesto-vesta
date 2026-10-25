@@ -103,7 +103,7 @@ export function CartView({ defaults }: CartViewProps) {
           className="rounded-xl border border-line bg-surface p-4"
         >
           <div className="flex items-center gap-2">
-            <MapPin className="size-4 text-brand-strong" aria-hidden="true" />
+            <MapPin className="size-4 text-brand-ink" aria-hidden="true" />
             <h2 id="shipping-heading" className="text-sm font-semibold text-ink">
               Lokasi pengiriman
             </h2>
@@ -267,7 +267,7 @@ export function CartView({ defaults }: CartViewProps) {
 
           <fieldset className="space-y-2">
             <legend className="flex items-center gap-1.5 text-sm font-medium text-ink">
-              <Truck className="size-4 text-brand-strong" aria-hidden="true" />
+              <Truck className="size-4 text-brand-ink" aria-hidden="true" />
               Metode pengiriman
             </legend>
             {deliveryOptions.map((option) => {

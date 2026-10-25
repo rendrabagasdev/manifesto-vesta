@@ -2,21 +2,17 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
 import {
-  AlarmClock,
   ArrowRight,
   Building2,
   CalendarClock,
   Download,
   FileBadge,
-  ShoppingBag,
 } from "lucide-react";
 import { requireRole } from "@/src/lib/auth/session";
 import {
-  getBuyerQuotaStatus,
   getImpactSummaryFor,
   getOrdersForUser,
 } from "@/src/lib/marketplace/queries";
-import { TIER_BENEFITS, type TierName } from "@/src/lib/loyalty/tiers";
 import {
   formatDateTime,
   formatIdr,
@@ -38,7 +34,7 @@ function OrderStatusPill({ status }: { status: string }) {
 export const instant = false;
 export const metadata: Metadata = {
   title: "Dashboard business — Vesta",
-  description: "Pre-order, pesanan grosir, sertifikat dampak, dan akses layu untuk mitra B2B.",
+  description: "Pre-order, pesanan grosir, sertifikat dampak, dan akses diskon untuk mitra B2B.",
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -54,20 +50,16 @@ export default async function BusinessDashboardPage() {
   const user = await requireRole(["BUSINESS", "ADMIN"]);
   const userId = Number(user.id);
 
-  const [quota, orders, impact] = await Promise.all([
-    getBuyerQuotaStatus(userId),
+  const [orders, impact] = await Promise.all([
     getOrdersForUser(userId),
     getImpactSummaryFor(undefined, userId),
   ]);
 
-  const tier = quota.tier as TierName;
-  const benefits = TIER_BENEFITS[tier];
   const preorders = orders.filter((order) => order.kind === "PREORDER");
   const bulkOrders = orders.filter((order) => order.kind !== "PREORDER");
   const pendingPreorders = preorders.filter(
     (order) => order.status === "PENDING",
   );
-  const quotaPct = quota.limit > 0 ? (quota.used / quota.limit) * 100 : 0;
 
   return (
     <div>
@@ -120,53 +112,6 @@ export default async function BusinessDashboardPage() {
             <span className="text-sm font-normal text-ink-muted"> kg</span>
           </p>
         </div>
-      </section>
-
-      <section
-        aria-labelledby="rescue-heading"
-        className="mt-4 flex flex-col gap-4 rounded-xl border border-line bg-surface p-5 sm:flex-row sm:items-center sm:justify-between"
-      >
-        <div className="min-w-0">
-          <h2 id="rescue-heading" className="flex items-center gap-2 text-sm font-semibold text-ink">
-            <AlarmClock className="size-4" aria-hidden="true" />
-            Akses Penawaran Layu — tier {benefits.label}
-          </h2>
-          <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-muted">
-            <span>
-              <span className="font-semibold tabular-nums text-ink">
-                {quota.remaining}
-              </span>
-              /{quota.limit} kuota minggu ini
-            </span>
-            <span>
-              Akses awal{" "}
-              <span className="font-semibold tabular-nums text-ink">
-                +{benefits.earlyAccessHours}
-              </span>{" "}
-              jam
-            </span>
-          </p>
-          <div
-            className="mt-2.5 h-1.5 max-w-xs overflow-hidden rounded-full bg-surface-muted"
-            role="meter"
-            aria-valuenow={quota.used}
-            aria-valuemin={0}
-            aria-valuemax={quota.limit}
-            aria-label={`Kuota layu terpakai ${quota.used} dari ${quota.limit}`}
-          >
-            <span
-              className="block h-full rounded-full bg-stage-rescue"
-              style={{ width: `${Math.max(quota.used > 0 ? 4 : 0, quotaPct)}%` }}
-            />
-          </div>
-        </div>
-        <Link
-          href="/rescue-deals"
-          className="inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-lg border border-line px-4 text-sm font-semibold text-ink transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-        >
-          <ShoppingBag className="size-4" aria-hidden="true" />
-          Lihat penawaran layu
-        </Link>
       </section>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
@@ -245,7 +190,7 @@ export default async function BusinessDashboardPage() {
             <div className="p-4">
               <EmptyState
                 title="Belum ada pesanan"
-                description="Belanja di marketplace segar atau penawaran layu."
+                description="Belanja di marketplace segar atau penawaran diskon."
               />
             </div>
           ) : (

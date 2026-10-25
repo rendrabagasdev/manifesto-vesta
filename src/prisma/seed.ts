@@ -706,7 +706,7 @@ async function main() {
     type: "EARN",
     amount: 84000,
     pointsDelta: 84,
-    description: "Pembelian demo penawaran layu dan beras.",
+    description: "Pembelian demo penawaran diskon dan beras.",
   });
 
   await ensureBuyerTier(b2cUser.id, {

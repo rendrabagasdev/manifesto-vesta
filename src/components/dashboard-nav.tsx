@@ -76,16 +76,25 @@ export function DashboardNav({ role, canViewBatches, variant }: DashboardNavProp
       : []),
   ];
 
-  const activeHref = items
+  const buyerMobile = variant === "mobile" && BUYER_ROLES.includes(role);
+  const visibleItems = buyerMobile
+    ? items.filter(
+        (item) => item.href !== "/dashboard/profile" && item.href !== "/marketplace",
+      )
+    : items;
+
+  const activeHref = visibleItems
     .map((item) => item.href)
-    .filter(
-      (href) => pathname === href || pathname.startsWith(`${href}/`),
+    .filter((href) =>
+      href === "/dashboard"
+        ? pathname === href
+        : pathname === href || pathname.startsWith(`${href}/`),
     )
     .sort((a, b) => b.length - a.length)[0];
 
   return (
     <nav
-      aria-label="Navigasi utama"
+      aria-label="Navigasi ruang kerja"
       className={cn(
         "min-w-0",
         variant === "sidebar"
@@ -93,7 +102,7 @@ export function DashboardNav({ role, canViewBatches, variant }: DashboardNavProp
           : "flex items-center gap-1 overflow-x-auto",
       )}
     >
-      {items.map((item) => {
+      {visibleItems.map((item) => {
         const active = item.href === activeHref;
         const Icon = item.icon;
 

@@ -92,8 +92,8 @@ const claimSchema = z.object({
     .positive("Penawaran tidak valid."),
   quantityKg: z.coerce
     .number({ error: "Jumlah tidak valid." })
-    .positive("Jumlah pembelian layu harus lebih dari 0 kg.")
-    .max(100_000, "Jumlah pembelian layu maksimal 100.000 kg."),
+    .positive("Jumlah pembelian diskon harus lebih dari 0 kg.")
+    .max(100_000, "Jumlah pembelian diskon maksimal 100.000 kg."),
 });
 
 const DEFAULT_ADDRESS = "Diambil langsung di gudang";
@@ -232,7 +232,7 @@ export async function placeOrderAction(
       return {
         ok: false,
         error:
-          "Pembelian Layu/Pakan/Residu hanya dapat dilakukan satu batch per pesanan.",
+          "Pembelian Diskon/Pakan/Residu hanya dapat dilakukan satu batch per pesanan.",
         errorCode: "MIXED_SOURCES",
       };
     }
@@ -385,7 +385,7 @@ export async function claimRescueDealAction(
   if (quotaBefore.remaining < 1) {
     return {
       ok: false,
-      error: `Kuota layu mingguan Anda habis (${quotaBefore.used}/${quotaBefore.limit}). Kuota baru tersedia ${quotaBefore.resetsAt}.`,
+      error: "Batas pembelian penawaran diskon minggu ini sudah tercapai. Coba lagi minggu depan.",
       errorCode: "RESCUE_QUOTA_EXHAUSTED",
       quota: quotaBefore,
       quotaRemaining: 0,
@@ -408,7 +408,7 @@ export async function claimRescueDealAction(
       ok: false,
       error:
         access.reason === "EARLY_ACCESS_LOCKED"
-          ? "Penawaran ini belum bisa Anda akses. Tunggu akses awal tier Anda terbuka."
+          ? "Penawaran ini belum bisa Anda akses. Coba lagi nanti."
           : access.reason === "EXPIRED"
             ? "Penawaran ini sudah berakhir."
             : "Penawaran ini belum tersedia.",
@@ -446,11 +446,11 @@ export async function claimRescueDealAction(
       quota: quotaAfter,
       quotaRemaining: quotaAfter.remaining,
       message: result.paid
-        ? `Penawaran layu berhasil diklaim (${quantityKg} kg dari ${availableKg} kg tersedia).`
+        ? `Penawaran diskon berhasil diklaim (${quantityKg} kg dari ${availableKg} kg tersedia).`
         : "Mengarahkan ke halaman pembayaran Midtrans...",
     };
   } catch (error) {
-    const mapped = mapError(error, "Pembelian layu gagal. Coba lagi.");
+    const mapped = mapError(error, "Pembelian diskon gagal. Coba lagi.");
     if (mapped.errorCode === "RESCUE_QUOTA_EXHAUSTED") {
       mapped.quota = await getQuotaStatus(db, buyerId).catch(() => quotaBefore);
       mapped.quotaRemaining = mapped.quota?.remaining ?? 0;

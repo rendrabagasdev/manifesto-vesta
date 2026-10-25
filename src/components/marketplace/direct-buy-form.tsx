@@ -119,7 +119,7 @@ export function DirectBuyForm({
         {state.error ? (
           <span className="font-medium text-danger">{state.error}</span>
         ) : state.ok && state.message ? (
-          <span className="font-medium text-brand-strong">
+          <span className="font-medium text-brand-ink">
             {state.message}{" "}
             {state.code ? (
               <a href={`/orders/${state.code}`} className="underline">
