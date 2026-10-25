@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useActionState, useEffect, useRef } from "react";
 import { createProductAction, updateProductAction } from "./actions";
 import {
@@ -23,6 +24,7 @@ export type ProductValues = {
   idealTempC: number;
   basePricePerKg: number;
   description: string | null;
+  imageUrl: string | null;
 };
 
 const initialState: ProductFormState = {};
@@ -291,6 +293,52 @@ export function ProductForm({
           <p className="text-sm font-medium text-danger">
             {state.fieldErrors.description[0]}
           </p>
+        ) : null}
+      </div>
+
+      <div className="space-y-2">
+        <label
+          htmlFor={`${fieldId}-image`}
+          className="block text-sm font-medium text-ink"
+        >
+          Foto produk{" "}
+          <span className="font-normal text-ink-muted">(opsional)</span>
+        </label>
+        {product?.imageUrl ? (
+          <div className="relative h-32 w-40 overflow-hidden rounded-lg border border-line bg-surface-muted">
+            <Image
+              src={product.imageUrl}
+              alt={`Foto ${product.name}`}
+              fill
+              sizes="160px"
+              className="object-cover"
+            />
+          </div>
+        ) : null}
+        <input
+          id={`${fieldId}-image`}
+          name="image"
+          type="file"
+          accept="image/jpeg,image/png,image/webp,image/avif"
+          className="block w-full cursor-pointer rounded-lg border border-dashed border-line bg-surface-muted px-3 py-3 text-sm text-ink-muted file:mr-3 file:rounded-md file:border-0 file:bg-brand-soft file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-brand-strong hover:border-brand/40"
+        />
+        <p className="text-xs text-ink-muted">
+          JPG, PNG, WebP, atau AVIF. Maksimal 5 MB.
+        </p>
+        {state.fieldErrors?.image?.[0] ? (
+          <p className="text-sm font-medium text-danger">
+            {state.fieldErrors.image[0]}
+          </p>
+        ) : null}
+        {product?.imageUrl ? (
+          <label className="flex items-center gap-2 text-sm text-ink">
+            <input
+              type="checkbox"
+              name="removeImage"
+              className="size-4 accent-brand-strong"
+            />
+            Hapus foto saat ini
+          </label>
         ) : null}
       </div>
 

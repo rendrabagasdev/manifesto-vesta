@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { connection } from "next/server";
 import { ArrowLeft, Sprout } from "lucide-react";
@@ -154,6 +155,7 @@ export default async function ProductsPage() {
                   idealTempC: product.idealTempC,
                   basePricePerKg: product.basePricePerKg,
                   description: product.description,
+                  imageUrl: product.imageUrl,
                 };
 
                 return (
@@ -162,26 +164,44 @@ export default async function ProductsPage() {
                     className="border-b border-line px-4 py-4 last:border-0"
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="text-sm font-semibold text-ink">
-                          {product.name}
-                        </p>
-                        <p className="mt-1 text-xs text-ink-muted">
-                          {PRODUCT_CATEGORY_LABELS[product.category] ??
-                            product.category}{" "}
-                          · {product.producer?.farmName ?? "Produsen tidak dikenal"} ·{" "}
-                          {formatIdr(product.basePricePerKg)}/{product.unit}
-                        </p>
-                        <p className="mt-1 text-xs text-ink-muted">
-                          Masa simpan {product.shelfLifeDays} hari · suhu ideal{" "}
-                          {formatNumber(product.idealTempC)}°C ·{" "}
-                          {product.batches.length} batch tercatat
-                        </p>
-                        {product.description ? (
-                          <p className="mt-1 max-w-prose text-xs leading-relaxed text-ink-muted">
-                            {product.description}
+                      <div className="flex min-w-0 items-start gap-3">
+                        <div className="relative size-14 shrink-0 overflow-hidden rounded-lg border border-line bg-brand-soft/60">
+                          {product.imageUrl ? (
+                            <Image
+                              src={product.imageUrl}
+                              alt={`Foto ${product.name}`}
+                              fill
+                              sizes="56px"
+                              className="object-cover"
+                            />
+                          ) : (
+                            <Sprout
+                              className="absolute inset-0 m-auto size-5 text-brand-strong/70"
+                              aria-hidden="true"
+                            />
+                          )}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold text-ink">
+                            {product.name}
                           </p>
-                        ) : null}
+                          <p className="mt-1 text-xs text-ink-muted">
+                            {PRODUCT_CATEGORY_LABELS[product.category] ??
+                              product.category}{" "}
+                            · {product.producer?.farmName ?? "Produsen tidak dikenal"} ·{" "}
+                            {formatIdr(product.basePricePerKg)}/{product.unit}
+                          </p>
+                          <p className="mt-1 text-xs text-ink-muted">
+                            Masa simpan {product.shelfLifeDays} hari · suhu ideal{" "}
+                            {formatNumber(product.idealTempC)}°C ·{" "}
+                            {product.batches.length} batch tercatat
+                          </p>
+                          {product.description ? (
+                            <p className="mt-1 max-w-prose text-xs leading-relaxed text-ink-muted">
+                              {product.description}
+                            </p>
+                          ) : null}
+                        </div>
                       </div>
                       <DeleteProductButton
                         productId={product.id}

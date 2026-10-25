@@ -6,14 +6,8 @@ import { ROLE_LABELS } from "@/src/lib/auth/roles";
 import type { SessionUser } from "@/src/lib/auth/session";
 import { initials } from "@/src/lib/batches/format";
 import { CartBadge } from "./cart-badge";
-
-const SHOP_LINKS = [
-  { href: "/marketplace", label: "Marketplace" },
-  { href: "/rescue-deals", label: "Penawaran Layu" },
-  { href: "/feed", label: "Pakan" },
-  { href: "/residue", label: "Residu" },
-  { href: "/impact", label: "Dampak" },
-] as const;
+import { BottomNav } from "./bottom-nav";
+import { MarketplaceNav } from "@/src/components/marketplace/marketplace-nav";
 
 export function ShopShell({
   user,
@@ -25,7 +19,7 @@ export function ShopShell({
   const displayName = user.name ?? user.email ?? "Pengguna Vesta";
 
   return (
-    <div className="min-h-dvh bg-surface-muted">
+    <div className="min-h-dvh bg-background-orange md:bg-surface-muted">
       <header className="sticky top-0 z-40 border-b border-line bg-surface">
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 sm:px-6">
           <Link
@@ -38,23 +32,14 @@ export function ShopShell({
             Vesta
           </Link>
 
-          <nav
-            aria-label="Navigasi marketplace"
-            className="ml-4 hidden min-w-0 items-center gap-1 md:flex"
-          >
-            {SHOP_LINKS.map((link) => (
-              <Link
-                key={link.href}
-                href={link.href}
-                className="inline-flex h-8 items-center rounded-lg px-3 text-sm font-medium text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-              >
-                {link.label}
-              </Link>
-            ))}
-          </nav>
+          <div className="ml-4 min-w-0">
+            <MarketplaceNav variant="desktop" />
+          </div>
 
           <div className="ml-auto flex items-center gap-1.5">
-            <CartBadge />
+            <div className="hidden md:block">
+              <CartBadge />
+            </div>
             <Link
               href="/dashboard"
               className="inline-flex size-10 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
@@ -63,18 +48,23 @@ export function ShopShell({
             >
               <Store className="size-[18px]" aria-hidden="true" />
             </Link>
-            <div className="hidden items-center gap-2.5 rounded-lg py-1 pl-2 pr-1 sm:flex">
-              <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-soft text-xs font-bold text-brand-strong">
-                {initials(displayName)}
-              </span>
-              <div className="min-w-0 leading-tight">
-                <p className="max-w-28 truncate text-xs font-semibold text-ink">
-                  {displayName}
-                </p>
-                <p className="text-[11px] text-ink-muted">
-                  {ROLE_LABELS[user.role]}
-                </p>
-              </div>
+            <div className="hidden items-center gap-1 rounded-lg py-1 pl-1 pr-1 sm:flex">
+              <Link
+                href="/dashboard/profile"
+                className="flex items-center gap-2.5 rounded-lg py-1 pl-1 pr-1 transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+              >
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-soft text-xs font-bold text-brand-strong">
+                  {initials(displayName)}
+                </span>
+                <div className="min-w-0 leading-tight">
+                  <p className="max-w-28 truncate text-xs font-semibold text-ink">
+                    {displayName}
+                  </p>
+                  <p className="text-[11px] text-ink-muted">
+                    {ROLE_LABELS[user.role]}
+                  </p>
+                </div>
+              </Link>
               <form action={signOutAction}>
                 <button
                   type="submit"
@@ -88,28 +78,13 @@ export function ShopShell({
             </div>
           </div>
         </div>
-
-        <nav
-          aria-label="Navigasi marketplace seluler"
-          className="flex gap-1 overflow-x-auto border-t border-line px-3 py-1.5 md:hidden"
-        >
-          {SHOP_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="inline-flex h-8 shrink-0 items-center rounded-lg px-3 text-sm font-medium text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-            >
-              {link.label}
-            </Link>
-          ))}
-        </nav>
       </header>
 
       <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:py-8">
         {children}
       </main>
 
-      <footer className="border-t border-line bg-surface">
+      <footer className="border-t border-line bg-surface pb-[calc(env(safe-area-inset-bottom)+5rem)] md:pb-0">
         <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-6 text-sm text-ink-muted sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <p className="font-semibold text-ink">
             Vesta &middot; Platform Kaskade Kesegaran
@@ -119,6 +94,8 @@ export function ShopShell({
           </p>
         </div>
       </footer>
+
+      <BottomNav />
     </div>
   );
 }

@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 
-function scoreTone(score: number): {
+export function freshnessTone(score: number): {
   barClassName: string;
   label: string;
 } {
@@ -21,7 +21,7 @@ export function FreshnessMeter({
   size?: "sm" | "md";
   className?: string;
 }) {
-  const tone = scoreTone(score);
+  const tone = freshnessTone(score);
   const clamped = Math.max(0, Math.min(100, Math.round(score)));
 
   return (

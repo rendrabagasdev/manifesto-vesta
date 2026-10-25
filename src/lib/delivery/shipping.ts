@@ -71,7 +71,9 @@ export function findDeliveryCity(value: string | null | undefined): DeliveryCity
   );
 }
 
-function matchWarehouseCity(value: string | null | undefined): DeliveryCity | null {
+export function matchDeliveryCity(
+  value: string | null | undefined,
+): DeliveryCity | null {
   const needle = value?.trim().toLowerCase();
   if (!needle) return null;
 
@@ -121,7 +123,7 @@ function estimateFor(
   warehouseCities: readonly (string | null | undefined)[],
   now: Date,
 ): Date | null {
-  const matched = warehouseCities.map(matchWarehouseCity);
+  const matched = warehouseCities.map(matchDeliveryCity);
   if (matched.length === 0) return null;
 
   const sameMetro = matched.every((entry) => metroMatches(city, entry));

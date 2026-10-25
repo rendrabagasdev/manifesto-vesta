@@ -24,6 +24,7 @@ export type SavedItem = {
 
 const CART_KEY = "vesta-cart-v1";
 const SAVED_KEY = "vesta-saved-v1";
+const SAVED_EVENT = "vesta-saved-change";
 
 function readJson<T>(key: string, fallback: T): T {
   if (typeof window === "undefined") return fallback;
@@ -63,6 +64,43 @@ export function readSaved(): SavedItem[] {
 
 export function writeSaved(items: SavedItem[]) {
   writeJson(SAVED_KEY, items);
+  window.dispatchEvent(new Event(SAVED_EVENT));
+}
+
+export function subscribeSaved(listener: () => void): () => void {
+  const onStorage = (event: StorageEvent) => {
+    if (event.key === null || event.key === SAVED_KEY) listener();
+  };
+  window.addEventListener(SAVED_EVENT, listener);
+  window.addEventListener("storage", onStorage);
+  return () => {
+    window.removeEventListener(SAVED_EVENT, listener);
+    window.removeEventListener("storage", onStorage);
+  };
+}
+
+export function savedSnapshot(): string {
+  try {
+    return window.localStorage.getItem(SAVED_KEY) ?? "[]";
+  } catch {
+    return "[]";
+  }
+}
+
+export function savedServerSnapshot(): string {
+  return "[]";
+}
+
+export function isSavedInSnapshot(snapshot: string, productId: number): boolean {
+  try {
+    const entries = JSON.parse(snapshot) as SavedItem[];
+    return (
+      Array.isArray(entries) &&
+      entries.some((entry) => entry.productId === productId)
+    );
+  } catch {
+    return false;
+  }
 }
 
 export function cartSubtotal(items: CartItem[]): number {

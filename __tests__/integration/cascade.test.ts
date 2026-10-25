@@ -572,6 +572,6 @@ describe("marketplace visibility across the cascade", () => {
     expect(deal.dealEarlyAccessHours).toBe(12);
     expect(deal.access.publicStartsAt).toBe(new Date(deal.startsAt).toISOString());
     expect(deal.discountPct).toBeGreaterThanOrEqual(8);
-    expect(deal.originalPricePerKg).toBeGreaterThanOrEqual(deal.rescuePricePerKg);
+    expect(deal.originalPricePerKg).toBeGreaterThan(deal.rescuePricePerKg);
   });
 });

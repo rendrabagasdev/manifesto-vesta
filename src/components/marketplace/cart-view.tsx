@@ -18,10 +18,18 @@ const initialState: PurchaseState = { ok: false };
 const inputClassName =
   "h-10 w-full rounded-lg border border-line bg-surface px-3 text-sm text-ink outline-none transition-colors placeholder:text-ink-muted/70 focus:border-brand focus:ring-2 focus:ring-brand/15";
 
-export function CartView() {
+type CartViewProps = {
+  defaults?: {
+    cityId?: string;
+    phone?: string;
+    address?: string;
+  };
+};
+
+export function CartView({ defaults }: CartViewProps) {
   const { items, ready, updateQty, removeItem, clear, subtotal, totalKg } = useCart();
   const [state, formAction, pending] = useActionState(checkoutAction, initialState);
-  const [cityId, setCityId] = useState("bandung");
+  const [cityId, setCityId] = useState(defaults?.cityId ?? "bandung");
   const [method, setMethod] = useState<DeliveryMethodId>("INSTANT");
   const router = useRouter();
 
@@ -134,6 +142,7 @@ export function CartView() {
                 required
                 minLength={8}
                 maxLength={20}
+                defaultValue={defaults?.phone ?? ""}
                 placeholder="0812xxxxxxx"
                 className={inputClassName}
               />
@@ -151,6 +160,7 @@ export function CartView() {
               required
               minLength={10}
               maxLength={300}
+              defaultValue={defaults?.address ?? ""}
               placeholder="Nama, jalan, nomor rumah, patokan"
               className="w-full rounded-lg border border-line bg-surface px-3 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-ink-muted/70 focus:border-brand focus:ring-2 focus:ring-brand/15"
             />

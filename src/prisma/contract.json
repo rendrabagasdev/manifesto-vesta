@@ -2676,6 +2676,20 @@
           },
           "User": {
             "fields": {
+              "address": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "city": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "createdAt": {
                 "nullable": false,
                 "type": {
@@ -2706,6 +2720,13 @@
               },
               "passwordHash": {
                 "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "phone": {
+                "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -2865,6 +2886,12 @@
             },
             "storage": {
               "fields": {
+                "address": {
+                  "column": "address"
+                },
+                "city": {
+                  "column": "city"
+                },
                 "createdAt": {
                   "column": "createdAt"
                 },
@@ -2879,6 +2906,9 @@
                 },
                 "passwordHash": {
                   "column": "passwordHash"
+                },
+                "phone": {
+                  "column": "phone"
                 },
                 "role": {
                   "column": "role"
@@ -5161,6 +5191,16 @@
                 }
               ],
               "columns": {
+                "address": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "city": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
                 "createdAt": {
                   "codecId": "pg/timestamptz-string@1",
                   "dataType": "pg/timestamptz",
@@ -5193,6 +5233,11 @@
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
                   "nullable": false
+                },
+                "phone": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
                 },
                 "role": {
                   "codecId": "pg/text@1",
@@ -5393,7 +5438,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "4e6a15622fb62ea929ecba868f1a0324c0e0216546aa393d6dc620ed5d586960"
+    "storageHash": "b7ea73eaef6994f9a68c6f7e85b49378c1391703fc8454ee610dc5310803f070"
   },
   "execution": {
     "executionHash": "72a678ae5abbc20560d5d389981a277cdba90fae0226162c86ebb90e86df1123",
