@@ -70,6 +70,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     try {
       const stored = window.localStorage.getItem(STORAGE_KEY);
+      // Hydration-safe: persisted cart is loaded after mount so the first client render matches the server.
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       if (stored) setItems(sanitizeItems(JSON.parse(stored)));
     } catch {
       // Corrupted storage starts as an empty cart.

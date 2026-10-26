@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { FileBadge } from "lucide-react";
 import { requireRole } from "@/src/lib/auth/session";
 import { getFreshListings, getImpactSummaryFor } from "@/src/lib/marketplace/queries";
 import { dateInputValue, formatInteger, formatNumber } from "@/src/lib/batches/format";
@@ -15,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 const BULK_FLOW = [
-  "Pilih batch segar, jumlah, dan jadwal pengiriman pertama.",
+  "Pilih produk, jumlah, dan jadwal pengiriman pertama.",
   "Gudang mengonfirmasi ketersediaan sebelum invoice terbit.",
   "Pesanan berulang disimpan sebagai catatan — gudang menyiapkan stok sesuai frekuensi yang dipilih.",
 ] as const;
@@ -58,8 +57,8 @@ export default async function BulkMarketplacePage() {
           <div className="mt-4">
             {batches.length === 0 ? (
               <EmptyState
-                title="Belum ada batch segar untuk dipesan"
-                description="Pre-order membutuhkan batch FRESH aktif. Cek kembali setelah pasokan baru masuk."
+                title="Belum ada produk untuk dipesan"
+                description="Pre-order membutuhkan stok aktif. Cek kembali setelah pasokan baru masuk."
               />
             ) : (
               <BulkOrderForm batches={batches} today={dateInputValue()} />
@@ -69,8 +68,7 @@ export default async function BulkMarketplacePage() {
 
         <div className="grid gap-4">
           <section aria-labelledby="certificate-heading" className="rounded-xl border border-line bg-surface p-5">
-            <h2 id="certificate-heading" className="flex items-center gap-2 text-sm font-semibold text-ink">
-              <FileBadge className="size-4" aria-hidden="true" />
+            <h2 id="certificate-heading" className="text-sm font-semibold text-ink">
               Sertifikat dampak
             </h2>
             <p className="mt-2 text-sm leading-relaxed text-ink-muted">

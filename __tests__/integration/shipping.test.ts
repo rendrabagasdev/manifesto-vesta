@@ -1,10 +1,29 @@
 import { describe, expect, it } from "vitest";
 import {
+  calculateShippingCost,
   formatDeliveryEstimate,
   getDeliveryOptions,
   matchDeliveryCity,
   resolveDeliverySelection,
 } from "@/src/lib/delivery/shipping";
+
+describe("calculateShippingCost", () => {
+  it("charges base plus per-km rates rounded up to Rp 500", () => {
+    expect(calculateShippingCost(4, "INSTANT")).toBe(14_000);
+    expect(calculateShippingCost(14.9, "INSTANT")).toBe(30_500);
+    expect(calculateShippingCost(14.9, "SAME_DAY")).toBe(22_500);
+    expect(calculateShippingCost(14.9, "REGULAR")).toBe(16_000);
+  });
+
+  it("returns zero without a distance or a known method", () => {
+    expect(calculateShippingCost(null, "INSTANT")).toBe(0);
+    expect(calculateShippingCost(undefined, "INSTANT")).toBe(0);
+    expect(calculateShippingCost(0, "INSTANT")).toBe(0);
+    expect(calculateShippingCost(Number.NaN, "INSTANT")).toBe(0);
+    expect(calculateShippingCost(4, null)).toBe(0);
+    expect(calculateShippingCost(4, "DRONE")).toBe(0);
+  });
+});
 
 const option = (
   options: ReturnType<typeof getDeliveryOptions>,

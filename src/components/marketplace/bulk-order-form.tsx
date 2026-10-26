@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { PackagePlus } from "lucide-react";
 import { preorderAction, type PurchaseState } from "@/app/(shop)/actions";
 import { formatIdr } from "@/src/lib/batches/format";
 
@@ -170,9 +169,8 @@ export function BulkOrderForm({
         type="submit"
         disabled={pending || batches.length === 0}
         aria-busy={pending}
-        className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-brand-strong text-sm font-semibold text-on-brand transition-colors hover:bg-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:px-6"
+        className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-brand-strong text-sm font-semibold text-on-brand transition-colors hover:bg-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto sm:px-6"
       >
-        <PackagePlus className="size-4" aria-hidden="true" />
         {pending ? "Mencatat pesanan..." : "Kirim pre-order"}
       </button>
     </form>

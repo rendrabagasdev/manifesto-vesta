@@ -23,7 +23,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'b7ea73eaef6994f9a68c6f7e85b49378c1391703fc8454ee610dc5310803f070'>;
+  StorageHashBase<'f704f2e476fb59687fa9e76f957e3cee9b932f55eb20900577a64fe24eec70be'>;
 export type ExecutionHash =
   ExecutionHashBase<'72a678ae5abbc20560d5d389981a277cdba90fae0226162c86ebb90e86df1123'>;
 export type ProfileHash =
@@ -509,6 +509,10 @@ export namespace Models {
     createdAt: FieldOutputTypes['public']['Order']['createdAt'];
     deliveryAddress: FieldOutputTypes['public']['Order']['deliveryAddress'];
     deliveryCity: FieldOutputTypes['public']['Order']['deliveryCity'];
+    deliveryDistanceKm: FieldOutputTypes['public']['Order']['deliveryDistanceKm'];
+    deliveryDurationMinutes: FieldOutputTypes['public']['Order']['deliveryDurationMinutes'];
+    deliveryLatitude: FieldOutputTypes['public']['Order']['deliveryLatitude'];
+    deliveryLongitude: FieldOutputTypes['public']['Order']['deliveryLongitude'];
     deliveryMethod: FieldOutputTypes['public']['Order']['deliveryMethod'];
     discount: FieldOutputTypes['public']['Order']['discount'];
     estimatedDeliveryAt: FieldOutputTypes['public']['Order']['estimatedDeliveryAt'];
@@ -520,6 +524,7 @@ export namespace Models {
     paymentRef: FieldOutputTypes['public']['Order']['paymentRef'];
     paymentUrl: FieldOutputTypes['public']['Order']['paymentUrl'];
     scheduledFor: FieldOutputTypes['public']['Order']['scheduledFor'];
+    shippingCost: FieldOutputTypes['public']['Order']['shippingCost'];
     status: FieldOutputTypes['public']['Order']['status'];
     subtotal: FieldOutputTypes['public']['Order']['subtotal'];
     tierAtPurchase: FieldOutputTypes['public']['Order']['tierAtPurchase'];
@@ -593,6 +598,8 @@ export namespace Models {
     createdAt: FieldOutputTypes['public']['Producer']['createdAt'];
     farmName: FieldOutputTypes['public']['Producer']['farmName'];
     id: FieldOutputTypes['public']['Producer']['id'];
+    latitude: FieldOutputTypes['public']['Producer']['latitude'];
+    longitude: FieldOutputTypes['public']['Producer']['longitude'];
     phone: FieldOutputTypes['public']['Producer']['phone'];
     updatedAt: FieldOutputTypes['public']['Producer']['updatedAt'];
     userId: FieldOutputTypes['public']['Producer']['userId'];
@@ -690,6 +697,8 @@ export namespace Models {
     city: FieldOutputTypes['public']['Warehouse']['city'];
     createdAt: FieldOutputTypes['public']['Warehouse']['createdAt'];
     id: FieldOutputTypes['public']['Warehouse']['id'];
+    latitude: FieldOutputTypes['public']['Warehouse']['latitude'];
+    longitude: FieldOutputTypes['public']['Warehouse']['longitude'];
     managerId: FieldOutputTypes['public']['Warehouse']['managerId'];
     name: FieldOutputTypes['public']['Warehouse']['name'];
     updatedAt: FieldOutputTypes['public']['Warehouse']['updatedAt'];
@@ -1482,6 +1491,30 @@ type ContractBase = Omit<
                   readonly nullable: true;
                   readonly many: false;
                 };
+                readonly deliveryDistanceKm: {
+                  readonly dataType: 'pg/float8';
+                  readonly codecId: 'pg/float8@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly deliveryDurationMinutes: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly deliveryLatitude: {
+                  readonly dataType: 'pg/float8';
+                  readonly codecId: 'pg/float8@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly deliveryLongitude: {
+                  readonly dataType: 'pg/float8';
+                  readonly codecId: 'pg/float8@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
                 readonly deliveryMethod: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
@@ -1558,6 +1591,16 @@ type ContractBase = Omit<
                   readonly dataType: 'pg/date';
                   readonly codecId: 'pg/date-string@1';
                   readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly shippingCost: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
+                  };
                   readonly many: false;
                 };
                 readonly status: {
@@ -2094,6 +2137,18 @@ type ContractBase = Omit<
                   };
                   readonly many: false;
                 };
+                readonly latitude: {
+                  readonly dataType: 'pg/float8';
+                  readonly codecId: 'pg/float8@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly longitude: {
+                  readonly dataType: 'pg/float8';
+                  readonly codecId: 'pg/float8@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
                 readonly phone: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
@@ -2625,6 +2680,18 @@ type ContractBase = Omit<
                     readonly kind: 'function';
                     readonly expression: 'autoincrement()';
                   };
+                  readonly many: false;
+                };
+                readonly latitude: {
+                  readonly dataType: 'pg/float8';
+                  readonly codecId: 'pg/float8@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly longitude: {
+                  readonly dataType: 'pg/float8';
+                  readonly codecId: 'pg/float8@1';
+                  readonly nullable: true;
                   readonly many: false;
                 };
                 readonly managerId: {
@@ -3402,6 +3469,22 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly deliveryDistanceKm: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/float8@1' };
+              };
+              readonly deliveryDurationMinutes: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly deliveryLatitude: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/float8@1' };
+              };
+              readonly deliveryLongitude: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/float8@1' };
+              };
               readonly deliveryMethod: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -3451,6 +3534,10 @@ type ContractBase = Omit<
               readonly scheduledFor: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/date-string@1' };
+              };
+              readonly shippingCost: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
               readonly status: {
                 readonly nullable: false;
@@ -3530,6 +3617,10 @@ type ContractBase = Omit<
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly deliveryAddress: { readonly column: 'deliveryAddress' };
                 readonly deliveryCity: { readonly column: 'deliveryCity' };
+                readonly deliveryDistanceKm: { readonly column: 'deliveryDistanceKm' };
+                readonly deliveryDurationMinutes: { readonly column: 'deliveryDurationMinutes' };
+                readonly deliveryLatitude: { readonly column: 'deliveryLatitude' };
+                readonly deliveryLongitude: { readonly column: 'deliveryLongitude' };
                 readonly deliveryMethod: { readonly column: 'deliveryMethod' };
                 readonly discount: { readonly column: 'discount' };
                 readonly estimatedDeliveryAt: { readonly column: 'estimatedDeliveryAt' };
@@ -3541,6 +3632,7 @@ type ContractBase = Omit<
                 readonly paymentRef: { readonly column: 'paymentRef' };
                 readonly paymentUrl: { readonly column: 'paymentUrl' };
                 readonly scheduledFor: { readonly column: 'scheduledFor' };
+                readonly shippingCost: { readonly column: 'shippingCost' };
                 readonly status: { readonly column: 'status' };
                 readonly subtotal: { readonly column: 'subtotal' };
                 readonly tierAtPurchase: { readonly column: 'tierAtPurchase' };
@@ -3888,6 +3980,14 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
+              readonly latitude: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/float8@1' };
+              };
+              readonly longitude: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/float8@1' };
+              };
               readonly phone: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -3934,6 +4034,8 @@ type ContractBase = Omit<
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly farmName: { readonly column: 'farmName' };
                 readonly id: { readonly column: 'id' };
+                readonly latitude: { readonly column: 'latitude' };
+                readonly longitude: { readonly column: 'longitude' };
                 readonly phone: { readonly column: 'phone' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
                 readonly userId: { readonly column: 'userId' };
@@ -4444,6 +4546,14 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
+              readonly latitude: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/float8@1' };
+              };
+              readonly longitude: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/float8@1' };
+              };
               readonly managerId: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
@@ -4491,6 +4601,8 @@ type ContractBase = Omit<
                 readonly city: { readonly column: 'city' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly id: { readonly column: 'id' };
+                readonly latitude: { readonly column: 'latitude' };
+                readonly longitude: { readonly column: 'longitude' };
                 readonly managerId: { readonly column: 'managerId' };
                 readonly name: { readonly column: 'name' };
                 readonly updatedAt: { readonly column: 'updatedAt' };

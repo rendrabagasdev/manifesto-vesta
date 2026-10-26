@@ -208,22 +208,22 @@ components:
   product-card:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
-    rounded: "{rounded.2xl}"
-    padding: 12px
+    rounded: "{rounded.xl}"
+    padding: 16px
   deal-card:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
     rounded: "{rounded.xl}"
-    padding: 12px
+    padding: 16px
   panel:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.ink}"
     rounded: "{rounded.xl}"
     padding: 16px
   hero-card:
-    backgroundColor: "{colors.primary}"
-    textColor: "{colors.on-primary}"
-    rounded: "{rounded.2xl}"
+    backgroundColor: "{colors.surface}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.xl}"
     padding: 20px
   top-header:
     backgroundColor: "{colors.surface}"
@@ -304,16 +304,18 @@ Buyer surfaces expose only what a shopper needs to decide and buy. Tier mechanic
 - Do not show tier names, tier progress, points, spend thresholds, tier comparison tables, or early-access hours anywhere in the buyer area (`app/(shop)` and buyer account pages).
 - Do not show the weekly purchase quota, its usage meter, remaining count, or reset date on buyer surfaces. The limit still applies in the backend.
 - Do not show live countdowns or reset timers for deals, quotas, or early access. Replace urgency with static availability copy such as "Selama stok tersedia".
+- Do not show freshness scores, freshness meters, stage chips, or "presentasi segar" on buyer surfaces. The score still drives pricing and the cascade in the backend; buyers only see stage-level offer pages (Diskon, Pakan, Residu).
 - Tier, quota, and early-access rules still run in the backend. When a deal is locked or the quota is exhausted, use neutral copy ("Penawaran belum terbuka", "Batas pembelian minggu ini sudah tercapai") without naming the tier or exposing counters.
 - Admin and staff surfaces may continue to show full tier and quota configuration.
 
 ### Design principles
 
 1. **Neutral canvas, orange action.** Page backgrounds stay `surface-muted` or `canvas`. Orange is reserved for actions, active states, and one hero moment per screen.
-2. **Warm but orderly.** Rounded cards, generous spacing, and a single accent keep the marketplace friendly without looking like a discount banner.
-3. **Flat by default.** Cards rest on a 1px `line` border. Shadows appear on hover or on overlays, not on every surface.
-4. **One primary action per section.** A screen should have one obvious next step; secondary actions stay outlined or ghost.
+2. **Corporate and calm.** Flat white surfaces, 1px borders, and restrained corners keep the marketplace tidy. Buyer pages avoid decorative illustrations, icon-heavy cards, and freshness presentation.
+3. **Flat by default.** Cards rest on a 1px `line` border. Shadows appear on overlays, not on every surface.
+4. **One primary action per section.** A screen should have one obvious next step; secondary actions stay outlined or text-only.
 5. **Plain Indonesian.** Copy is short, everyday language. Avoid "freshness cascade", "rescue", and other internal terms in buyer-facing UI; use "segar", "diskon", "pakan", "residu", "dibuang".
+6. **Icons are functional.** In the buyer area, icons are limited to navigation, search, and quantity glyphs. Actions use text labels ("Tambah", "Simpan", "Hapus", "Detail", "Keluar") instead of icons.
 
 ### Source of truth
 
@@ -338,7 +340,7 @@ Buyer surfaces expose only what a shopper needs to decide and buy. Tier mechanic
 
 | Token | Value | Use | Avoid |
 | --- | --- | --- | --- |
-| `primary` | `#FF9900` | Primary button fill, hero fill, active badge, search submit, bottom-nav badge | Page background, body text, borders on white |
+| `primary` | `#FF9900` | Primary button fill, auth splash fill, active filter, search submit, bottom-nav badge | Page background, body text, borders on white |
 | `on-primary` | `#402400` | Text and icons on `primary` | Cream or white text on orange |
 | `primary-hover` | `#e68a00` | Hover and pressed state of primary fills | Resting fill |
 | `primary-soft` | `#fff1e0` | Active nav pill, avatar background, icon tile, subtle CTA band, image fallback | Large section background |
@@ -424,7 +426,7 @@ Raleway is the display face: headings, prices, metrics, and the auth hero. Nunit
 | `display-lg` | Raleway | 48 / 52 | 800 | Auth hero at ≥640px |
 | `heading-xl` | Raleway | 30 / 36 | 700 | Page title on desktop |
 | `heading-lg` | Raleway | 24 / 32 | 700 | Page title on mobile, marketplace desktop title |
-| `heading-md` | Raleway | 20 / 28 | 700 | Hero headline, member card title |
+| `heading-md` | Raleway | 20 / 28 | 700 | Marketplace banner headline, section heading |
 | `heading-sm` | Raleway | 18 / 28 | 700 | Section heading, card group heading |
 | `metric-lg` | Raleway | 30 / 36 | 800 | Quota, impact counter, large stat |
 | `metric-md` | Raleway | 18 / 28 | 700 | Price in deal card, order total |
@@ -478,7 +480,7 @@ The bar is fixed to the bottom, 64px tall plus `env(safe-area-inset-bottom)`, hi
 
 - Shells must reserve at least 96px bottom padding on mobile so content is not hidden behind the bar.
 - The bar uses `bg-surface/95`, `backdrop-blur`, `border-t border-line`, and `z-50`.
-- The active icon sits in a 32px `bg-brand-soft` circle; the active label is `text-brand-ink`; inactive items are `text-ink-muted`.
+- The active item uses `text-brand-ink` for both icon and label; there is no soft background circle. Inactive items are `text-ink-muted`.
 - The cart item shows a count badge when the cart is ready and non-empty.
 - On buyer mobile, the workspace nav in `AppShell` omits Profil and Belanja; the bottom bar owns those destinations. It keeps Ringkasan and the role module (Akun saya / Modul bisnis).
 - Public pages (`/impact`, `/products/[id]/breakdown`) do not render the bar until they are moved into the buyer shell.
@@ -502,9 +504,9 @@ Use the spacing scale; do not invent intermediate values.
 
 ### Grids and widths
 
-- **Product grid:** 2 columns on mobile, 3 from `lg`, 4 from `xl`; gap 12px → 16px. Cards must stretch to equal height.
-- **Deal rail:** horizontal snap scroll on mobile, 2 columns from `sm`, 4 from `lg`.
-- **Model overview:** hero and quick actions stacked full width; no quota or tier card beside them.
+- **Listing grids:** product, deal, feed, and residue cards use 2 columns on mobile and 3 columns from `lg`; gap 12px → 16px. Cards must stretch to equal height.
+- **Deal preview:** the home deal section uses the same grid as products, never a horizontal rail.
+- **Model overview:** marketplace banner and quick links stack full width; no quota or tier card beside them.
 - **Cart:** content + 360px summary aside from `lg`.
 - **Profile:** content + 320px aside from `lg`.
 - **Forms:** 448px (`max-w-md`) for auth and single-column forms; two columns from `sm` inside panels.
@@ -546,16 +548,16 @@ Rules:
 | `sm` | 6px | Small chips, count badges that are not pills |
 | `md` | 8px | Buttons, inputs, selects, compact controls, logo tile inner |
 | `lg` | 10px | Logo tile, icon button, segmented control |
-| `xl` | 14px | Panels, deal cards, order rows, empty states, stat tiles |
-| `2xl` | 18px | Product cards, hero, member card, quick-action group |
-| `3xl` | 22px | Auth sheet top corners, large feature surfaces |
+| `xl` | 14px | Panels, order rows, empty states, stat tiles |
+| `2xl` | 18px | Large feature surfaces that need extra softness |
+| `3xl` | 22px | Auth sheet top corners |
 | `full` | 9999px | Pills, avatars, icon circles, search field, stage badges |
 
 Rules:
 
 - Do not write arbitrary radii such as `rounded-t-[28px]`; use a token.
 - Buttons and inputs share `md`. Do not mix 8px and 10px for the same control family.
-- Equivalent cards must share a radius. Product cards and hero use `2xl`; panels and deal cards use `xl`.
+- Equivalent cards must share a radius. All marketplace listing cards (product, deal, feed, residue), banners, panels, and order rows use `xl`.
 - Avatars and icon tiles are circles. The logo tile is a rounded square (`md` or `lg`), not a circle.
 - Borders are `1px solid line`. Dashed borders are reserved for empty states.
 
@@ -583,30 +585,32 @@ Component names below match the frontmatter keys. Each entry is a contract, not 
   - Labels use `label` typography and sit above the field. Required fields carry a visible marker and `required`.
   - Errors set `aria-invalid`, `aria-describedby`, `border-danger`, and a `text-xs text-danger` message. Errors are never color-only.
   - Hints use `text-xs text-ink-muted` and are announced through `aria-describedby`.
-- **`text-input-search`** — 44px, `rounded-full`, left icon at 14px inset, right submit button inset 4px. Use only for the marketplace search.
+- **`text-input-search`** — a bordered `rounded-lg` bar with a search icon at the left and an orange submit button at the right. Use only for the marketplace search.
 - **Select and textarea** — match `text-input` height and radius. Textarea may grow; minimum height is 96px.
 - **`quantity-stepper`** — 36px tall, bordered, minus/plus 36px square buttons, centered numeric value with `tabular-nums`. Steps are 0.5 kg; the maximum is the batch's remaining stock. Both buttons need `aria-label` with the product name.
 - **Checkout fields** — group delivery method and address in a panel with 16px padding; the selected option uses `bg-brand-soft text-brand-ink` plus a visible radio/check, not color alone.
 
 ### Cards and panels
 
-- **`product-card`** — `rounded-2xl border border-line bg-surface`, image area 96px mobile / 112px `sm`, body padding 12px.
-  - Image or fallback icon sits on `bg-brand-soft/60`; fallback uses a category icon at `text-brand-ink/70`.
-  - Category chip and freshness chip sit on the image with `bg-surface/90`, `caption` typography.
-  - Title `body-md` semibold, truncated to one line. Meta `caption` muted. Price Raleway 16px bold `tabular-nums`, unit `caption` muted.
-  - The image and title link to the product breakdown. The add-to-cart control is a separate interactive region, never nested inside the link.
-  - Hover lifts with `shadow-sm` and scales the image 1.05; motion is 200ms and disabled under reduced motion.
-- **`deal-card`** — 14px radius, 56px thumbnail, discount badge top-left, price in Raleway 18px bold, original price struck through in `caption`. Use the same anatomy for rescue deals across pages.
-- **`panel`** — 14px radius, 16px padding, `border-line`. Section headers inside a panel use `body-md` semibold with an optional icon; page-level section headers use `heading-sm`. Do not place a `heading-sm` inside a 14px-radius panel header.
-- **`hero-card`** — 18px radius, `bg-brand-strong`, `text-on-brand`. Headline `heading-md` → `heading-xl` from `sm`, body `body-sm`/`body-lg` at 80% opacity, CTA pill `bg-surface text-brand-ink`. Decorative circles use `on-brand/10` and `stage-rescue/20`.
-  - The hero is the only large orange surface on a shopping page. Do not add a second orange hero in the same viewport.
-- **Member card, stat tile, quick-action group** — all use `rounded-2xl border border-line bg-surface`. Stat labels use `caption` muted; values use `metric-lg` or `heading-md` with `tabular-nums`.
+- **`product-card`** — `rounded-xl border border-line bg-surface`, media 112px mobile / 160px `sm`, body padding 16px.
+  - Media uses `bg-surface-muted`. When there is no photo, show the text "Foto belum tersedia"; never a category icon.
+  - Buyer cards do not show freshness scores, meters, or stage chips. Category appears as an uppercase `caption` label in the body.
+  - Title `body-md` semibold, truncated to one line. Warehouse `caption` muted. Price in Raleway 18px bold `tabular-nums`, unit `caption` muted. Stock `caption` muted.
+  - The add-to-cart control is text-first: quantity stepper with `−`/`+`, an orange "Tambah" text action, and a "Simpan"/"Tersimpan" text toggle. No cart or heart icons.
+  - Hover changes the border to `brand/50`; no lift and no image scale.
+- **`deal-card`** — same anatomy and radius as `product-card`: media 112px / 160px, one orange percent badge at the top-right of the media, uppercase discount label in the body, price bold with the original struck through in `caption`, stock `caption`, then the direct-buy form. Never render a freshness meter.
+- **`listing-card`** — feed and residue listings reuse the `product-card` shell with plain `bg-surface-muted` media (no stage icon), an uppercase tag in the body, warehouse as plain text, and the direct-buy form at the bottom. Description is hidden below `sm`.
+- **`panel`** — `rounded-xl`, 16px padding, `border-line`. Section headers inside a panel use `body-md` semibold without icons; page-level section headers use `heading-sm`.
+- **`hero-card`** — the buyer marketplace banner is a white `rounded-xl border border-line bg-surface` panel, full width, padding 20–24px. Eyebrow `caption` uppercase `brand-ink`, headline `heading-md` → `heading-xl` from `sm`, one-line body `body-sm` muted, and a single orange primary CTA.
+  - Keep the banner text-first: no farmer illustration, decorative circles, or orange fill. Auth pages keep their own orange splash.
+- **Quick links** — one `rounded-xl border border-line bg-surface` row with three equal text links ("Diskon", "Pakan", "Residu"). No icon circles or colored tiles.
+- **Stat tile** — `rounded-xl border border-line bg-surface`; label `caption` muted, value `heading-md` `tabular-nums`. No icon unless the metric is otherwise ambiguous.
 
 ### Navigation
 
-- **`top-header`** — 56px tall, `bg-surface`, 1px bottom border, sticky at `z-40`. Left: 32px logo tile + wordmark. Center/left: desktop marketplace links. Right: cart, dashboard, avatar, sign-out.
-- **Desktop marketplace nav** — 36px tall pills, `text-sm font-medium`. Active: `bg-brand-soft text-brand-ink`; inactive: `text-ink-muted hover:bg-surface-muted hover:text-ink`. Always set `aria-current="page"`.
-- **`bottom-nav`** — mandatory on every buyer route below `md`, fixed, `bg-surface/95`, `backdrop-blur`, top border, 64px + safe area, 5 equal columns, hidden from `md`. Active icon sits in a 32px `bg-brand-soft` circle with `text-brand-ink`; inactive is `text-ink-muted`. Labels use `micro`.
+- **`top-header`** — 56px tall, `bg-surface`, 1px bottom border, sticky at `z-40`. Left: "Vesta." wordmark with an orange dot. Center/left: desktop marketplace links. Right: text "Keranjang" with count, Dashboard, avatar + name, and Keluar. No icon buttons on buyer desktop.
+- **Desktop marketplace nav** — underline tabs, `text-sm`. Active: `border-brand-strong font-semibold text-ink`; inactive: `border-transparent font-medium text-ink-muted hover:text-ink`. Always set `aria-current="page"`.
+- **`bottom-nav`** — mandatory on every buyer route below `md`, fixed, `bg-surface/95`, `backdrop-blur`, top border, 64px + safe area, 5 equal columns, hidden from `md`. Active icon and label use `text-brand-ink` with no background circle; inactive is `text-ink-muted`. Labels use `micro`.
   - Single source: `src/components/shop/bottom-nav.tsx`. Pages and shells render it; they never copy its markup.
   - Accessible name: "Navigasi belanja". The workspace nav is "Navigasi ruang kerja" and the marketplace nav is "Navigasi marketplace"; never give two landmarks the same name.
   - Cart badge: top-right, `min-w-4`, `rounded-full`, `bg-brand-strong text-on-brand`, 10px bold, `aria-label` includes the item count.
@@ -691,15 +695,15 @@ Component names below match the frontmatter keys. Each entry is a contract, not 
 
 | Breakpoint | Width | Changes |
 | --- | --- | --- |
-| Base | <640px | Single column, mandatory bottom nav on buyer routes, 2-column product grid, `px-4`, `h1` 24/32, hero image 96px, deal rail scrolls horizontally |
-| `sm` | ≥640px | Product gap 16px, hero min-height 176px, deal grid 2 columns, form panels 2 columns, login hero 48/52 |
+| Base | <640px | Two-column listing grids, stacked sections, mandatory bottom nav on buyer routes, `px-4`, `h1` 24/32, card media 112px |
+| `sm` | ≥640px | Listing gap 16px, card media 160px, form panels 2 columns, login hero 48/52 |
 | `md` | ≥768px | Bottom nav hidden, desktop marketplace nav visible, cart and avatar appear in header |
-| `lg` | ≥1024px | Product grid 3 columns, marketplace hero 2/3 + member card 1/3, cart aside 360px, profile aside 320px, auth split layout, dashboard sidebar 224px |
-| `xl` | ≥1280px | Product grid 4 columns, auth hero 60/64, illustration 500px tall |
+| `lg` | ≥1024px | Listing grids 3 columns, cart aside 360px, profile aside 320px, auth split layout, dashboard sidebar 224px |
+| `xl` | ≥1280px | Auth hero 60/64, illustration 500px tall |
 
 Rules:
 
-- No horizontal scrolling. Horizontal snap rails are allowed only for deal previews and must not hide the only path to a product.
+- Page content never scrolls horizontally. Filter chips stay in a single horizontal row at every breakpoint (the rail itself may scroll, with no visible scrollbar); card lists always use grids.
 - Text wraps; do not truncate product names to the point of ambiguity. One-line truncation is allowed in cards when the full name is available on the detail page.
 - Avoid fixed heights except for media, headers, navigation, and control heights. Cards grow with content and stretch equally in a row.
 - On mobile, the footer sits above the bottom nav and includes safe-area padding.
@@ -725,24 +729,22 @@ These are confirmed drifts between the contract and the current implementation. 
 
 ### Minor
 
-8. **Card radius drift.** Product cards use 18px while deal cards use 14px. Either keep the documented family split (product/hero 18, deal/panel 14) or unify; this is an open decision.
-9. **Navigation coverage.** The bottom bar now covers shop and buyer account routes, including profile and the consumer/business dashboards. `/feed` and `/residue` still have no dedicated item, so neither shows an active item; decide whether to map them to Beranda or add an item. The "Profil" tab still switches from the shop shell to the dashboard shell, although the bar now persists.
-10. **Footer anchoring.** `ShopShell` is not a flex column, so the footer floats mid-viewport on short pages (`/feed` at 881px). Make the shell `flex min-h-dvh flex-col` and `main` `flex-1`.
-11. **Copy inconsistency.** The public footer says "Freshness Cascade Platform"; the shop footer says "Platform Kaskade Kesegaran". Standardize Indonesian copy.
-12. **Ornament token is not exposed.** `--ornamen-orange` exists but is not in `@theme`, so components cannot use `bg-ornament` / `text-ornament`. Add a Tailwind color token if decorative orange is needed.
-13. **Auth sheet radius is arbitrary.** `rounded-t-[28px]` bypasses the radius scale. Use `rounded-t-3xl` (22px) or add a `sheet` radius token.
+8. **Navigation coverage.** The bottom bar now covers shop and buyer account routes, including profile and the consumer/business dashboards. `/feed` and `/residue` still have no dedicated item, so neither shows an active item; decide whether to map them to Beranda or add an item. The "Profil" tab still switches from the shop shell to the dashboard shell, although the bar now persists.
+9. **Footer anchoring.** `ShopShell` is not a flex column, so the footer floats mid-viewport on short pages (`/feed` at 881px). Make the shell `flex min-h-dvh flex-col` and `main` `flex-1`.
+10. **Copy inconsistency.** The public footer says "Freshness Cascade Platform"; the shop footer says "Platform Kaskade Kesegaran". Standardize Indonesian copy.
+11. **Ornament token is not exposed.** `--ornamen-orange` exists but is not in `@theme`, so components cannot use `bg-ornament` / `text-ornament`. Add a Tailwind color token if decorative orange is needed.
+12. **Auth sheet radius is arbitrary.** `rounded-t-[28px]` bypasses the radius scale. Use `rounded-t-3xl` (22px) or add a `sheet` radius token.
 
 ### Informational
 
-14. **Inline meter widths are acceptable.** The only inline styles in the buyer area are dynamic `width` values for freshness meters. They express data, not design values, and must stay inline.
-15. **No dark mode.** Tokens are light-only. Do not introduce dark surfaces without a full token pass and a contrast audit.
-16. **Product image alt text.** Card images use `alt=""` correctly because the adjacent title names the product. Detail and hero images must use descriptive alt text when they add information.
+13. **Inline meter widths are acceptable.** The only inline styles in the buyer area are dynamic `width` values for freshness meters. They express data, not design values, and must stay inline.
+14. **No dark mode.** Tokens are light-only. Do not introduce dark surfaces without a full token pass and a contrast audit.
+15. **Product image alt text.** Card images use `alt=""` correctly because the adjacent title names the product. Detail and hero images must use descriptive alt text when they add information.
 
 ## Open Design Decisions
 
 - [ ] Confirm the exact dark-on-orange shade (`#402400` proposed) and migrate `--on-brand` and `--primary-foreground`.
 - [ ] Confirm whether product breakdown becomes a shop route (buyer shell) or stays public with a buyer-aware header.
-- [ ] Confirm the card radius family: keep product/hero at 18px and deal/panel at 14px, or unify.
 - [ ] Confirm whether "Profil" stays in the dashboard shell or moves under the shop shell.
 - [ ] Confirm whether `/feed` and `/residue` appear in the bottom nav or only in the desktop nav.
 - [ ] Confirm whether dark mode is in scope; if not, document it as out of scope.

@@ -1,0 +1,418 @@
+[
+  {
+    "id": "column.public.Order.deliveryDistanceKm",
+    "label": "Add column \"deliveryDistanceKm\" to \"Order\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "deliveryDistanceKm",
+        "table": "Order"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"deliveryDistanceKm\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Order",
+          "deliveryDistanceKm"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"deliveryDistanceKm\"",
+        "sql": "ALTER TABLE \"public\".\"Order\" ADD COLUMN \"deliveryDistanceKm\" float8"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"deliveryDistanceKm\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Order",
+          "deliveryDistanceKm"
+        ]
+      },
+      {
+        "description": "verify column \"deliveryDistanceKm\" has type \"double precision\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "Order",
+          "deliveryDistanceKm",
+          "double precision"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Order.deliveryDurationMinutes",
+    "label": "Add column \"deliveryDurationMinutes\" to \"Order\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "deliveryDurationMinutes",
+        "table": "Order"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"deliveryDurationMinutes\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Order",
+          "deliveryDurationMinutes"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"deliveryDurationMinutes\"",
+        "sql": "ALTER TABLE \"public\".\"Order\" ADD COLUMN \"deliveryDurationMinutes\" int4"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"deliveryDurationMinutes\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Order",
+          "deliveryDurationMinutes"
+        ]
+      },
+      {
+        "description": "verify column \"deliveryDurationMinutes\" has type \"integer\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "Order",
+          "deliveryDurationMinutes",
+          "integer"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Order.deliveryLatitude",
+    "label": "Add column \"deliveryLatitude\" to \"Order\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "deliveryLatitude",
+        "table": "Order"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"deliveryLatitude\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Order",
+          "deliveryLatitude"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"deliveryLatitude\"",
+        "sql": "ALTER TABLE \"public\".\"Order\" ADD COLUMN \"deliveryLatitude\" float8"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"deliveryLatitude\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Order",
+          "deliveryLatitude"
+        ]
+      },
+      {
+        "description": "verify column \"deliveryLatitude\" has type \"double precision\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "Order",
+          "deliveryLatitude",
+          "double precision"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Order.deliveryLongitude",
+    "label": "Add column \"deliveryLongitude\" to \"Order\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "deliveryLongitude",
+        "table": "Order"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"deliveryLongitude\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Order",
+          "deliveryLongitude"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"deliveryLongitude\"",
+        "sql": "ALTER TABLE \"public\".\"Order\" ADD COLUMN \"deliveryLongitude\" float8"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"deliveryLongitude\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Order",
+          "deliveryLongitude"
+        ]
+      },
+      {
+        "description": "verify column \"deliveryLongitude\" has type \"double precision\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "Order",
+          "deliveryLongitude",
+          "double precision"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Producer.latitude",
+    "label": "Add column \"latitude\" to \"Producer\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "latitude",
+        "table": "Producer"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"latitude\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Producer",
+          "latitude"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"latitude\"",
+        "sql": "ALTER TABLE \"public\".\"Producer\" ADD COLUMN \"latitude\" float8"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"latitude\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Producer",
+          "latitude"
+        ]
+      },
+      {
+        "description": "verify column \"latitude\" has type \"double precision\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "Producer",
+          "latitude",
+          "double precision"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Producer.longitude",
+    "label": "Add column \"longitude\" to \"Producer\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "longitude",
+        "table": "Producer"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"longitude\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Producer",
+          "longitude"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"longitude\"",
+        "sql": "ALTER TABLE \"public\".\"Producer\" ADD COLUMN \"longitude\" float8"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"longitude\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Producer",
+          "longitude"
+        ]
+      },
+      {
+        "description": "verify column \"longitude\" has type \"double precision\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "Producer",
+          "longitude",
+          "double precision"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Warehouse.latitude",
+    "label": "Add column \"latitude\" to \"Warehouse\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "latitude",
+        "table": "Warehouse"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"latitude\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Warehouse",
+          "latitude"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"latitude\"",
+        "sql": "ALTER TABLE \"public\".\"Warehouse\" ADD COLUMN \"latitude\" float8"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"latitude\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Warehouse",
+          "latitude"
+        ]
+      },
+      {
+        "description": "verify column \"latitude\" has type \"double precision\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "Warehouse",
+          "latitude",
+          "double precision"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "column.public.Warehouse.longitude",
+    "label": "Add column \"longitude\" to \"Warehouse\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "column",
+        "name": "longitude",
+        "table": "Warehouse"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure column \"longitude\" is missing",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Warehouse",
+          "longitude"
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add column \"longitude\"",
+        "sql": "ALTER TABLE \"public\".\"Warehouse\" ADD COLUMN \"longitude\" float8"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify column \"longitude\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"information_schema\".\"columns\" WHERE (\"table_schema\" = $1 AND \"table_name\" = $2 AND \"column_name\" = $3)) AS \"result\"",
+        "params": [
+          "public",
+          "Warehouse",
+          "longitude"
+        ]
+      },
+      {
+        "description": "verify column \"longitude\" has type \"double precision\"",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_attribute\" AS \"a\" INNER JOIN \"pg_class\" AS \"c\" ON \"c\".\"oid\" = \"a\".\"attrelid\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"relnamespace\" WHERE (\"n\".\"nspname\" = $1 AND \"c\".\"relname\" = $2 AND \"a\".\"attname\" = $3 AND (format_type(\"a\".\"atttypid\", \"a\".\"atttypmod\")) = $4 AND NOT (\"a\".\"attisdropped\"))) AS \"result\"",
+        "params": [
+          "public",
+          "Warehouse",
+          "longitude",
+          "double precision"
+        ]
+      }
+    ]
+  }
+]

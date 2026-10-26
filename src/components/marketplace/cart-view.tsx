@@ -1,17 +1,43 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useActionState, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { MapPin, Minus, Plus, Trash2, Truck } from "lucide-react";
 import { useCart } from "@/src/components/shop/cart-context";
-import { checkoutAction, type PurchaseState } from "@/app/(shop)/actions";
+import type { DeliveryPoint } from "@/src/components/marketplace/delivery-map";
 import {
+  checkoutAction,
+  estimateDeliveryRouteAction,
+  type DeliveryRouteState,
+  type PurchaseState,
+} from "@/app/(shop)/actions";
+import {
+  calculateShippingCost,
   DELIVERY_CITIES,
+  findDeliveryCityById,
   getDeliveryOptions,
   type DeliveryMethodId,
 } from "@/src/lib/delivery/shipping";
-import { formatIdr, formatKg } from "@/src/lib/batches/format";
+import {
+  formatIdr,
+  formatInteger,
+  formatKg,
+  formatNumber,
+} from "@/src/lib/batches/format";
+
+const DeliveryMap = dynamic(
+  () =>
+    import("@/src/components/marketplace/delivery-map").then(
+      (mod) => mod.DeliveryMap,
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-full w-full bg-surface-muted" aria-hidden="true" />
+    ),
+  },
+);
 
 const initialState: PurchaseState = { ok: false };
 
@@ -29,8 +55,18 @@ type CartViewProps = {
 export function CartView({ defaults }: CartViewProps) {
   const { items, ready, updateQty, removeItem, clear, subtotal, totalKg } = useCart();
   const [state, formAction, pending] = useActionState(checkoutAction, initialState);
-  const [cityId, setCityId] = useState(defaults?.cityId ?? "bandung");
+  const [cityId, setCityId] = useState(
+    () => findDeliveryCityById(defaults?.cityId)?.id ?? DELIVERY_CITIES[0].id,
+  );
+  const [pin, setPin] = useState<DeliveryPoint>(() => {
+    const city = findDeliveryCityById(defaults?.cityId) ?? DELIVERY_CITIES[0];
+    return { latitude: city.latitude, longitude: city.longitude };
+  });
   const [method, setMethod] = useState<DeliveryMethodId>("INSTANT");
+  const [route, setRoute] = useState<DeliveryRouteState | null>(null);
+  const [routeLoading, setRouteLoading] = useState(false);
+  const [locating, setLocating] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
   const router = useRouter();
 
   const warehouseCities = useMemo(
@@ -46,16 +82,97 @@ export function CartView({ defaults }: CartViewProps) {
     deliveryOptions.find((option) => option.available)?.id ??
     "REGULAR";
   const selectedOption = deliveryOptions.find((option) => option.id === selectedMethod);
+  const shippingCost =
+    route?.ok && route.distanceKm !== undefined
+      ? calculateShippingCost(route.distanceKm, selectedMethod)
+      : null;
+  const estimatedTotal = subtotal + (shippingCost ?? 0);
+
+  const batchIdsKey = useMemo(
+    () => items.map((item) => item.batchId).sort((a, b) => a - b).join(","),
+    [items],
+  );
 
   useEffect(() => {
     if (!state.ok) return;
     clear();
-    if (state.paymentUrl) {
-      window.location.href = state.paymentUrl;
-    } else if (state.code) {
+    if (state.code) {
       router.push(`/orders/${state.code}`);
     }
   }, [state, clear, router]);
+
+  useEffect(() => {
+    if (!ready || !batchIdsKey) return;
+
+    const batchIds = batchIdsKey.split(",").map(Number);
+    let cancelled = false;
+
+    const timer = window.setTimeout(() => {
+      setRouteLoading(true);
+      estimateDeliveryRouteAction({
+        batchIds,
+        latitude: pin.latitude,
+        longitude: pin.longitude,
+      })
+        .then((result) => {
+          if (cancelled) return;
+          setRoute(result);
+          setRouteLoading(false);
+        })
+        .catch(() => {
+          if (cancelled) return;
+          setRoute({ ok: false, error: "Rute belum bisa dihitung." });
+          setRouteLoading(false);
+        });
+    }, 450);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [batchIdsKey, pin.latitude, pin.longitude, ready]);
+
+  function handleCityChange(nextCityId: string) {
+    const city = findDeliveryCityById(nextCityId);
+    setCityId(nextCityId);
+    if (city) {
+      setPin({ latitude: city.latitude, longitude: city.longitude });
+    }
+  }
+
+  function handleUseMyLocation() {
+    if (!("geolocation" in navigator)) {
+      setLocationError("Perangkat ini tidak mendukung lokasi.");
+      return;
+    }
+
+    setLocating(true);
+    setLocationError(null);
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        setPin({
+          latitude: position.coords.latitude,
+          longitude: position.coords.longitude,
+        });
+        setLocating(false);
+      },
+      () => {
+        setLocationError("Izin lokasi tidak tersedia. Geser pin secara manual.");
+        setLocating(false);
+      },
+      { enableHighAccuracy: true, timeout: 8_000, maximumAge: 60_000 },
+    );
+  }
+
+  const routeLabel = routeLoading
+    ? "Menghitung jarak rute..."
+    : route?.ok
+      ? `Rute ${formatNumber(route.distanceKm ?? 0)} km · ${formatInteger(
+          route.durationMinutes ?? 0,
+        )} menit dari ${route.warehouseName ?? "gudang"}${
+          route.provider === "ESTIMATE" ? " (perkiraan)" : ""
+        }`
+      : "Jarak rute akan dihitung saat pesanan dibuat.";
 
   if (!ready) {
     return (
@@ -71,8 +188,7 @@ export function CartView({ defaults }: CartViewProps) {
       <div className="rounded-xl border border-dashed border-line bg-surface px-6 py-12 text-center">
         <p className="text-sm font-semibold text-ink">Keranjang masih kosong</p>
         <p className="mx-auto mt-1 max-w-md text-sm leading-relaxed text-ink-muted">
-          Pilih bahan segar dari marketplace — setiap batch punya skor kesegaran
-          dan rincian harga yang transparan.
+          Pilih produk dari katalog, lalu lanjut ke pembayaran.
         </p>
         <Link
           href="/marketplace"
@@ -96,18 +212,17 @@ export function CartView({ defaults }: CartViewProps) {
           items.map((item) => ({ batchId: item.batchId, quantityKg: item.qtyKg })),
         )}
       />
+      <input type="hidden" name="deliveryLatitude" value={pin.latitude} />
+      <input type="hidden" name="deliveryLongitude" value={pin.longitude} />
 
       <div className="min-w-0 space-y-4">
         <section
           aria-labelledby="shipping-heading"
           className="rounded-xl border border-line bg-surface p-4"
         >
-          <div className="flex items-center gap-2">
-            <MapPin className="size-4 text-brand-ink" aria-hidden="true" />
-            <h2 id="shipping-heading" className="text-sm font-semibold text-ink">
-              Lokasi pengiriman
-            </h2>
-          </div>
+          <h2 id="shipping-heading" className="text-sm font-semibold text-ink">
+            Lokasi pengiriman
+          </h2>
 
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
             <div className="space-y-1.5">
@@ -119,7 +234,7 @@ export function CartView({ defaults }: CartViewProps) {
                 name="deliveryCity"
                 required
                 value={cityId}
-                onChange={(event) => setCityId(event.target.value)}
+                onChange={(event) => handleCityChange(event.target.value)}
                 className={inputClassName}
               >
                 {DELIVERY_CITIES.map((city) => (
@@ -167,6 +282,52 @@ export function CartView({ defaults }: CartViewProps) {
           </div>
         </section>
 
+        <section
+          aria-labelledby="delivery-map-heading"
+          className="rounded-xl border border-line bg-surface p-4"
+        >
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="min-w-0">
+              <h2 id="delivery-map-heading" className="text-sm font-semibold text-ink">
+                Titik pengiriman
+              </h2>
+              <p className="mt-1 text-xs leading-relaxed text-ink-muted">
+                Geser pin atau ketuk peta untuk menandai lokasi penerima.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleUseMyLocation}
+              disabled={locating}
+              className="inline-flex h-9 items-center justify-center rounded-lg border border-line bg-surface px-3 text-xs font-semibold text-ink transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {locating ? "Mencari lokasi..." : "Gunakan lokasi saya"}
+            </button>
+          </div>
+
+          <div className="delivery-map mt-3 h-[260px] overflow-hidden rounded-lg border border-line sm:h-[300px]">
+            <DeliveryMap value={pin} onChange={setPin} />
+          </div>
+
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs tabular-nums text-ink-muted">
+              {pin.latitude.toFixed(5)}, {pin.longitude.toFixed(5)}
+            </p>
+            <p aria-live="polite" className="text-xs font-medium text-ink">
+              {routeLabel}
+            </p>
+          </div>
+
+          {locationError ? (
+            <p
+              role="alert"
+              className="mt-2 rounded-lg bg-danger-soft px-3 py-2 text-xs font-medium text-danger"
+            >
+              {locationError}
+            </p>
+          ) : null}
+        </section>
+
         <section aria-labelledby="cart-items-heading" className="rounded-xl border border-line bg-surface">
           <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
             <h2 id="cart-items-heading" className="text-sm font-semibold text-ink">
@@ -184,7 +345,7 @@ export function CartView({ defaults }: CartViewProps) {
           <ul>
             {items.map((item) => (
               <li key={item.batchId} className="border-b border-line px-4 py-4 last:border-0">
-                <div className="flex flex-wrap items-start justify-between gap-3">
+                <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-ink">{item.productName}</p>
                     <p className="mt-0.5 text-xs text-ink-muted">
@@ -195,9 +356,9 @@ export function CartView({ defaults }: CartViewProps) {
                     type="button"
                     onClick={() => removeItem(item.batchId)}
                     aria-label={`Hapus ${item.productName} dari keranjang`}
-                    className="inline-flex size-8 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-danger-soft hover:text-danger focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                    className="inline-flex h-8 items-center rounded-md px-2 text-xs font-medium text-ink-muted transition-colors hover:bg-danger-soft hover:text-danger focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                   >
-                    <Trash2 className="size-4" aria-hidden="true" />
+                    Hapus
                   </button>
                 </div>
 
@@ -209,7 +370,7 @@ export function CartView({ defaults }: CartViewProps) {
                       aria-label={`Kurangi jumlah ${item.productName}`}
                       className="inline-flex size-9 items-center justify-center rounded-l-lg text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand"
                     >
-                      <Minus className="size-4" aria-hidden="true" />
+                      &minus;
                     </button>
                     <input
                       type="number"
@@ -230,7 +391,7 @@ export function CartView({ defaults }: CartViewProps) {
                       aria-label={`Tambah jumlah ${item.productName}`}
                       className="inline-flex size-9 items-center justify-center rounded-r-lg text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand"
                     >
-                      <Plus className="size-4" aria-hidden="true" />
+                      +
                     </button>
                   </div>
                   <p className="text-sm font-semibold tabular-nums text-ink">
@@ -263,11 +424,22 @@ export function CartView({ defaults }: CartViewProps) {
               <dt className="text-ink-muted">Subtotal</dt>
               <dd className="text-base font-semibold tabular-nums text-ink">{formatIdr(subtotal)}</dd>
             </div>
+            <div className="flex items-center justify-between gap-3">
+              <dt className="text-ink-muted">Ongkir</dt>
+              <dd className="font-semibold tabular-nums text-ink">
+                {shippingCost === null ? "Menunggu rute" : formatIdr(shippingCost)}
+              </dd>
+            </div>
+            <div className="flex items-center justify-between gap-3 border-t border-line pt-1.5">
+              <dt className="font-semibold text-ink">Total</dt>
+              <dd className="font-heading text-lg font-bold tabular-nums tracking-tight text-ink">
+                {formatIdr(estimatedTotal)}
+              </dd>
+            </div>
           </dl>
 
           <fieldset className="space-y-2">
-            <legend className="flex items-center gap-1.5 text-sm font-medium text-ink">
-              <Truck className="size-4 text-brand-ink" aria-hidden="true" />
+            <legend className="text-sm font-medium text-ink">
               Metode pengiriman
             </legend>
             {deliveryOptions.map((option) => {
@@ -330,6 +502,37 @@ export function CartView({ defaults }: CartViewProps) {
             />
           </div>
 
+          <fieldset>
+            <legend className="text-sm font-medium text-ink">Pembayaran</legend>
+            <label className="mt-2 flex items-start gap-3 rounded-lg border border-brand-strong bg-brand-soft px-3 py-2.5">
+              <input
+                type="radio"
+                name="paymentMethod"
+                value="COD"
+                defaultChecked
+                className="sr-only"
+              />
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-semibold text-ink">
+                  Bayar di tempat (COD)
+                </span>
+                <span className="mt-0.5 block text-xs text-ink-muted">
+                  Bayar tunai saat pesanan tiba.
+                </span>
+              </span>
+              <span
+                aria-hidden="true"
+                className="mt-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full border border-brand-strong"
+              >
+                <span className="size-2 rounded-full bg-brand-strong" />
+              </span>
+            </label>
+            <p className="mt-2 text-xs leading-relaxed text-ink-muted">
+              Pesanan disimpan dengan status menunggu konfirmasi. Tidak ada
+              pembayaran online.
+            </p>
+          </fieldset>
+
           {state.error ? (
             <p role="alert" className="rounded-lg bg-danger-soft px-3.5 py-3 text-sm font-medium text-danger">
               {state.error}
@@ -342,11 +545,12 @@ export function CartView({ defaults }: CartViewProps) {
             aria-busy={pending}
             className="inline-flex h-11 w-full items-center justify-center rounded-lg bg-brand-strong text-sm font-semibold text-on-brand transition-colors hover:bg-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {pending ? "Memproses pesanan..." : "Checkout & bayar"}
+            {pending ? "Membuat pesanan..." : "Buat pesanan COD"}
           </button>
 
           <p className="text-xs leading-relaxed text-ink-muted">
-            Pembayaran aman lewat Midtrans.
+            Bayar tunai saat pesanan tiba. Gudang akan mengonfirmasi pesanan
+            Anda.
           </p>
         </div>
       </aside>

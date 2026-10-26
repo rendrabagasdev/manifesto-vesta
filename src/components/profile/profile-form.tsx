@@ -2,7 +2,6 @@
 
 import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, CheckCircle2 } from "lucide-react";
 import {
   updateProfileAction,
   type ProfileFormState,
@@ -89,18 +88,16 @@ export function ProfileForm({ user }: { user: ProfileFormValues }) {
       {state.error ? (
         <div
           role="alert"
-          className="flex items-start gap-2 rounded-lg border border-danger/20 bg-danger-soft px-4 py-3 text-sm text-danger"
+          className="rounded-lg border border-danger/20 bg-danger-soft px-4 py-3 text-sm text-danger"
         >
-          <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
           {state.error}
         </div>
       ) : null}
       {state.success ? (
         <div
           role="status"
-          className="flex items-start gap-2 rounded-lg border border-brand/20 bg-brand-soft px-4 py-3 text-sm text-brand-strong"
+          className="rounded-lg border border-brand/20 bg-brand-soft px-4 py-3 text-sm text-brand-strong"
         >
-          <CheckCircle2 className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
           {state.success}
         </div>
       ) : null}

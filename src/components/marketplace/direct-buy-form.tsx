@@ -1,7 +1,6 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { Zap } from "lucide-react";
 import type { PurchaseState } from "@/app/(shop)/actions";
 import { formatIdr } from "@/src/lib/batches/format";
 
@@ -18,7 +17,6 @@ export function DirectBuyForm({
   source,
   pricePerKg,
   maxKg,
-  unit,
   label = "Beli",
   locked = false,
   lockedHint,
@@ -29,7 +27,6 @@ export function DirectBuyForm({
   source: "RESCUE" | "FEED" | "RESIDUE";
   pricePerKg: number;
   maxKg: number;
-  unit: string;
   label?: string;
   locked?: boolean;
   lockedHint?: string;
@@ -81,24 +78,24 @@ export function DirectBuyForm({
       <input type="hidden" name="source" value={source} />
       <input type="hidden" name="quantityKg" value={qty} />
 
-      <div className="flex items-center gap-2">
-        <div className="inline-flex h-9 shrink-0 items-center rounded-lg border border-line bg-surface">
+      <div className="space-y-2">
+        <div className="inline-flex h-9 w-full items-center justify-between rounded-lg border border-line bg-surface">
           <button
             type="button"
             onClick={() => changeQty(qty - step)}
             aria-label="Kurangi jumlah"
-            className="inline-flex size-9 items-center justify-center rounded-l-lg text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand"
+            className="inline-flex size-9 items-center justify-center rounded-l-lg text-sm text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand"
           >
             &minus;
           </button>
-          <span className="w-12 border-x border-line text-center text-sm font-semibold tabular-nums text-ink">
+          <span className="text-sm font-semibold tabular-nums text-ink">
             {qty}
           </span>
           <button
             type="button"
             onClick={() => changeQty(qty + step)}
             aria-label="Tambah jumlah"
-            className="inline-flex size-9 items-center justify-center rounded-r-lg text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand"
+            className="inline-flex size-9 items-center justify-center rounded-r-lg text-sm text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-brand"
           >
             +
           </button>
@@ -108,9 +105,8 @@ export function DirectBuyForm({
           type="submit"
           disabled={pending}
           aria-busy={pending}
-          className="inline-flex h-9 flex-1 items-center justify-center gap-1.5 rounded-lg bg-brand-strong px-3 text-sm font-semibold text-on-brand transition-colors hover:bg-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:cursor-not-allowed disabled:opacity-60"
+          className="inline-flex h-9 w-full items-center justify-center rounded-lg bg-brand-strong px-3 text-sm font-semibold text-on-brand transition-colors hover:bg-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:cursor-not-allowed disabled:opacity-60"
         >
-          <Zap className="size-4" aria-hidden="true" />
           {pending ? "Memproses..." : label}
         </button>
       </div>
@@ -128,9 +124,7 @@ export function DirectBuyForm({
             ) : null}
           </span>
         ) : (
-          <span>
-            {formatIdr(pricePerKg)} × {qty} {unit} = {formatIdr(pricePerKg * qty)}
-          </span>
+          <span>Total {formatIdr(pricePerKg * qty)}</span>
         )}
       </p>
     </form>

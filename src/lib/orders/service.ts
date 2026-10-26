@@ -7,6 +7,7 @@ import { createSaleImpactLog } from "@/src/lib/impact/ledger";
 import { addNormalSpend, consumeRescueQuota, getOrCreateBuyerTier } from "@/src/lib/loyalty/tiers";
 import { getDealAccess, type RescueDealWindow } from "@/src/lib/pricing/rescue";
 import {
+  calculateShippingCost,
   resolveDeliverySelection,
   type DeliveryMethodId,
 } from "@/src/lib/delivery/shipping";
@@ -16,6 +17,10 @@ import {
   type SnapCustomer,
   type SnapItem,
 } from "@/src/lib/payment/midtrans";
+import {
+  estimateCartRoute,
+  type CartRouteEstimate,
+} from "@/src/lib/delivery/routes";
 
 type QueryClient = Pick<typeof db, "orm">;
 type TxClient = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -117,7 +122,11 @@ async function settleOrder(
   return { paid: false, paymentUrl: snap.redirectUrl };
 }
 
-/** Checkout for the marketplace cart: several FRESH batches at normal price. */
+/**
+ * Checkout for the marketplace cart: several FRESH batches at normal price.
+ * Cart orders are cash on delivery only, so they stay PENDING until the
+ * warehouse hands the goods over.
+ */
 export async function createOrderFromCart(options: {
   buyerId: number;
   buyerName?: string | null;
@@ -126,6 +135,8 @@ export async function createOrderFromCart(options: {
   deliveryAddress: string;
   deliveryCity?: string;
   deliveryMethod?: DeliveryMethodId;
+  deliveryLatitude?: number;
+  deliveryLongitude?: number;
   contactPhone: string;
   notes?: string;
 }): Promise<PurchaseResult> {
@@ -151,6 +162,29 @@ export async function createOrderFromCart(options: {
   const requestedLines = [...quantities.entries()]
     .map(([batchId, quantityKg]) => ({ batchId, quantityKg }))
     .sort((a, b) => a.batchId - b.batchId);
+
+  const destination =
+    options.deliveryLatitude !== undefined &&
+    options.deliveryLongitude !== undefined
+      ? {
+          latitude: options.deliveryLatitude,
+          longitude: options.deliveryLongitude,
+        }
+      : null;
+
+  // Route calls stay outside the transaction so a slow routing provider never
+  // holds batch locks. A failed route leaves the order without an estimate.
+  let route: CartRouteEstimate | null = null;
+  if (destination) {
+    try {
+      route = await estimateCartRoute(
+        requestedLines.map((line) => line.batchId),
+        destination,
+      );
+    } catch (error) {
+      console.error("createOrderFromCart route estimate", error);
+    }
+  }
 
   const result = await db.transaction(async (tx) => {
     let subtotal = 0;
@@ -207,20 +241,30 @@ export async function createOrderFromCart(options: {
     }
 
     const deliverySelection = delivery?.ok ? delivery : null;
+    const shippingCost =
+      deliverySelection && route
+        ? calculateShippingCost(route.distanceKm, deliverySelection.method)
+        : 0;
 
     const order = await tx.orm.public.Order.create({
       code,
       buyerId: options.buyerId,
       kind: "REGULAR",
       status: "PENDING",
+      paymentProvider: "COD",
       subtotal,
       discount: 0,
-      total: subtotal,
+      shippingCost,
+      total: subtotal + shippingCost,
       deliveryAddress: options.deliveryAddress,
       deliveryCity: deliverySelection?.city.label ?? null,
       deliveryMethod: deliverySelection?.method ?? null,
       estimatedDeliveryAt:
         deliverySelection?.estimatedDeliveryAt.toISOString() ?? null,
+      deliveryLatitude: destination?.latitude ?? null,
+      deliveryLongitude: destination?.longitude ?? null,
+      deliveryDistanceKm: route?.distanceKm ?? null,
+      deliveryDurationMinutes: route?.durationMinutes ?? null,
       contactPhone: options.contactPhone,
       notes: options.notes ?? null,
     });
@@ -258,24 +302,7 @@ export async function createOrderFromCart(options: {
       lockTier: true,
     });
 
-    const settle = await settleOrder(tx, {
-      orderId: order.id,
-      code,
-      total: subtotal,
-      items: prepared.map((line) => ({
-        id: String(line.batch.id),
-        price: line.pricePerKg,
-        quantity: line.quantityKg,
-        name: line.batch.product.name.slice(0, 50),
-      })),
-      customer: {
-        first_name: options.buyerName ?? undefined,
-        email: options.buyerEmail ?? undefined,
-        phone: options.contactPhone,
-      },
-    });
-
-    return { code, ...settle };
+    return { code, paid: false, paymentUrl: null };
   });
 
   return result;

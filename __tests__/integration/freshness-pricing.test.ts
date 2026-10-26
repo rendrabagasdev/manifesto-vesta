@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  ambientHeatPenaltyC,
   COMMODITY_PROFILES,
   calculateDynamicPricing,
   calculateFreshnessScore,
@@ -144,6 +145,50 @@ describe("calculateFreshnessScore (engine)", () => {
     expect(result.score).toBe(0);
     expect(result.status).toBe("DISPOSED");
     expect(result.daysRemaining).toBe(0);
+  });
+});
+
+describe("ambient weather adjustment", () => {
+  it("adds a bounded heat and humidity penalty", () => {
+    expect(ambientHeatPenaltyC(24, 85)).toBe(0);
+    expect(ambientHeatPenaltyC(20, 50)).toBe(0);
+    expect(ambientHeatPenaltyC(null, null)).toBe(0);
+    expect(ambientHeatPenaltyC(32, 90)).toBe(2.3);
+    expect(ambientHeatPenaltyC(45, 100)).toBe(4.8);
+  });
+
+  it("lowers the freshness score when the warehouse air is hot and humid", () => {
+    const ideal = calculateFreshnessScore({
+      ...TOMATO,
+      receivedAt: receivedDaysAgo(2),
+    });
+    const hot = calculateFreshnessScore({
+      ...TOMATO,
+      receivedAt: receivedDaysAgo(2),
+      ambientTempC: 38,
+      ambientHumidityPct: 95,
+    });
+
+    expect(hot.ambientPenaltyC).toBeGreaterThan(0);
+    expect(hot.effectiveStorageTempC).toBeGreaterThan(TOMATO.storageTempC);
+    expect(hot.score).toBeLessThan(ideal.score);
+  });
+
+  it("keeps the recorded temperature when weather is unavailable", () => {
+    const weatherless = calculateFreshnessScore({
+      ...TOMATO,
+      receivedAt: receivedDaysAgo(2),
+      ambientTempC: null,
+      ambientHumidityPct: null,
+    });
+    const baseline = calculateFreshnessScore({
+      ...TOMATO,
+      receivedAt: receivedDaysAgo(2),
+    });
+
+    expect(weatherless.ambientPenaltyC).toBe(0);
+    expect(weatherless.effectiveStorageTempC).toBe(TOMATO.storageTempC);
+    expect(weatherless.score).toBe(baseline.score);
   });
 });
 

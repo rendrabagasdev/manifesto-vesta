@@ -104,6 +104,8 @@ model Producer {
   farmName  String
   address   String?
   phone     String?
+  latitude  Float?
+  longitude Float?
   products  Product[]
   createdAt TimestamptzString @default(now())
   updatedAt temporal.updatedAtString()
@@ -114,6 +116,8 @@ model Warehouse {
   name       String
   address    String?
   city       String?
+  latitude   Float?
+  longitude  Float?
   capacityKg Float
   managerId  Int?
   manager    User?    @relation(fields: [managerId], references: [id])
@@ -302,12 +306,17 @@ model Order {
   status          OrderStatus @default(PENDING)
   subtotal        Int
   discount        Int         @default(0)
+  shippingCost    Int         @default(0)
   total           Int
   tierAtPurchase  TierName    @default(STARTER)
   deliveryAddress String?
   deliveryCity    String?
   deliveryMethod  String?
   estimatedDeliveryAt TimestamptzString?
+  deliveryLatitude       Float?
+  deliveryLongitude      Float?
+  deliveryDistanceKm     Float?
+  deliveryDurationMinutes Int?
   contactPhone    String?
   scheduledFor    DateString?
   notes           String?

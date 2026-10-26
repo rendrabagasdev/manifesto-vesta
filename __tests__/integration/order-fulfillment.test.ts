@@ -72,6 +72,14 @@ function fulfiller(id: number, role: UserRole) {
   return { id, role };
 }
 
+async function markOrderPaid(orderId: number) {
+  await db.orm.public.Order.where({ id: orderId }).update({
+    status: "PAID",
+    paymentProvider: "DEMO",
+    paidAt: new Date().toISOString(),
+  });
+}
+
 async function paidOrderFor(
   world: TestWorld,
   options: { quantityKg?: number } = {},
@@ -94,7 +102,13 @@ async function paidOrderFor(
   const order = await db.orm.public.Order.where({ code: purchase.code }).first();
   if (!order) throw new Error("Order fixture gagal dibuat");
 
-  return { batch, order };
+  // Cart checkout is COD and starts PENDING; shipping tests need a paid order.
+  await markOrderPaid(order.id);
+
+  return {
+    batch,
+    order: (await db.orm.public.Order.where({ id: order.id }).first())!,
+  };
 }
 
 async function expectApiError(
@@ -281,6 +295,7 @@ describe("shipOrder", () => {
       contactPhone: PHONE,
     });
     const order = await db.orm.public.Order.where({ code: purchase.code }).first();
+    await markOrderPaid(order!.id);
 
     await expectApiError(
       shipOrder(
@@ -380,6 +395,7 @@ describe("getFulfillmentOrders", () => {
     const foreignOrder = await db.orm.public.Order.where({
       code: foreignPurchase.code,
     }).first();
+    await markOrderPaid(foreignOrder!.id);
 
     const adminQueue = await getFulfillmentOrders(
       fulfiller(world.users.admin.id, "ADMIN"),

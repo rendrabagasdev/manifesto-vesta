@@ -17,6 +17,8 @@ import {
   getOrdersForUser,
 } from "@/src/lib/marketplace/queries";
 import { getQuotaStatus } from "@/src/lib/loyalty/tiers";
+import { estimateCartRoute } from "@/src/lib/delivery/routes";
+import { calculateShippingCost } from "@/src/lib/delivery/shipping";
 import { closeTestResources, truncateAll } from "./helpers/db";
 import {
   createBatch,
@@ -117,7 +119,7 @@ describe("createOrderFromCart", () => {
       notes: "Titip di pos",
     });
 
-    expect(result.paid).toBe(true);
+    expect(result.paid).toBe(false);
     expect(result.paymentUrl).toBeNull();
     expect(result.code).toMatch(/^ORD-\d{8}-[A-Z0-9]{5}$/);
 
@@ -129,17 +131,23 @@ describe("createOrderFromCart", () => {
     expect(order).toMatchObject({
       buyerId: world.users.consumer.id,
       kind: "REGULAR",
-      status: "PAID",
+      status: "PENDING",
       subtotal: 195_000,
       discount: 0,
+      shippingCost: 0,
       total: 195_000,
       deliveryAddress: ADDRESS,
       contactPhone: PHONE,
       notes: "Titip di pos",
-      paymentProvider: "DEMO",
-      paymentRef: `DEMO-${result.code}`,
+      paymentProvider: "COD",
+      paymentRef: null,
+      paymentUrl: null,
+      paidAt: null,
+      deliveryLatitude: null,
+      deliveryLongitude: null,
+      deliveryDistanceKm: null,
+      deliveryDurationMinutes: null,
     });
-    expect(order!.paidAt).not.toBeNull();
 
     expect(order!.items).toHaveLength(1);
     expect(order!.items[0]).toMatchObject({
@@ -182,6 +190,91 @@ describe("createOrderFromCart", () => {
       pointsDelta: 195,
       orderId: order!.id,
     });
+  });
+
+  it("estimates the farthest warehouse leg for a multi-warehouse cart", async () => {
+    const world = await createWorld();
+    const near = await createBatch({
+      product: world.products.tomato,
+      warehouseId: world.warehouse.id,
+      quantityKg: 10,
+      status: "FRESH",
+      freshnessScore: 95,
+    });
+    const far = await createBatch({
+      product: world.products.spinach,
+      warehouseId: world.otherWarehouse.id,
+      quantityKg: 10,
+      status: "FRESH",
+      freshnessScore: 95,
+    });
+
+    const route = await estimateCartRoute(
+      [near.batch.id, far.batch.id],
+      { latitude: -6.9175, longitude: 107.6191 },
+    );
+
+    expect(route).not.toBeNull();
+    expect(route!.legs).toHaveLength(2);
+    expect(route!.warehouseName).toBe("Gudang Cadangan");
+    expect(route!.distanceKm).toBeGreaterThan(route!.legs[0].distanceKm);
+    expect(route!.distanceKm).toBe(route!.legs[1].distanceKm);
+  });
+
+  it("stores the pinned delivery point and route estimate", async () => {
+    const world = await createWorld();
+    await createBuyerTier({ userId: world.users.consumer.id });
+    const { fresh } = await setupShop(world);
+
+    const result = await createOrderFromCart({
+      buyerId: world.users.consumer.id,
+      lines: [{ batchId: fresh.batch.id, quantityKg: 2 }],
+      deliveryAddress: ADDRESS,
+      contactPhone: PHONE,
+      deliveryLatitude: -6.9175,
+      deliveryLongitude: 107.6191,
+    });
+
+    const order = await db.orm.public.Order.where({ code: result.code }).first();
+    expect(order).toMatchObject({
+      status: "PENDING",
+      paymentProvider: "COD",
+      deliveryLatitude: -6.9175,
+      deliveryLongitude: 107.6191,
+    });
+    expect(order!.deliveryDistanceKm).toBeGreaterThan(0);
+    expect(order!.deliveryDurationMinutes).toBeGreaterThanOrEqual(10);
+    expect(order!.shippingCost).toBe(0);
+  });
+
+  it("charges shipping from the route distance and delivery method", async () => {
+    const world = await createWorld();
+    await createBuyerTier({ userId: world.users.consumer.id });
+    const { fresh } = await setupShop(world);
+
+    const result = await createOrderFromCart({
+      buyerId: world.users.consumer.id,
+      lines: [{ batchId: fresh.batch.id, quantityKg: 2 }],
+      deliveryAddress: ADDRESS,
+      deliveryCity: "bandung",
+      deliveryMethod: "INSTANT",
+      deliveryLatitude: -6.9175,
+      deliveryLongitude: 107.6191,
+      contactPhone: PHONE,
+    });
+
+    const order = await db.orm.public.Order.where({ code: result.code }).first();
+    const expectedShipping = calculateShippingCost(
+      order!.deliveryDistanceKm,
+      "INSTANT",
+    );
+
+    expect(order).toMatchObject({
+      subtotal: 39_000,
+      shippingCost: expectedShipping,
+      total: 39_000 + expectedShipping,
+    });
+    expect(order!.shippingCost).toBeGreaterThan(0);
   });
 
   it("sums multiple lines and reserves each batch", async () => {

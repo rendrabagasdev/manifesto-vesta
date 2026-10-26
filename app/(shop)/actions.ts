@@ -10,6 +10,7 @@ import {
   createPreorder,
   createSinglePurchase,
 } from "@/src/lib/orders/service";
+import { estimateCartRoute } from "@/src/lib/delivery/routes";
 
 export interface PurchaseState {
   ok: boolean;
@@ -24,6 +25,14 @@ const cartLineSchema = z.object({
   quantityKg: z.coerce.number().positive().max(100_000),
 });
 
+function optionalCoordinate(min: number, max: number) {
+  return z.preprocess(
+    (value) =>
+      value === "" || value === null || value === undefined ? undefined : Number(value),
+    z.number().min(min).max(max).optional(),
+  );
+}
+
 const cartSchema = z.object({
   lines: z.array(cartLineSchema).min(1, "Keranjang kosong.").max(50),
   deliveryAddress: z.string().trim().min(10, "Alamat pengiriman minimal 10 karakter.").max(300),
@@ -31,9 +40,60 @@ const cartSchema = z.object({
   deliveryMethod: z.enum(["INSTANT", "SAME_DAY", "REGULAR"], {
     error: "Pilih metode pengiriman.",
   }),
+  deliveryLatitude: optionalCoordinate(-90, 90),
+  deliveryLongitude: optionalCoordinate(-180, 180),
   contactPhone: z.string().trim().min(8, "Nomor telepon tidak valid.").max(20),
   notes: z.string().trim().max(300).optional().transform((v) => v || undefined),
 });
+
+export interface DeliveryRouteState {
+  ok: boolean;
+  error?: string;
+  distanceKm?: number;
+  durationMinutes?: number;
+  warehouseName?: string;
+  provider?: "OSRM" | "ESTIMATE";
+}
+
+const routeEstimateSchema = z.object({
+  batchIds: z.array(z.coerce.number().int().positive()).min(1).max(50),
+  latitude: z.coerce.number().min(-90).max(90),
+  longitude: z.coerce.number().min(-180).max(180),
+});
+
+export async function estimateDeliveryRouteAction(input: {
+  batchIds: number[];
+  latitude: number;
+  longitude: number;
+}): Promise<DeliveryRouteState> {
+  await requireSession();
+  const parsed = routeEstimateSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: "Titik pengiriman tidak valid." };
+  }
+
+  try {
+    const route = await estimateCartRoute(parsed.data.batchIds, {
+      latitude: parsed.data.latitude,
+      longitude: parsed.data.longitude,
+    });
+
+    if (!route) {
+      return { ok: false, error: "Rute belum bisa dihitung untuk titik ini." };
+    }
+
+    return {
+      ok: true,
+      distanceKm: route.distanceKm,
+      durationMinutes: route.durationMinutes,
+      warehouseName: route.warehouseName,
+      provider: route.provider,
+    };
+  } catch (error) {
+    console.error("estimateDeliveryRouteAction", error);
+    return { ok: false, error: "Rute belum bisa dihitung." };
+  }
+}
 
 export async function checkoutAction(
   _previousState: PurchaseState,
@@ -53,6 +113,8 @@ export async function checkoutAction(
     deliveryAddress: formData.get("deliveryAddress"),
     deliveryCity: formData.get("deliveryCity"),
     deliveryMethod: formData.get("deliveryMethod"),
+    deliveryLatitude: formData.get("deliveryLatitude"),
+    deliveryLongitude: formData.get("deliveryLongitude"),
     contactPhone: formData.get("contactPhone") ?? undefined,
     notes: formData.get("notes") ?? undefined,
   });
@@ -73,6 +135,8 @@ export async function checkoutAction(
       deliveryAddress: parsed.data.deliveryAddress,
       deliveryCity: parsed.data.deliveryCity,
       deliveryMethod: parsed.data.deliveryMethod,
+      deliveryLatitude: parsed.data.deliveryLatitude,
+      deliveryLongitude: parsed.data.deliveryLongitude,
       contactPhone: parsed.data.contactPhone,
       notes: parsed.data.notes,
     });
@@ -84,10 +148,8 @@ export async function checkoutAction(
     return {
       ok: true,
       code: result.code,
-      paymentUrl: result.paymentUrl,
-      message: result.paid
-        ? "Pembayaran demo berhasil — pesanan ditandai lunas."
-        : "Mengarahkan ke halaman pembayaran Midtrans...",
+      paymentUrl: null,
+      message: "Pesanan COD dibuat. Bayar tunai saat pesanan tiba.",
     };
   } catch (error) {
     if (error instanceof ApiError) {

@@ -18,6 +18,7 @@ import {
   statusFromScore,
 } from "@/src/lib/batches/freshness";
 import { getPlatformConfig } from "@/src/lib/config/platform";
+import { getWeatherForWarehouse } from "@/src/lib/weather/service";
 import { dateCompact } from "@/src/lib/batches/format";
 import {
   getProducerForUser,
@@ -94,12 +95,15 @@ export async function createBatchAction(
 
   const now = new Date();
   const config = await getPlatformConfig();
+  const weather = await getWeatherForWarehouse(warehouse);
   const freshnessScore = calculateFreshnessScore({
     harvestDate: parsed.data.harvestDate,
     receivedAt: now,
     storageTempC: parsed.data.storageTempC,
     idealTempC: product.idealTempC,
     shelfLifeDays: product.shelfLifeDays,
+    ambientTempC: weather?.temperatureC ?? null,
+    ambientHumidityPct: weather?.humidityPct ?? null,
     now,
   });
   const status = statusFromScore(freshnessScore, config.thresholds);
@@ -179,7 +183,7 @@ export async function updateBatchAction(
       product.select("id", "shelfLifeDays", "idealTempC", "basePricePerKg"),
     )
     .include("warehouse", (warehouse) =>
-      warehouse.select("id", "managerId"),
+      warehouse.select("id", "managerId", "latitude", "longitude"),
     )
     .include("priceBreakdown")
     .first();
@@ -197,12 +201,15 @@ export async function updateBatchAction(
 
   const now = new Date();
   const config = await getPlatformConfig();
+  const weather = await getWeatherForWarehouse(batch.warehouse);
   const freshnessScore = calculateFreshnessScore({
     harvestDate: batch.harvestDate,
     receivedAt: batch.receivedAt,
     storageTempC: parsed.data.storageTempC,
     idealTempC: batch.product.idealTempC,
     shelfLifeDays: batch.product.shelfLifeDays,
+    ambientTempC: weather?.temperatureC ?? null,
+    ambientHumidityPct: weather?.humidityPct ?? null,
     now,
   });
   const status = statusFromScore(freshnessScore, config.thresholds);

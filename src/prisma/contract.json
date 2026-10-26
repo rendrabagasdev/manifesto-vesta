@@ -1264,6 +1264,34 @@
                   "kind": "scalar"
                 }
               },
+              "deliveryDistanceKm": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/float8@1",
+                  "kind": "scalar"
+                }
+              },
+              "deliveryDurationMinutes": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
+                }
+              },
+              "deliveryLatitude": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/float8@1",
+                  "kind": "scalar"
+                }
+              },
+              "deliveryLongitude": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/float8@1",
+                  "kind": "scalar"
+                }
+              },
               "deliveryMethod": {
                 "nullable": true,
                 "type": {
@@ -1344,6 +1372,13 @@
                 "nullable": true,
                 "type": {
                   "codecId": "pg/date-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "shippingCost": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
                   "kind": "scalar"
                 }
               },
@@ -1478,6 +1513,18 @@
                 "deliveryCity": {
                   "column": "deliveryCity"
                 },
+                "deliveryDistanceKm": {
+                  "column": "deliveryDistanceKm"
+                },
+                "deliveryDurationMinutes": {
+                  "column": "deliveryDurationMinutes"
+                },
+                "deliveryLatitude": {
+                  "column": "deliveryLatitude"
+                },
+                "deliveryLongitude": {
+                  "column": "deliveryLongitude"
+                },
                 "deliveryMethod": {
                   "column": "deliveryMethod"
                 },
@@ -1510,6 +1557,9 @@
                 },
                 "scheduledFor": {
                   "column": "scheduledFor"
+                },
+                "shippingCost": {
+                  "column": "shippingCost"
                 },
                 "status": {
                   "column": "status"
@@ -2088,6 +2138,20 @@
                   "kind": "scalar"
                 }
               },
+              "latitude": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/float8@1",
+                  "kind": "scalar"
+                }
+              },
+              "longitude": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/float8@1",
+                  "kind": "scalar"
+                }
+              },
               "phone": {
                 "nullable": true,
                 "type": {
@@ -2156,6 +2220,12 @@
                 },
                 "id": {
                   "column": "id"
+                },
+                "latitude": {
+                  "column": "latitude"
+                },
+                "longitude": {
+                  "column": "longitude"
                 },
                 "phone": {
                   "column": "phone"
@@ -2961,6 +3031,20 @@
                   "kind": "scalar"
                 }
               },
+              "latitude": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/float8@1",
+                  "kind": "scalar"
+                }
+              },
+              "longitude": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/float8@1",
+                  "kind": "scalar"
+                }
+              },
               "managerId": {
                 "nullable": true,
                 "type": {
@@ -3032,6 +3116,12 @@
                 },
                 "id": {
                   "column": "id"
+                },
+                "latitude": {
+                  "column": "latitude"
+                },
+                "longitude": {
+                  "column": "longitude"
                 },
                 "managerId": {
                   "column": "managerId"
@@ -3989,6 +4079,26 @@
                   "dataType": "pg/text",
                   "nullable": true
                 },
+                "deliveryDistanceKm": {
+                  "codecId": "pg/float8@1",
+                  "dataType": "pg/float8",
+                  "nullable": true
+                },
+                "deliveryDurationMinutes": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "nullable": true
+                },
+                "deliveryLatitude": {
+                  "codecId": "pg/float8@1",
+                  "dataType": "pg/float8",
+                  "nullable": true
+                },
+                "deliveryLongitude": {
+                  "codecId": "pg/float8@1",
+                  "dataType": "pg/float8",
+                  "nullable": true
+                },
                 "deliveryMethod": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
@@ -4061,6 +4171,15 @@
                   "codecId": "pg/date-string@1",
                   "dataType": "pg/date",
                   "nullable": true
+                },
+                "shippingCost": {
+                  "codecId": "pg/int4@1",
+                  "dataType": "pg/int4",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nullable": false
                 },
                 "status": {
                   "codecId": "pg/text@1",
@@ -4678,6 +4797,16 @@
                     "kind": "function"
                   },
                   "nullable": false
+                },
+                "latitude": {
+                  "codecId": "pg/float8@1",
+                  "dataType": "pg/float8",
+                  "nullable": true
+                },
+                "longitude": {
+                  "codecId": "pg/float8@1",
+                  "dataType": "pg/float8",
+                  "nullable": true
                 },
                 "phone": {
                   "codecId": "pg/text@1",
@@ -5311,6 +5440,16 @@
                   },
                   "nullable": false
                 },
+                "latitude": {
+                  "codecId": "pg/float8@1",
+                  "dataType": "pg/float8",
+                  "nullable": true
+                },
+                "longitude": {
+                  "codecId": "pg/float8@1",
+                  "dataType": "pg/float8",
+                  "nullable": true
+                },
                 "managerId": {
                   "codecId": "pg/int4@1",
                   "dataType": "pg/int4",
@@ -5438,7 +5577,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "b7ea73eaef6994f9a68c6f7e85b49378c1391703fc8454ee610dc5310803f070"
+    "storageHash": "f704f2e476fb59687fa9e76f957e3cee9b932f55eb20900577a64fe24eec70be"
   },
   "execution": {
     "executionHash": "72a678ae5abbc20560d5d389981a277cdba90fae0226162c86ebb90e86df1123",

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
-import { ArrowRight, Droplets, Leaf, Recycle } from "lucide-react";
 import { requireRole } from "@/src/lib/auth/session";
 import {
   getImpactSummaryFor,
@@ -57,33 +56,24 @@ export default async function ConsumerDashboardPage() {
         <h2 id="impact-heading" className="text-sm font-semibold text-ink">
           Kontribusi dampak Anda
         </h2>
-        <ul className="mt-4 space-y-3 text-sm">
-          <li className="flex items-center justify-between gap-3">
-            <span className="flex items-center gap-2 text-ink-muted">
-              <Leaf className="size-4" aria-hidden="true" />
-              Tidak terbuang
-            </span>
-            <span className="font-semibold tabular-nums text-ink">
+        <ul className="mt-4 grid gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-3">
+          <li className="bg-surface p-3">
+            <p className="text-xs text-ink-muted">Tidak terbuang</p>
+            <p className="mt-1 text-lg font-semibold tabular-nums text-ink">
               {formatKg(impact.totalRescuedKg)}
-            </span>
+            </p>
           </li>
-          <li className="flex items-center justify-between gap-3">
-            <span className="flex items-center gap-2 text-ink-muted">
-              <Recycle className="size-4" aria-hidden="true" />
-              CO₂e dihindari
-            </span>
-            <span className="font-semibold tabular-nums text-ink">
+          <li className="bg-surface p-3">
+            <p className="text-xs text-ink-muted">CO₂e dihindari</p>
+            <p className="mt-1 text-lg font-semibold tabular-nums text-ink">
               {formatNumber(impact.totalCo2eSavedKg)} kg
-            </span>
+            </p>
           </li>
-          <li className="flex items-center justify-between gap-3">
-            <span className="flex items-center gap-2 text-ink-muted">
-              <Droplets className="size-4" aria-hidden="true" />
-              Air dihemat
-            </span>
-            <span className="font-semibold tabular-nums text-ink">
+          <li className="bg-surface p-3">
+            <p className="text-xs text-ink-muted">Air dihemat</p>
+            <p className="mt-1 text-lg font-semibold tabular-nums text-ink">
               {formatInteger(impact.totalWaterSavedLiters)} L
-            </span>
+            </p>
           </li>
         </ul>
         <Link
@@ -137,11 +127,13 @@ export default async function ConsumerDashboardPage() {
                         {formatDateTime(order.createdAt)}
                       </p>
                     </div>
-                    <div className="flex shrink-0 items-center gap-2">
+                    <div className="flex shrink-0 items-center gap-3">
                       <span className="text-sm font-semibold tabular-nums text-ink">
                         {formatIdr(order.total)}
                       </span>
-                      <ArrowRight className="size-4 text-ink-muted" aria-hidden="true" />
+                      <span className="text-xs font-medium text-ink-muted">
+                        Detail
+                      </span>
                     </div>
                   </Link>
                 </li>

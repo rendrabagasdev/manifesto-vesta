@@ -11,18 +11,14 @@
             "id": "aefbd595902ba19d",
             "type": "leaf",
             "state": {
-              "type": "kanban",
+              "type": "markdown",
               "state": {
-                "file": "05-Timeline/📋 Kanban Board.md",
-                "kanbanViewState": {
-                  "kanban-plugin": "board",
-                  "list-collapse": [
-                    null
-                  ]
-                }
+                "file": "file:/Users/bagaskara/Development/vesta/DESIGN.md",
+                "mode": "preview",
+                "source": false
               },
-              "icon": "lucide-trello",
-              "title": "📋 Kanban Board"
+              "icon": "lucide-file",
+              "title": "DESIGN"
             }
           }
         ]

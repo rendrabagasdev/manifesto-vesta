@@ -59,7 +59,12 @@ function item(overrides: Partial<CartItem> = {}): CartItem {
 }
 
 beforeAll(() => {
-  vi.stubGlobal("window", { localStorage: storage });
+  vi.stubGlobal("window", {
+    localStorage: storage,
+    dispatchEvent: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+  });
 });
 
 afterAll(() => {

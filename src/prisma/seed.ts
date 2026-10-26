@@ -34,6 +34,7 @@ type ProductSeed = {
   idealTempC: number;
   basePricePerKg: number;
   description: string;
+  imageUrl: string;
 };
 
 type BatchSeed = {
@@ -186,6 +187,30 @@ async function main() {
     await db.orm.public.Order.where({ id: existingOrder.id }).delete();
   }
 
+  const demoBatchIds: number[] = [];
+
+  for (const code of BATCH_CODES) {
+    const existingBatch = await db.orm.public.Batch.where({ code }).first();
+    if (existingBatch) demoBatchIds.push(existingBatch.id);
+  }
+
+  if (demoBatchIds.length > 0) {
+    const orderItems = await db.orm.public.OrderItem.all();
+    const affectedOrderIds = [
+      ...new Set(
+        orderItems
+          .filter((item) => demoBatchIds.includes(item.batchId))
+          .map((item) => item.orderId),
+      ),
+    ];
+
+    for (const orderId of affectedOrderIds) {
+      await db.orm.public.LoyaltyLedger.where({ orderId }).deleteAll();
+      await db.orm.public.ImpactLog.where({ orderId }).deleteAll();
+      await db.orm.public.Order.where({ id: orderId }).delete();
+    }
+  }
+
   for (const code of BATCH_CODES) {
     const existingBatch = await db.orm.public.Batch.where({ code }).first();
     if (!existingBatch) continue;
@@ -204,12 +229,16 @@ async function main() {
         farmName: "Kebun Segar Lembang",
         address: "Jl. Raya Lembang No. 88, Bandung Barat",
         phone: "0812-3456-7890",
+        latitude: -6.8118,
+        longitude: 107.6172,
       })
     : await db.orm.public.Producer.create({
         userId: producerUser.id,
         farmName: "Kebun Segar Lembang",
         address: "Jl. Raya Lembang No. 88, Bandung Barat",
         phone: "0812-3456-7890",
+        latitude: -6.8118,
+        longitude: 107.6172,
       });
 
   if (!producer) throw new Error("Gagal menyiapkan producer demo.");
@@ -227,6 +256,8 @@ async function main() {
         address: "Jl. Soekarno-Hatta No. 120, Bandung",
         city: "Bandung",
         capacityKg: 5000,
+        latitude: -6.943,
+        longitude: 107.625,
       })
     : await db.orm.public.Warehouse.create({
         name: "Gudang Utama Bandung",
@@ -234,6 +265,8 @@ async function main() {
         address: "Jl. Soekarno-Hatta No. 120, Bandung",
         city: "Bandung",
         capacityKg: 5000,
+        latitude: -6.943,
+        longitude: 107.625,
       });
 
   if (!warehouse) throw new Error("Gagal menyiapkan warehouse demo.");
@@ -250,6 +283,8 @@ async function main() {
         address: "Jl. Industri No. 7, Cimahi",
         city: "Cimahi",
         capacityKg: 2500,
+        latitude: -6.8722,
+        longitude: 107.5425,
       })
     : await db.orm.public.Warehouse.create({
         name: "Gudang Cimahi",
@@ -257,6 +292,8 @@ async function main() {
         address: "Jl. Industri No. 7, Cimahi",
         city: "Cimahi",
         capacityKg: 2500,
+        latitude: -6.8722,
+        longitude: 107.5425,
       });
 
   if (!secondWarehouse) throw new Error("Gagal menyiapkan warehouse kedua.");
@@ -284,6 +321,7 @@ async function main() {
     idealTempC: 10,
     basePricePerKg: 15000,
     description: "Tomat segar panen Lembang dengan tingkat kematangan seragam.",
+    imageUrl: "/assets/products/tomat-servo.jpg",
   });
 
   if (!tomato) throw new Error("Gagal menyiapkan produk tomat demo.");
@@ -295,6 +333,7 @@ async function main() {
     idealTempC: 8,
     basePricePerKg: 12000,
     description: "Bayam hijau daun lebar, cocok untuk konsumsi harian.",
+    imageUrl: "/assets/products/bayam-hijau.jpg",
   });
 
   if (!spinach) throw new Error("Gagal menyiapkan produk bayam demo.");
@@ -306,6 +345,7 @@ async function main() {
     idealTempC: 4,
     basePricePerKg: 25000,
     description: "Apel Malang manis dengan tekstur renyah.",
+    imageUrl: "/assets/products/apel-malang.jpg",
   });
 
   if (!apple) throw new Error("Gagal menyiapkan produk apel demo.");
@@ -317,6 +357,7 @@ async function main() {
     idealTempC: 20,
     basePricePerKg: 14000,
     description: "Beras pandan wangi premium dari petani mitra.",
+    imageUrl: "/assets/products/beras-pandan-wangi.jpg",
   });
 
   if (!rice) throw new Error("Gagal menyiapkan produk beras demo.");
@@ -328,6 +369,7 @@ async function main() {
     idealTempC: 4,
     basePricePerKg: 11000,
     description: "Wortel Berastagi manis dengan warna oranye cerah.",
+    imageUrl: "/assets/products/wortel-berastagi.jpg",
   });
 
   if (!carrot) throw new Error("Gagal menyiapkan produk wortel demo.");
@@ -339,6 +381,7 @@ async function main() {
     idealTempC: 12,
     basePricePerKg: 38000,
     description: "Cabe merah keriting panen petani Brebes.",
+    imageUrl: "/assets/products/cabe-merah-keriting.jpg",
   });
 
   if (!chili) throw new Error("Gagal menyiapkan produk cabe demo.");
@@ -350,6 +393,7 @@ async function main() {
     idealTempC: 18,
     basePricePerKg: 32000,
     description: "Telur ayam kampung dari peternakan mitra.",
+    imageUrl: "/assets/products/telur-ayam-kampung.jpg",
   });
 
   if (!egg) throw new Error("Gagal menyiapkan produk telur demo.");
@@ -361,6 +405,7 @@ async function main() {
     idealTempC: 10,
     basePricePerKg: 8000,
     description: "Kangkung hidroponik segar dipanen pagi hari.",
+    imageUrl: "/assets/products/kangkung-hidroponik.jpg",
   });
 
   if (!waterSpinach) throw new Error("Gagal menyiapkan produk kangkung demo.");
