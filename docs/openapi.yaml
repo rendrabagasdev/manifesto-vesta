@@ -1,0 +1,1333 @@
+openapi: 3.1.0
+info:
+  title: Vesta Marketplace API
+  version: 1.0.0
+  description: |
+    API untuk Vesta Marketplace - Platform cascade freshness untuk komoditas pertanian.
+    
+    ## Fitur Utama
+    - **Cascade Pricing**: Harga dinamis berdasarkan freshness score
+    - **Rescue Deals**: Penawaran diskon dengan tier-based early access
+    - **Loyalty System**: Poin loyalitas dan tier konsumen (Bronze/Silver/Gold/Platinum)
+    - **Batch Tracking**: Pelacakan batch dari panen hingga disposal
+    - **Impact Measurement**: Sustainability tracking (food waste prevention)
+    
+    ## Autentikasi
+    API menggunakan NextAuth session-based authentication untuk endpoint yang memerlukan autentikasi.
+    Untuk integrasi eksternal, gunakan API key atau Bearer token pada endpoint tertentu (cron).
+    
+    ## Role-Based Access Control (RBAC)
+    - **CONSUMER**: Pembeli retail
+    - **BUSINESS**: Pembeli B2B (bulk orders)
+    - **PRODUCER**: Petani/produsen
+    - **WAREHOUSE**: Manajer gudang
+    - **ADMIN**: Administrator platform
+    
+  contact:
+    name: Vesta API Support
+    email: support@vesta-marketplace.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3000
+    description: Development server
+  - url: https://api.vesta-marketplace.com
+    description: Production server
+
+tags:
+  - name: Health
+    description: Health check endpoints
+  - name: Products
+    description: Product catalog and pricing
+  - name: Batches
+    description: Batch management and quality tracking
+  - name: Orders
+    description: Order placement and checkout
+  - name: Rescue Deals
+    description: Time-limited discount offers
+  - name: Cascade
+    description: Cascade engine and simulation
+  - name: Admin
+    description: Platform configuration (ADMIN only)
+
+components:
+  securitySchemes:
+    SessionAuth:
+      type: apiKey
+      in: cookie
+      name: next-auth.session-token
+      description: NextAuth session cookie
+    
+    BearerAuth:
+      type: http
+      scheme: bearer
+      description: Bearer token untuk cron jobs
+
+  schemas:
+    BatchStatus:
+      type: string
+      enum: [FRESH, RESCUE, FEED, RESIDUE, DISPOSED]
+      description: Status cascade batch
+    
+    OrderStatus:
+      type: string
+      enum: [PENDING, PAID, PROCESSING, SHIPPED, DELIVERED, CANCELLED]
+      description: Status pesanan
+    
+    UserRole:
+      type: string
+      enum: [CONSUMER, BUSINESS, PRODUCER, WAREHOUSE, ADMIN]
+      description: Role pengguna
+    
+    LoyaltyTier:
+      type: string
+      enum: [BRONZE, SILVER, GOLD, PLATINUM]
+      description: Tier loyalitas konsumen
+    
+    ProductCategory:
+      type: string
+      enum: [VEGETABLES, FRUITS, HERBS, GRAINS, DAIRY, MEAT, SEAFOOD]
+      description: Kategori produk
+    
+    ApiResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Status response
+        message:
+          type: string
+          description: Pesan response
+        data:
+          type: object
+          description: Data response
+        error:
+          type: string
+          description: Error message jika success = false
+      required:
+        - success
+    
+    ValidationError:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        error:
+          type: string
+          example: "Validasi gagal"
+        fields:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+          description: Field-level validation errors
+    
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: "Tomat Cherry Organik"
+        category:
+          $ref: '#/components/schemas/ProductCategory'
+        unit:
+          type: string
+          example: "kg"
+        shelfLifeDays:
+          type: integer
+          example: 7
+          description: Umur simpan dalam hari
+        idealTempC:
+          type: number
+          format: float
+          example: 4.5
+          description: Suhu ideal penyimpanan (Celsius)
+        basePricePerKg:
+          type: integer
+          example: 25000
+          description: Harga dasar per kg (IDR)
+        description:
+          type: string
+          nullable: true
+    
+    Batch:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        code:
+          type: string
+          example: "VST-20261026-A1B2C3"
+          description: Kode unik batch
+        productId:
+          type: integer
+          example: 1
+        warehouseId:
+          type: integer
+          example: 1
+        harvestDate:
+          type: string
+          format: date
+          example: "2026-10-20"
+        receivedAt:
+          type: string
+          format: date-time
+          example: "2026-10-21T08:00:00Z"
+        storageTempC:
+          type: number
+          format: float
+          example: 5.0
+        quantityKg:
+          type: number
+          format: float
+          example: 500.0
+        reservedKg:
+          type: number
+          format: float
+          example: 150.0
+        freshnessScore:
+          type: integer
+          minimum: 0
+          maximum: 100
+          example: 85
+        status:
+          $ref: '#/components/schemas/BatchStatus'
+        qualityNote:
+          type: string
+          nullable: true
+        isManuallyAdjusted:
+          type: boolean
+          default: false
+    
+    PriceBreakdown:
+      type: object
+      properties:
+        basePricePerKg:
+          type: integer
+          example: 25000
+          description: Harga dasar dari produsen
+        warehouseCostPerKg:
+          type: integer
+          example: 1000
+          description: Biaya penyimpanan gudang
+        logisticsCostPerKg:
+          type: integer
+          example: 1500
+          description: Biaya logistik
+        marginPerKg:
+          type: integer
+          example: 2000
+          description: Margin platform
+        grossPricePerKg:
+          type: integer
+          example: 29500
+          description: Total harga sebelum diskon
+    
+    Order:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        code:
+          type: string
+          example: "VST-ORD-20261026-123456"
+        buyerId:
+          type: integer
+          example: 5
+        status:
+          $ref: '#/components/schemas/OrderStatus'
+        subtotal:
+          type: integer
+          example: 250000
+          description: Subtotal sebelum diskon (IDR)
+        discount:
+          type: integer
+          example: 25000
+          description: Total diskon (IDR)
+        total:
+          type: integer
+          example: 225000
+          description: Total pembayaran (IDR)
+        deliveryAddress:
+          type: string
+          example: "Jl. Raya No. 123, Jakarta"
+        contactPhone:
+          type: string
+          example: "081234567890"
+        notes:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+
+paths:
+  /api/health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      description: Cek status kesehatan API
+      operationId: healthCheck
+      responses:
+        '200':
+          description: API berjalan normal
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "ok"
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2026-10-26T15:00:00.000Z"
+                  uptime:
+                    type: number
+                    example: 123456.789
+                    description: Uptime process dalam detik
+                  environment:
+                    type: string
+                    example: "development"
+
+  /api/products/{id}/breakdown:
+    get:
+      tags:
+        - Products
+      summary: Detail breakdown harga produk
+      description: |
+        Mendapatkan rincian harga produk dengan breakdown biaya dan simulasi harga cascade.
+        Endpoint ini menampilkan:
+        - Informasi produk dan produsen
+        - Breakdown biaya (warehouse, logistics, margin)
+        - Harga di setiap stage cascade (FRESH, RESCUE, FEED, RESIDUE)
+        - Batch terakhir yang tersedia
+      operationId: getProductBreakdown
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Product ID
+          schema:
+            type: integer
+            example: 1
+      responses:
+        '200':
+          description: Breakdown harga berhasil didapatkan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      product:
+                        $ref: '#/components/schemas/Product'
+                      producer:
+                        type: object
+                        nullable: true
+                        properties:
+                          id:
+                            type: integer
+                          farmName:
+                            type: string
+                            example: "Kebun Segar Organik"
+                          address:
+                            type: string
+                          phone:
+                            type: string
+                      warehouse:
+                        type: object
+                        nullable: true
+                        properties:
+                          id:
+                            type: integer
+                          name:
+                            type: string
+                          city:
+                            type: string
+                      priceBreakdown:
+                        $ref: '#/components/schemas/PriceBreakdown'
+                      cascadePricing:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            status:
+                              $ref: '#/components/schemas/BatchStatus'
+                            label:
+                              type: string
+                              example: "Harga Normal (Segar)"
+                            discountPct:
+                              type: integer
+                              example: 0
+                            pricePerKg:
+                              type: integer
+                              example: 29500
+                      currentBatch:
+                        type: object
+                        nullable: true
+                        properties:
+                          id:
+                            type: integer
+                          code:
+                            type: string
+                          freshnessScore:
+                            type: integer
+                          status:
+                            $ref: '#/components/schemas/BatchStatus'
+                          quantityKg:
+                            type: number
+                          reservedKg:
+                            type: number
+                          availableKg:
+                            type: number
+        '400':
+          description: ID produk tidak valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '404':
+          description: Produk tidak ditemukan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /api/batches:
+    post:
+      tags:
+        - Batches
+      summary: Buat batch baru
+      description: |
+        Membuat batch baru untuk produk yang dipanen.
+        
+        **Hak Akses**: PRODUCER, WAREHOUSE, ADMIN
+        
+        Batch akan otomatis:
+        - Menghitung freshness score berdasarkan harvest date dan storage temp
+        - Menentukan status cascade awal (FRESH/RESCUE/FEED/RESIDUE)
+        - Membuat price breakdown
+        - Mencatat cascade event
+        - Membuat listing jika langsung masuk RESCUE/FEED/RESIDUE
+      operationId: createBatch
+      security:
+        - SessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                productId:
+                  type: integer
+                  example: 1
+                warehouseId:
+                  type: integer
+                  example: 1
+                harvestDate:
+                  type: string
+                  format: date
+                  example: "2026-10-20"
+                quantityKg:
+                  type: number
+                  format: float
+                  example: 500.0
+                  minimum: 0.1
+                storageTempC:
+                  type: number
+                  format: float
+                  example: 5.0
+                  minimum: -30
+                  maximum: 60
+                qualityNote:
+                  type: string
+                  maxLength: 500
+                  nullable: true
+              required:
+                - productId
+                - warehouseId
+                - harvestDate
+                - quantityKg
+                - storageTempC
+      responses:
+        '200':
+          description: Batch berhasil dibuat
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  id:
+                    type: integer
+                    example: 123
+                  batchId:
+                    type: integer
+                    example: 123
+                  code:
+                    type: string
+                    example: "VST-20261026-A1B2C3"
+                  status:
+                    $ref: '#/components/schemas/BatchStatus'
+                  freshnessScore:
+                    type: integer
+                    example: 85
+        '400':
+          description: Validasi gagal
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                  fieldErrors:
+                    type: object
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - role tidak memiliki akses
+        '404':
+          description: Produk atau gudang tidak ditemukan
+        '500':
+          description: Internal server error
+
+  /api/batches/{id}/quality:
+    put:
+      tags:
+        - Batches
+      summary: Update kualitas batch
+      description: |
+        Memperbarui data kualitas batch (suhu penyimpanan, catatan kualitas).
+        
+        **Hak Akses**: WAREHOUSE (hanya batch di gudang sendiri), ADMIN
+        
+        Update akan memicu:
+        - Perhitungan ulang freshness score
+        - Transisi status cascade jika melewati threshold
+        - Notifikasi WhatsApp ke produsen jika ada transisi
+        - Update/pembuatan rescue deal otomatis
+      operationId: updateBatchQuality
+      security:
+        - SessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Batch ID
+          schema:
+            type: integer
+            example: 123
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                storageTempC:
+                  type: number
+                  format: float
+                  example: 5.5
+                  minimum: -30
+                  maximum: 60
+                qualityNote:
+                  type: string
+                  maxLength: 500
+                  nullable: true
+                isManuallyAdjusted:
+                  type: boolean
+                  description: Flag untuk menandai penyesuaian manual
+              minProperties: 1
+      responses:
+        '200':
+          description: Kualitas batch berhasil diperbarui
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  batchId:
+                    type: integer
+                  code:
+                    type: string
+                  status:
+                    $ref: '#/components/schemas/BatchStatus'
+                  previousStatus:
+                    $ref: '#/components/schemas/BatchStatus'
+                  freshnessScore:
+                    type: integer
+                  previousScore:
+                    type: integer
+                  transitioned:
+                    type: boolean
+                    description: Apakah ada transisi status cascade
+                  forcedByTimer:
+                    type: boolean
+                    description: Apakah transisi dipaksa oleh timer
+                  availableKg:
+                    type: number
+                  rescueDealId:
+                    type: integer
+                    nullable: true
+                  reason:
+                    type: string
+                    nullable: true
+        '400':
+          description: Validasi gagal
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Batch tidak ditemukan
+        '500':
+          description: Internal server error
+
+  /api/batches/{id}/sync:
+    post:
+      tags:
+        - Batches
+      summary: Sinkronisasi manual status batch
+      description: |
+        Trigger manual untuk sinkronisasi status cascade batch.
+        
+        **Hak Akses**: WAREHOUSE (hanya batch di gudang sendiri), ADMIN
+        
+        Digunakan untuk:
+        - Force re-check freshness score
+        - Trigger transisi cascade manual
+        - Sync setelah perubahan konfigurasi threshold
+      operationId: syncBatchState
+      security:
+        - SessionAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Batch ID
+          schema:
+            type: integer
+            example: 123
+      responses:
+        '200':
+          description: Batch berhasil disinkronkan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  batchId:
+                    type: integer
+                  code:
+                    type: string
+                  status:
+                    $ref: '#/components/schemas/BatchStatus'
+                  previousStatus:
+                    $ref: '#/components/schemas/BatchStatus'
+                  transitioned:
+                    type: boolean
+                  freshnessScore:
+                    type: integer
+        '400':
+          description: Batch tidak valid
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '404':
+          description: Batch tidak ditemukan
+        '500':
+          description: Internal server error
+
+  /api/orders:
+    post:
+      tags:
+        - Orders
+      summary: Buat pesanan
+      description: |
+        Membuat pesanan dari marketplace (FRESH) atau pembelian langsung stage lain.
+        
+        **Hak Akses**: CONSUMER, BUSINESS, ADMIN
+        
+        **Jenis Pesanan**:
+        1. **Regular Cart** (source: FRESH atau undefined) - Multiple batches
+        2. **Direct Purchase** (source: RESCUE/FEED/RESIDUE) - Single batch only
+        3. **Preorder** (kind: PREORDER) - Scheduled delivery
+        
+        **Fitur**:
+        - Stock reservation otomatis
+        - Loyalty points earned
+        - Impact tracking (food waste prevention)
+        - Payment via Midtrans (sandbox/production)
+        - WhatsApp confirmation
+      operationId: placeOrder
+      security:
+        - SessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                items:
+                  type: array
+                  minItems: 1
+                  maxItems: 50
+                  items:
+                    type: object
+                    properties:
+                      batchId:
+                        type: integer
+                        example: 123
+                      quantityKg:
+                        type: number
+                        format: float
+                        example: 10.0
+                        minimum: 0.1
+                        maximum: 100000
+                      source:
+                        type: string
+                        enum: [FRESH, RESCUE, FEED, RESIDUE]
+                        default: FRESH
+                    required:
+                      - batchId
+                      - quantityKg
+                deliveryAddress:
+                  type: string
+                  maxLength: 300
+                  example: "Jl. Raya No. 123, Jakarta Selatan"
+                contactPhone:
+                  type: string
+                  minLength: 8
+                  maxLength: 20
+                  example: "081234567890"
+                notes:
+                  type: string
+                  maxLength: 300
+                kind:
+                  type: string
+                  enum: [REGULAR, PREORDER]
+                  default: REGULAR
+                scheduledFor:
+                  type: string
+                  format: date
+                  example: "2026-10-27"
+                  description: Untuk PREORDER
+                recurrence:
+                  type: string
+                  enum: [NONE, WEEKLY, BIWEEKLY, MONTHLY]
+                  default: NONE
+                  description: Untuk PREORDER
+              required:
+                - items
+      responses:
+        '200':
+          description: Pesanan berhasil dibuat
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  code:
+                    type: string
+                    example: "VST-ORD-20261026-123456"
+                  paid:
+                    type: boolean
+                    description: True jika menggunakan demo payment
+                  paymentUrl:
+                    type: string
+                    nullable: true
+                    example: "https://app.sandbox.midtrans.com/snap/v4/..."
+                    description: URL Midtrans Snap untuk pembayaran
+                  message:
+                    type: string
+                    example: "Pesanan berhasil dibuat"
+        '400':
+          description: Validasi gagal atau keranjang kosong
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: false
+                  error:
+                    type: string
+                  errorCode:
+                    type: string
+        '401':
+          description: Unauthorized
+        '403':
+          description: Insufficient stock atau quota exceeded
+        '500':
+          description: Internal server error
+
+  /api/rescue-deals/{dealId}/claim:
+    post:
+      tags:
+        - Rescue Deals
+      summary: Klaim rescue deal
+      description: |
+        Klaim penawaran diskon rescue dengan quota enforcement.
+        
+        **Hak Akses**: CONSUMER, BUSINESS, ADMIN
+        
+        **Pembatasan**:
+        - Weekly quota berdasarkan tier (Bronze: 2, Silver: 3, Gold: 5, Platinum: unlimited)
+        - Early access window untuk tier Gold dan Platinum
+        - Deal harus masih aktif (status RESCUE)
+        - Stock harus tersedia
+        
+        **Benefit**:
+        - Diskon 35% dari harga normal
+        - Loyalty points earned (1.5x multiplier)
+        - Impact points untuk sustainability
+      operationId: claimRescueDeal
+      security:
+        - SessionAuth: []
+      parameters:
+        - name: dealId
+          in: path
+          required: true
+          description: Rescue Deal ID
+          schema:
+            type: integer
+            example: 45
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantityKg:
+                  type: number
+                  format: float
+                  example: 5.0
+                  minimum: 0.1
+                  maximum: 100000
+              required:
+                - quantityKg
+      responses:
+        '200':
+          description: Rescue deal berhasil diklaim
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  code:
+                    type: string
+                    example: "VST-ORD-20261026-789012"
+                  paid:
+                    type: boolean
+                  paymentUrl:
+                    type: string
+                    nullable: true
+                  quota:
+                    type: object
+                    properties:
+                      remaining:
+                        type: integer
+                        example: 4
+                      limit:
+                        type: integer
+                        example: 5
+                      tier:
+                        $ref: '#/components/schemas/LoyaltyTier'
+                      earlyAccessHours:
+                        type: integer
+                        example: 2
+                  quotaRemaining:
+                    type: integer
+                    example: 4
+                  message:
+                    type: string
+        '400':
+          description: Validasi gagal atau deal tidak valid
+        '401':
+          description: Unauthorized
+        '403':
+          description: |
+            Quota exceeded, early access locked, atau deal expired.
+            Error codes:
+            - RESCUE_QUOTA_EXHAUSTED
+            - EARLY_ACCESS_LOCKED
+            - EXPIRED
+            - DEAL_INACTIVE
+        '404':
+          description: Deal tidak ditemukan
+        '500':
+          description: Internal server error
+
+  /api/demo/simulate-tick:
+    get:
+      tags:
+        - Cascade
+      summary: Info endpoint simulasi
+      description: Menampilkan usage information untuk simulate-tick
+      operationId: simulateTickInfo
+      responses:
+        '200':
+          description: Usage information
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  usage:
+                    type: object
+                    properties:
+                      method:
+                        type: string
+                        example: "POST"
+                      body:
+                        type: object
+                        properties:
+                          hours:
+                            type: integer
+                            example: 24
+    
+    post:
+      tags:
+        - Cascade
+      summary: Simulasi waktu maju
+      description: |
+        Memajukan waktu sistem untuk simulasi cascade freshness.
+        
+        **Hak Akses**: ADMIN only
+        **Requirement**: `SIMULATE_TIME_ENABLED=true` di env
+        
+        Digunakan untuk demo/testing:
+        - Memajukan waktu 1-168 jam
+        - Trigger cascade tick dengan waktu simulasi
+        - Update freshness scores dan status batches
+        - Generate rescue deals, feed, residue listings
+        - Return statistik transisi lengkap
+      operationId: simulateTick
+      security:
+        - SessionAuth: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                hours:
+                  type: integer
+                  minimum: 1
+                  maximum: 168
+                  default: 24
+                  example: 24
+                  description: Jam yang dimajukan (1-168)
+      responses:
+        '200':
+          description: Simulasi berhasil dijalankan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Simulasi waktu maju 24 jam selesai"
+                  data:
+                    type: object
+                    properties:
+                      advancedHours:
+                        type: integer
+                        example: 24
+                      processedBatches:
+                        type: integer
+                        example: 15
+                        description: Jumlah batch yang diproses
+                      statusTransitions:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            batchId:
+                              type: integer
+                            batchCode:
+                              type: string
+                            fromStatus:
+                              $ref: '#/components/schemas/BatchStatus'
+                            toStatus:
+                              $ref: '#/components/schemas/BatchStatus'
+                            freshnessScore:
+                              type: integer
+                      updatedPricing:
+                        type: integer
+                        example: 15
+                      newRescueDeals:
+                        type: integer
+                        example: 3
+                      newFeedListings:
+                        type: integer
+                        example: 1
+                      newResidueListings:
+                        type: integer
+                        example: 0
+                      disposedBatches:
+                        type: integer
+                        example: 0
+                      loyalty:
+                        type: object
+                        properties:
+                          pointsAwarded:
+                            type: integer
+                          tiersUpdated:
+                            type: integer
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - hanya ADMIN atau simulasi dinonaktifkan
+        '500':
+          description: Internal server error
+
+  /api/cron/cascade-tick:
+    get:
+      tags:
+        - Cascade
+      summary: Cascade cron tick
+      description: |
+        Endpoint untuk menjalankan cascade tick via cron job.
+        
+        **Autentikasi**: Bearer token dengan `CRON_SECRET`
+        
+        Dijalankan secara periodik (misal: setiap jam) untuk:
+        - Update freshness scores semua active batches
+        - Trigger transisi cascade berdasarkan threshold
+        - Generate/expire rescue deals
+        - Apply stage timers (force transition)
+        - Send notifications
+        
+        **Setup Cron**:
+        ```bash
+        # Vercel Cron (vercel.json)
+        {
+          "crons": [{
+            "path": "/api/cron/cascade-tick",
+            "schedule": "0 * * * *"
+          }]
+        }
+        
+        # Manual cURL
+        curl -X GET https://api.vesta.com/api/cron/cascade-tick \
+          -H "Authorization: Bearer YOUR_CRON_SECRET"
+        ```
+      operationId: cascadeTick
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Cascade tick berhasil dijalankan
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '401':
+          description: Unauthorized - Bearer token salah
+        '503':
+          description: Service Unavailable - CRON_SECRET belum dikonfigurasi
+
+  /api/admin/config:
+    get:
+      tags:
+        - Admin
+      summary: Ambil konfigurasi platform
+      description: |
+        Mendapatkan konfigurasi cascade platform saat ini.
+        
+        **Hak Akses**: ADMIN only
+        
+        Konfigurasi meliputi:
+        - Threshold cascade (FRESH, RESCUE, FEED, RESIDUE)
+        - Stage timers (force transition setelah N jam)
+        - Default pricing costs (warehouse, logistics, margin)
+        - Rescue deal configuration (duration, early access window)
+      operationId: getPlatformConfig
+      security:
+        - SessionAuth: []
+      responses:
+        '200':
+          description: Konfigurasi berhasil didapatkan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Konfigurasi cascade"
+                  data:
+                    type: object
+                    properties:
+                      thresholds:
+                        type: object
+                        properties:
+                          fresh:
+                            type: integer
+                            example: 70
+                            description: Min freshness untuk FRESH
+                          rescue:
+                            type: integer
+                            example: 40
+                            description: Min freshness untuk RESCUE
+                          feed:
+                            type: integer
+                            example: 20
+                            description: Min freshness untuk FEED
+                          residue:
+                            type: integer
+                            example: 0
+                            description: Min freshness untuk RESIDUE
+                      stageTimersHours:
+                        type: object
+                        properties:
+                          FRESH:
+                            type: integer
+                            nullable: true
+                            example: null
+                            description: Jam sebelum force drop ke RESCUE (null = disabled)
+                          RESCUE:
+                            type: integer
+                            nullable: true
+                            example: 48
+                          FEED:
+                            type: integer
+                            nullable: true
+                            example: 24
+                          RESIDUE:
+                            type: integer
+                            nullable: true
+                            example: 12
+                      pricingDefaults:
+                        type: object
+                        properties:
+                          warehouseCostPerKg:
+                            type: integer
+                            example: 1000
+                          logisticsCostPerKg:
+                            type: integer
+                            example: 1500
+                          marginPerKg:
+                            type: integer
+                            example: 2000
+                      rescueDealDurationHours:
+                        type: integer
+                        example: 48
+                        description: Durasi rescue deal aktif
+                      earlyAccessWindowHours:
+                        type: integer
+                        example: 2
+                        description: Early access untuk Gold/Platinum
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden - hanya ADMIN
+
+    put:
+      tags:
+        - Admin
+      summary: Update konfigurasi platform
+      description: |
+        Memperbarui konfigurasi cascade platform (partial update).
+        
+        **Hak Akses**: ADMIN only
+        
+        **Validasi Otomatis**:
+        - Threshold consistency: fresh > rescue > feed >= residue
+        - Timer values: 0-8760 jam (1 tahun)
+        - Pricing: 0-10,000,000 IDR
+        
+        Semua field bersifat opsional (partial update).
+      operationId: updatePlatformConfig
+      security:
+        - SessionAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                thresholds:
+                  type: object
+                  properties:
+                    fresh:
+                      type: integer
+                      minimum: 0
+                      maximum: 100
+                    rescue:
+                      type: integer
+                      minimum: 0
+                      maximum: 100
+                    feed:
+                      type: integer
+                      minimum: 0
+                      maximum: 100
+                    residue:
+                      type: integer
+                      minimum: 0
+                      maximum: 100
+                stageTimersHours:
+                  type: object
+                  properties:
+                    FRESH:
+                      type: integer
+                      nullable: true
+                      minimum: 0
+                      maximum: 8760
+                    RESCUE:
+                      type: integer
+                      nullable: true
+                      minimum: 0
+                      maximum: 8760
+                    FEED:
+                      type: integer
+                      nullable: true
+                      minimum: 0
+                      maximum: 8760
+                    RESIDUE:
+                      type: integer
+                      nullable: true
+                      minimum: 0
+                      maximum: 8760
+                pricing:
+                  type: object
+                  properties:
+                    warehouseCostPerKg:
+                      type: integer
+                      minimum: 0
+                      maximum: 10000000
+                    logisticsCostPerKg:
+                      type: integer
+                      minimum: 0
+                      maximum: 10000000
+                    marginPerKg:
+                      type: integer
+                      minimum: 0
+                      maximum: 10000000
+                rescueDealDurationHours:
+                  type: integer
+                  minimum: 1
+                  maximum: 720
+                earlyAccessWindowHours:
+                  type: integer
+                  minimum: 0
+                  maximum: 168
+            examples:
+              updateThresholds:
+                summary: Update thresholds
+                value:
+                  thresholds:
+                    fresh: 75
+                    rescue: 45
+              updateTimers:
+                summary: Update stage timers
+                value:
+                  stageTimersHours:
+                    RESCUE: 36
+                    FEED: 18
+              updatePricing:
+                summary: Update pricing defaults
+                value:
+                  pricing:
+                    warehouseCostPerKg: 1200
+                    marginPerKg: 2500
+      responses:
+        '200':
+          description: Konfigurasi berhasil diperbarui
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Konfigurasi cascade diperbarui"
+                  data:
+                    type: object
+                    description: Konfigurasi baru setelah update
+        '400':
+          description: Body kosong atau tidak ada perubahan
+        '401':
+          description: Unauthorized
+        '403':
+          description: Forbidden
+        '422':
+          description: Validasi gagal atau threshold tidak konsisten
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ValidationError'
+
+    patch:
+      tags:
+        - Admin
+      summary: Update konfigurasi platform (alias)
+      description: Alias dari PUT /api/admin/config
+      operationId: patchPlatformConfig
+      security:
+        - SessionAuth: []
+      requestBody:
+        $ref: '#/components/paths/~1api~1admin~1config/put/requestBody'
+      responses:
+        $ref: '#/components/paths/~1api~1admin~1config/put/responses'
