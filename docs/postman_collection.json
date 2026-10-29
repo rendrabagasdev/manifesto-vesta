@@ -1,0 +1,416 @@
+{
+  "info": {
+    "name": "Vesta Marketplace API",
+    "description": "Collection untuk testing API Vesta Marketplace - Platform cascade freshness",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{session_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "session_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "cron_secret",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/health",
+              "host": ["{{base_url}}"],
+              "path": ["api", "health"]
+            },
+            "description": "Cek status kesehatan API"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        {
+          "name": "Get Product Breakdown",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/products/1/breakdown",
+              "host": ["{{base_url}}"],
+              "path": ["api", "products", "1", "breakdown"]
+            },
+            "description": "Mendapatkan breakdown harga produk dengan simulasi cascade pricing"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Batches",
+      "item": [
+        {
+          "name": "Create Batch",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"productId\": 1,\n  \"warehouseId\": 1,\n  \"harvestDate\": \"2026-10-20\",\n  \"quantityKg\": 500,\n  \"storageTempC\": 5.0,\n  \"qualityNote\": \"Grade A, organik\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/batches",
+              "host": ["{{base_url}}"],
+              "path": ["api", "batches"]
+            },
+            "description": "Membuat batch baru (PRODUCER, WAREHOUSE, ADMIN)"
+          }
+        },
+        {
+          "name": "Update Batch Quality",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"storageTempC\": 7.5,\n  \"qualityNote\": \"Suhu naik, perlu monitoring\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/batches/123/quality",
+              "host": ["{{base_url}}"],
+              "path": ["api", "batches", "123", "quality"]
+            },
+            "description": "Update kualitas batch (WAREHOUSE, ADMIN)"
+          }
+        },
+        {
+          "name": "Sync Batch State",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/batches/123/sync",
+              "host": ["{{base_url}}"],
+              "path": ["api", "batches", "123", "sync"]
+            },
+            "description": "Trigger manual sinkronisasi status cascade (WAREHOUSE, ADMIN)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "item": [
+        {
+          "name": "Place Order - Regular",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"batchId\": 123,\n      \"quantityKg\": 10.0\n    }\n  ],\n  \"deliveryAddress\": \"Jl. Raya No. 123, Jakarta Selatan\",\n  \"contactPhone\": \"081234567890\",\n  \"notes\": \"Pengiriman pagi\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/orders",
+              "host": ["{{base_url}}"],
+              "path": ["api", "orders"]
+            },
+            "description": "Buat pesanan regular dari marketplace"
+          }
+        },
+        {
+          "name": "Place Order - Direct Purchase",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"batchId\": 123,\n      \"quantityKg\": 5.0,\n      \"source\": \"RESCUE\"\n    }\n  ],\n  \"contactPhone\": \"081234567890\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/orders",
+              "host": ["{{base_url}}"],
+              "path": ["api", "orders"]
+            },
+            "description": "Pembelian langsung RESCUE/FEED/RESIDUE (single batch only)"
+          }
+        },
+        {
+          "name": "Place Order - Preorder",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"items\": [\n    {\n      \"batchId\": 123,\n      \"quantityKg\": 50.0\n    }\n  ],\n  \"kind\": \"PREORDER\",\n  \"scheduledFor\": \"2026-10-30\",\n  \"recurrence\": \"WEEKLY\",\n  \"notes\": \"Untuk kebutuhan restoran\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/orders",
+              "host": ["{{base_url}}"],
+              "path": ["api", "orders"]
+            },
+            "description": "Buat preorder dengan scheduled delivery (BUSINESS)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rescue Deals",
+      "item": [
+        {
+          "name": "Claim Rescue Deal",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"quantityKg\": 5.0\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/rescue-deals/45/claim",
+              "host": ["{{base_url}}"],
+              "path": ["api", "rescue-deals", "45", "claim"]
+            },
+            "description": "Klaim rescue deal dengan quota enforcement"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cascade",
+      "item": [
+        {
+          "name": "Simulate Tick - Info",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/demo/simulate-tick",
+              "host": ["{{base_url}}"],
+              "path": ["api", "demo", "simulate-tick"]
+            },
+            "description": "Info endpoint simulasi"
+          }
+        },
+        {
+          "name": "Simulate Tick - Run",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"hours\": 48\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/demo/simulate-tick",
+              "host": ["{{base_url}}"],
+              "path": ["api", "demo", "simulate-tick"]
+            },
+            "description": "Simulasi waktu maju (ADMIN only, requires SIMULATE_TIME_ENABLED=true)"
+          }
+        },
+        {
+          "name": "Cron Cascade Tick",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{cron_secret}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/cron/cascade-tick",
+              "host": ["{{base_url}}"],
+              "path": ["api", "cron", "cascade-tick"]
+            },
+            "description": "Trigger cascade tick via cron (requires Bearer token)"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Get Platform Config",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/admin/config",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "config"]
+            },
+            "description": "Ambil konfigurasi platform saat ini (ADMIN only)"
+          }
+        },
+        {
+          "name": "Update Config - Thresholds",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"thresholds\": {\n    \"fresh\": 75,\n    \"rescue\": 45,\n    \"feed\": 22,\n    \"residue\": 0\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/config",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "config"]
+            },
+            "description": "Update cascade thresholds (ADMIN only)"
+          }
+        },
+        {
+          "name": "Update Config - Stage Timers",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"stageTimersHours\": {\n    \"RESCUE\": 36,\n    \"FEED\": 18,\n    \"RESIDUE\": 12\n  }\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/config",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "config"]
+            },
+            "description": "Update stage timers untuk force transition (ADMIN only)"
+          }
+        },
+        {
+          "name": "Update Config - Pricing",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pricing\": {\n    \"warehouseCostPerKg\": 1200,\n    \"logisticsCostPerKg\": 1800,\n    \"marginPerKg\": 2500\n  },\n  \"rescueDealDurationHours\": 48,\n  \"earlyAccessWindowHours\": 2\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/config",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "config"]
+            },
+            "description": "Update pricing defaults dan rescue deal config (ADMIN only)"
+          }
+        }
+      ]
+    }
+  ]
+}
