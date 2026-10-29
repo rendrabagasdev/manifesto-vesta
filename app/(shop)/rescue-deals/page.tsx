@@ -9,9 +9,8 @@ import {
 } from "@/src/lib/marketplace/queries";
 import { getDealAccess } from "@/src/lib/pricing/rescue";
 import { formatIdr, formatKg, formatNumber } from "@/src/lib/batches/format";
-import { DirectBuyForm } from "@/src/components/marketplace/direct-buy-form";
+import { AddToCart } from "@/src/components/marketplace/add-to-cart";
 import { NotifyMe } from "@/src/components/marketplace/notify-me";
-import { buyRescueDealAction } from "@/app/(shop)/actions";
 
 export const instant = false;
 
@@ -102,13 +101,18 @@ function DealCard({ deal, earlyAccessHours }: { deal: RescueDealView; earlyAcces
                 : "Penawaran belum aktif."}
             </p>
           ) : (
-            <DirectBuyForm
-              action={buyRescueDealAction}
-              batchId={deal.batchId}
-              source="RESCUE"
-              pricePerKg={deal.rescuePricePerKg}
-              maxKg={deal.availableKg}
-              label="Beli"
+            <AddToCart
+              product={{
+                batchId: deal.batchId,
+                batchCode: deal.batchCode,
+                productId: deal.productId,
+                productName: deal.productName,
+                unit: deal.unit,
+                pricePerKg: deal.rescuePricePerKg,
+                maxKg: deal.availableKg,
+                warehouseName: deal.warehouseName,
+                warehouseCity: deal.warehouseCity,
+              }}
             />
           )}
         </div>
@@ -132,7 +136,7 @@ export default async function RescueDealsPage() {
           Penawaran diskon
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-ink-muted">
-          Harga lebih murah untuk stok yang mendekati akhir masa jual.
+          Harga lebih murah untuk stok yang mendekati akhir masa jual. Masukkan ke keranjang lalu checkout dengan COD.
         </p>
       </header>
 
