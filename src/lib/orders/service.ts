@@ -21,6 +21,7 @@ import {
   estimateCartRoute,
   type CartRouteEstimate,
 } from "@/src/lib/delivery/routes";
+import { creditOrderPayment } from "@/src/lib/wallet/service";
 
 type QueryClient = Pick<typeof db, "orm">;
 type TxClient = Parameters<Parameters<typeof db.transaction>[0]>[0];
@@ -87,13 +88,24 @@ async function settleOrder(
     customer?: SnapCustomer;
   },
 ): Promise<Pick<PurchaseResult, "paid" | "paymentUrl">> {
-  if (!isMidtransConfigured()) {
+  const markPaid = async (provider: "DEMO" | "MIDTRANS_SNAP", reference: string) => {
     await tx.orm.public.Order.where({ id: options.orderId }).update({
       status: "PAID",
-      paymentProvider: "DEMO",
-      paymentRef: `DEMO-${options.code}`,
+      paymentProvider: provider,
+      paymentRef: reference,
       paidAt: new Date().toISOString(),
     });
+
+    // Demo settlement: the order is instantly PAID, so producer wallets must
+    // be credited inside the very same transaction that flips the status.
+    await creditOrderPayment(tx, {
+      orderId: options.orderId,
+      orderCode: options.code,
+    });
+  };
+
+  if (!isMidtransConfigured()) {
+    await markPaid("DEMO", `DEMO-${options.code}`);
     return { paid: true, paymentUrl: null };
   }
 
@@ -105,12 +117,7 @@ async function settleOrder(
   });
 
   if (!snap) {
-    await tx.orm.public.Order.where({ id: options.orderId }).update({
-      status: "PAID",
-      paymentProvider: "DEMO",
-      paymentRef: `DEMO-${options.code}`,
-      paidAt: new Date().toISOString(),
-    });
+    await markPaid("DEMO", `DEMO-${options.code}`);
     return { paid: true, paymentUrl: null };
   }
 

@@ -5,6 +5,7 @@ import {
   type QuotaStatus,
 } from "@/src/lib/loyalty/tiers";
 import { getImpactSummary, type ImpactSummary } from "@/src/lib/impact/ledger";
+import { calculateProducerShareForItem } from "@/src/lib/wallet/share";
 
 type QueryClient = Pick<typeof db, "orm">;
 
@@ -827,9 +828,11 @@ export async function getSalesForProducer(
       order.include("buyer", (buyer) => buyer.select("id", "name")),
     )
     .include("batch", (batch) =>
-      batch.include("product", (product) =>
-        product.select("id", "name", "producerId"),
-      ),
+      batch
+        .include("product", (product) =>
+          product.select("id", "name", "producerId", "basePricePerKg"),
+        )
+        .include("priceBreakdown"),
     )
     .orderBy((item) => item.createdAt.desc())
     .all();
@@ -867,7 +870,14 @@ export async function getSalesForProducer(
       lineTotal: item.lineTotal,
       stage: item.stage,
     });
-    view.producerTotal += item.lineTotal;
+
+    // Mirror the producer wallet split: base price cut by the cascade
+    // discount, so this figure never differs from the wallet ledger.
+    view.producerTotal += calculateProducerShareForItem({
+      basePricePerKg: item.batch.product.basePricePerKg,
+      rescueDiscountPct: item.batch.priceBreakdown?.rescueDiscountPct ?? 0,
+      quantityKg: item.quantityKg,
+    });
   }
 
   return Array.from(byOrder.values());

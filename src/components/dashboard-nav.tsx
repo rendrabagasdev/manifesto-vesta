@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import {
   Briefcase,
   ClipboardList,
+  HandCoins,
   IdCard,
   LayoutDashboard,
   Package,
@@ -13,18 +14,23 @@ import {
   ShoppingBasket,
   Sprout,
   UserRound,
+  Wallet,
   Warehouse,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { UserRole } from "@/src/lib/auth/roles";
+import { BUYER_ROLES } from "@/src/lib/auth/roles";
 
-type DashboardNavProps = {
-  role: UserRole;
-  canViewBatches: boolean;
-  variant: "sidebar" | "mobile";
+type DashboardNavItem = {
+  href: string;
+  label: string;
+  icon: typeof Package;
 };
 
-const ROLE_MODULE: Record<UserRole, { href: string; label: string; icon: typeof Package } | null> = {
+const ROLE_MODULE: Record<
+  UserRole,
+  { href: string; label: string; icon: typeof Package } | null
+> = {
   ADMIN: { href: "/dashboard/admin", label: "Modul admin", icon: ShieldCheck },
   PRODUCER: { href: "/dashboard/producer", label: "Modul produsen", icon: Sprout },
   WAREHOUSE: { href: "/dashboard/warehouse", label: "Modul gudang", icon: Warehouse },
@@ -32,13 +38,17 @@ const ROLE_MODULE: Record<UserRole, { href: string; label: string; icon: typeof 
   BUSINESS: { href: "/dashboard/business", label: "Modul bisnis", icon: Briefcase },
 };
 
-const BUYER_ROLES: UserRole[] = ["CONSUMER", "BUSINESS"];
-
-export function DashboardNav({ role, canViewBatches, variant }: DashboardNavProps) {
-  const pathname = usePathname();
+/**
+ * The destinations a role sees, in the order every dashboard surface renders
+ * them: the sidebar on desktop and the mobile hamburger sheet.
+ */
+export function getDashboardNavItems(
+  role: UserRole,
+  canViewBatches: boolean,
+): DashboardNavItem[] {
   const roleModule = ROLE_MODULE[role];
 
-  const items = [
+  return [
     { href: "/dashboard", label: "Ringkasan", icon: LayoutDashboard },
     ...(canViewBatches
       ? [{ href: "/dashboard/batches", label: "Batch", icon: Package }]
@@ -63,46 +73,50 @@ export function DashboardNav({ role, canViewBatches, variant }: DashboardNavProp
             icon: Warehouse,
           },
           {
+            href: "/dashboard/admin/payouts",
+            label: "Payout",
+            icon: HandCoins,
+          },
+          {
             href: "/dashboard/admin/config",
             label: "Konfigurasi",
             icon: Settings2,
           },
         ]
       : []),
-    ...(roleModule ? [{ ...roleModule }] : []),
+    ...(role === "PRODUCER"
+      ? [{ href: "/dashboard/wallet", label: "Wallet", icon: Wallet }]
+      : []),
+    ...(roleModule ? [roleModule] : []),
     { href: "/dashboard/profile", label: "Profil", icon: IdCard },
     ...(BUYER_ROLES.includes(role)
       ? [{ href: "/marketplace", label: "Belanja", icon: ShoppingBasket }]
       : []),
   ];
+}
 
-  const buyerMobile = variant === "mobile" && BUYER_ROLES.includes(role);
-  const visibleItems = buyerMobile
-    ? items.filter(
-        (item) => item.href !== "/dashboard/profile" && item.href !== "/marketplace",
-      )
-    : items;
+function isItemActive(pathname: string, href: string): boolean {
+  if (href === "/dashboard") return pathname === href;
+  return pathname === href || pathname.startsWith(`${href}/`);
+}
 
-  const activeHref = visibleItems
+export function DashboardNav({ role, canViewBatches }: {
+  role: UserRole;
+  canViewBatches: boolean;
+}) {
+  const pathname = usePathname();
+  const items = getDashboardNavItems(role, canViewBatches);
+  const activeHref = items
     .map((item) => item.href)
-    .filter((href) =>
-      href === "/dashboard"
-        ? pathname === href
-        : pathname === href || pathname.startsWith(`${href}/`),
-    )
+    .filter((href) => isItemActive(pathname, href))
     .sort((a, b) => b.length - a.length)[0];
 
   return (
     <nav
       aria-label="Navigasi ruang kerja"
-      className={cn(
-        "min-w-0",
-        variant === "sidebar"
-          ? "space-y-1"
-          : "flex items-center gap-1 overflow-x-auto",
-      )}
+      className="min-w-0 space-y-1"
     >
-      {visibleItems.map((item) => {
+      {items.map((item) => {
         const active = item.href === activeHref;
         const Icon = item.icon;
 
@@ -112,22 +126,13 @@ export function DashboardNav({ role, canViewBatches, variant }: DashboardNavProp
             href={item.href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "inline-flex items-center gap-2.5 whitespace-nowrap text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
-              variant === "sidebar"
-                ? "h-9 w-full rounded-lg px-3 font-medium"
-                : "h-11 shrink-0 rounded-lg px-2.5 font-semibold",
-              variant === "sidebar" && active
+              "inline-flex h-9 w-full items-center gap-2.5 whitespace-nowrap rounded-lg px-3 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
+              active
                 ? "bg-surface text-ink"
-                : variant === "sidebar"
-                  ? "text-ink-muted hover:bg-surface/70 hover:text-ink"
-                  : active
-                    ? "bg-surface text-ink"
-                    : "text-ink-muted hover:bg-surface/70 hover:text-ink",
+                : "text-ink-muted hover:bg-surface/70 hover:text-ink",
             )}
           >
-            {variant === "sidebar" ? (
-              <Icon className="size-4 shrink-0" aria-hidden="true" />
-            ) : null}
+            <Icon className="size-4 shrink-0" aria-hidden="true" />
             {item.label}
           </Link>
         );

@@ -254,7 +254,7 @@ export default async function DashboardPage() {
       </section>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-6">
-        <section className="flex flex-col rounded-xl border border-line bg-surface lg:col-span-4">
+        <section className="flex flex-col rounded-xl border border-line bg-surface lg:col-span-4 min-w-0">
           <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
             <h2 className="text-sm font-semibold text-ink">
               Perlu ditindaklanjuti
@@ -319,7 +319,7 @@ export default async function DashboardPage() {
           )}
         </section>
 
-        <section className="rounded-xl border border-line bg-surface p-4 lg:col-span-2">
+        <section className="rounded-xl border border-line bg-surface p-4 lg:col-span-2 min-w-0">
           <h2 className="text-sm font-semibold text-ink">Sebaran tahap</h2>
           <ul className="mt-3 space-y-1">
             {BATCH_STATUSES.map((status) => {

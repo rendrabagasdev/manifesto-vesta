@@ -1,0 +1,765 @@
+[
+  {
+    "id": "table.ProducerWallet",
+    "label": "Create table \"ProducerWallet\"",
+    "summary": "Creates table \"ProducerWallet\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "ProducerWallet"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"ProducerWallet\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"ProducerWallet\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"ProducerWallet\"",
+        "sql": "CREATE TABLE \"public\".\"ProducerWallet\" (\n  \"balance\" int4 DEFAULT 0 NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"id\" SERIAL NOT NULL,\n  \"producerId\" int4 NOT NULL,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"withdrawnTotal\" int4 DEFAULT 0 NOT NULL,\n  PRIMARY KEY (\"id\")\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"ProducerWallet\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3))) AS \"result\"",
+        "params": [
+          "\"public\".\"ProducerWallet\"",
+          "r",
+          "p"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.WalletTransaction",
+    "label": "Create table \"WalletTransaction\"",
+    "summary": "Creates table \"WalletTransaction\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "WalletTransaction"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"WalletTransaction\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"WalletTransaction\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"WalletTransaction\"",
+        "sql": "CREATE TABLE \"public\".\"WalletTransaction\" (\n  \"actorId\" int4,\n  \"amount\" int4 NOT NULL,\n  \"balanceAfter\" int4 NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"description\" text,\n  \"id\" SERIAL NOT NULL,\n  \"reference\" text,\n  \"source\" text DEFAULT 'ADJUSTMENT' NOT NULL,\n  \"type\" text NOT NULL,\n  \"walletId\" int4 NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"WalletTransaction_source_check_74de9c4f\" CHECK (\"source\" IN ('ORDER', 'WITHDRAWAL', 'ADJUSTMENT')),\n  CONSTRAINT \"WalletTransaction_type_check_e3a9320e\" CHECK (\"type\" IN ('CREDIT', 'DEBIT'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"WalletTransaction\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3))) AS \"result\"",
+        "params": [
+          "\"public\".\"WalletTransaction\"",
+          "r",
+          "p"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "table.WithdrawalRequest",
+    "label": "Create table \"WithdrawalRequest\"",
+    "summary": "Creates table \"WithdrawalRequest\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "table",
+        "name": "WithdrawalRequest"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure table \"WithdrawalRequest\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"WithdrawalRequest\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create table \"WithdrawalRequest\"",
+        "sql": "CREATE TABLE \"public\".\"WithdrawalRequest\" (\n  \"amount\" int4 NOT NULL,\n  \"bankAccountName\" text NOT NULL,\n  \"bankAccountNumber\" text NOT NULL,\n  \"bankName\" text NOT NULL,\n  \"createdAt\" timestamptz DEFAULT (now()) NOT NULL,\n  \"decisionNote\" text,\n  \"id\" SERIAL NOT NULL,\n  \"note\" text,\n  \"requestedById\" int4 NOT NULL,\n  \"reviewedAt\" timestamptz,\n  \"reviewedById\" int4,\n  \"status\" text DEFAULT 'PENDING' NOT NULL,\n  \"transactionId\" int4,\n  \"updatedAt\" timestamptz NOT NULL,\n  \"walletId\" int4 NOT NULL,\n  PRIMARY KEY (\"id\"),\n  CONSTRAINT \"WithdrawalRequest_status_check_56005a61\" CHECK (\"status\" IN ('PENDING', 'APPROVED', 'REJECTED'))\n)",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify table \"WithdrawalRequest\" exists",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3))) AS \"result\"",
+        "params": [
+          "\"public\".\"WithdrawalRequest\"",
+          "r",
+          "p"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.ProducerWallet.ProducerWallet_producerId_key",
+    "label": "Add unique constraint on \"ProducerWallet\" (producerId)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "ProducerWallet_producerId_key",
+        "table": "ProducerWallet"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"ProducerWallet_producerId_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ProducerWallet_producerId_key",
+          "public",
+          "\"public\".\"ProducerWallet\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"ProducerWallet_producerId_key\"",
+        "sql": "ALTER TABLE \"public\".\"ProducerWallet\" ADD CONSTRAINT \"ProducerWallet_producerId_key\" UNIQUE (\"producerId\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify unique constraint \"ProducerWallet_producerId_key\" exists on (producerId)",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb)) AS \"result\"",
+        "params": [
+          "ProducerWallet_producerId_key",
+          "public",
+          "\"public\".\"ProducerWallet\"",
+          "u",
+          "[\"producerId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "unique.WalletTransaction.WalletTransaction_walletId_source_reference_key",
+    "label": "Add unique constraint on \"WalletTransaction\" (walletId, source, reference)",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "unique",
+        "name": "WalletTransaction_walletId_source_reference_key",
+        "table": "WalletTransaction"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure constraint \"WalletTransaction_walletId_source_reference_key\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "WalletTransaction_walletId_source_reference_key",
+          "public",
+          "\"public\".\"WalletTransaction\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add unique constraint \"WalletTransaction_walletId_source_reference_key\"",
+        "sql": "ALTER TABLE \"public\".\"WalletTransaction\" ADD CONSTRAINT \"WalletTransaction_walletId_source_reference_key\" UNIQUE (\"walletId\", \"source\", \"reference\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify unique constraint \"WalletTransaction_walletId_source_reference_key\" exists on (walletId, source, reference)",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb)) AS \"result\"",
+        "params": [
+          "WalletTransaction_walletId_source_reference_key",
+          "public",
+          "\"public\".\"WalletTransaction\"",
+          "u",
+          "[\"walletId\",\"source\",\"reference\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.WalletTransaction.WalletTransaction_actorId_idx_a58f6b4b",
+    "label": "Create index \"WalletTransaction_actorId_idx_a58f6b4b\" on \"WalletTransaction\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "WalletTransaction_actorId_idx_a58f6b4b",
+        "table": "WalletTransaction"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"WalletTransaction_actorId_idx_a58f6b4b\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"WalletTransaction_actorId_idx_a58f6b4b\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"WalletTransaction_actorId_idx_a58f6b4b\"",
+        "sql": "CREATE INDEX \"WalletTransaction_actorId_idx_a58f6b4b\" ON \"public\".\"WalletTransaction\" (\"actorId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"WalletTransaction_actorId_idx_a58f6b4b\" exists on \"WalletTransaction\" with the planned definition",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
+        "params": [
+          "\"public\".\"WalletTransaction_actorId_idx_a58f6b4b\"",
+          "i",
+          "I",
+          "\"public\".\"WalletTransaction\"",
+          "btree",
+          "[\"actorId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.WalletTransaction.WalletTransaction_walletId_idx_2e003173",
+    "label": "Create index \"WalletTransaction_walletId_idx_2e003173\" on \"WalletTransaction\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "WalletTransaction_walletId_idx_2e003173",
+        "table": "WalletTransaction"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"WalletTransaction_walletId_idx_2e003173\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"WalletTransaction_walletId_idx_2e003173\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"WalletTransaction_walletId_idx_2e003173\"",
+        "sql": "CREATE INDEX \"WalletTransaction_walletId_idx_2e003173\" ON \"public\".\"WalletTransaction\" (\"walletId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"WalletTransaction_walletId_idx_2e003173\" exists on \"WalletTransaction\" with the planned definition",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
+        "params": [
+          "\"public\".\"WalletTransaction_walletId_idx_2e003173\"",
+          "i",
+          "I",
+          "\"public\".\"WalletTransaction\"",
+          "btree",
+          "[\"walletId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.WithdrawalRequest.WithdrawalRequest_requestedById_idx_f9a56c66",
+    "label": "Create index \"WithdrawalRequest_requestedById_idx_f9a56c66\" on \"WithdrawalRequest\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "WithdrawalRequest_requestedById_idx_f9a56c66",
+        "table": "WithdrawalRequest"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"WithdrawalRequest_requestedById_idx_f9a56c66\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"WithdrawalRequest_requestedById_idx_f9a56c66\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"WithdrawalRequest_requestedById_idx_f9a56c66\"",
+        "sql": "CREATE INDEX \"WithdrawalRequest_requestedById_idx_f9a56c66\" ON \"public\".\"WithdrawalRequest\" (\"requestedById\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"WithdrawalRequest_requestedById_idx_f9a56c66\" exists on \"WithdrawalRequest\" with the planned definition",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
+        "params": [
+          "\"public\".\"WithdrawalRequest_requestedById_idx_f9a56c66\"",
+          "i",
+          "I",
+          "\"public\".\"WithdrawalRequest\"",
+          "btree",
+          "[\"requestedById\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.WithdrawalRequest.WithdrawalRequest_reviewedById_idx_e2835478",
+    "label": "Create index \"WithdrawalRequest_reviewedById_idx_e2835478\" on \"WithdrawalRequest\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "WithdrawalRequest_reviewedById_idx_e2835478",
+        "table": "WithdrawalRequest"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"WithdrawalRequest_reviewedById_idx_e2835478\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"WithdrawalRequest_reviewedById_idx_e2835478\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"WithdrawalRequest_reviewedById_idx_e2835478\"",
+        "sql": "CREATE INDEX \"WithdrawalRequest_reviewedById_idx_e2835478\" ON \"public\".\"WithdrawalRequest\" (\"reviewedById\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"WithdrawalRequest_reviewedById_idx_e2835478\" exists on \"WithdrawalRequest\" with the planned definition",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
+        "params": [
+          "\"public\".\"WithdrawalRequest_reviewedById_idx_e2835478\"",
+          "i",
+          "I",
+          "\"public\".\"WithdrawalRequest\"",
+          "btree",
+          "[\"reviewedById\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.WithdrawalRequest.WithdrawalRequest_status_idx_e98638ab",
+    "label": "Create index \"WithdrawalRequest_status_idx_e98638ab\" on \"WithdrawalRequest\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "WithdrawalRequest_status_idx_e98638ab",
+        "table": "WithdrawalRequest"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"WithdrawalRequest_status_idx_e98638ab\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"WithdrawalRequest_status_idx_e98638ab\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"WithdrawalRequest_status_idx_e98638ab\"",
+        "sql": "CREATE INDEX \"WithdrawalRequest_status_idx_e98638ab\" ON \"public\".\"WithdrawalRequest\" (\"status\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"WithdrawalRequest_status_idx_e98638ab\" exists on \"WithdrawalRequest\" with the planned definition",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
+        "params": [
+          "\"public\".\"WithdrawalRequest_status_idx_e98638ab\"",
+          "i",
+          "I",
+          "\"public\".\"WithdrawalRequest\"",
+          "btree",
+          "[\"status\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "index.WithdrawalRequest.WithdrawalRequest_walletId_idx_2e003173",
+    "label": "Create index \"WithdrawalRequest_walletId_idx_2e003173\" on \"WithdrawalRequest\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "index",
+        "name": "WithdrawalRequest_walletId_idx_2e003173",
+        "table": "WithdrawalRequest"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure index \"WithdrawalRequest_walletId_idx_2e003173\" does not exist",
+        "sql": "SELECT (to_regclass($1)) IS NULL AS \"result\"",
+        "params": [
+          "\"public\".\"WithdrawalRequest_walletId_idx_2e003173\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "create index \"WithdrawalRequest_walletId_idx_2e003173\"",
+        "sql": "CREATE INDEX \"WithdrawalRequest_walletId_idx_2e003173\" ON \"public\".\"WithdrawalRequest\" (\"walletId\")",
+        "params": []
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify index \"WithdrawalRequest_walletId_idx_2e003173\" exists on \"WithdrawalRequest\" with the planned definition",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_class\" AS \"c\" INNER JOIN \"pg_index\" AS \"i\" ON \"i\".\"indexrelid\" = \"c\".\"oid\" INNER JOIN \"pg_am\" AS \"m\" ON \"m\".\"oid\" = \"c\".\"relam\" WHERE (\"c\".\"oid\" = to_regclass($1) AND (\"c\".\"relkind\" = $2 OR \"c\".\"relkind\" = $3) AND \"i\".\"indrelid\" = to_regclass($4) AND NOT (\"i\".\"indisunique\") AND \"m\".\"amname\" = $5 AND (\"i\".\"indexprs\" IS NULL AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"i\".\"indkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"i\".\"indrelid\" AND key_attribute.attnum = key_column.attnum) = ($6)::jsonb) AND \"i\".\"indpred\" IS NULL)) AS \"result\"",
+        "params": [
+          "\"public\".\"WithdrawalRequest_walletId_idx_2e003173\"",
+          "i",
+          "I",
+          "\"public\".\"WithdrawalRequest\"",
+          "btree",
+          "[\"walletId\"]"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.ProducerWallet.ProducerWallet_producerId_fkey",
+    "label": "Add foreign key \"ProducerWallet_producerId_fkey\" on \"ProducerWallet\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "ProducerWallet_producerId_fkey",
+        "table": "ProducerWallet"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"ProducerWallet_producerId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "ProducerWallet_producerId_fkey",
+          "public",
+          "\"public\".\"ProducerWallet\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"ProducerWallet_producerId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"ProducerWallet\"\nADD CONSTRAINT \"ProducerWallet_producerId_fkey\"\nFOREIGN KEY (\"producerId\")\nREFERENCES \"public\".\"Producer\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"ProducerWallet_producerId_fkey\" exists with the planned columns, referenced table and actions",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb AND \"c\".\"confrelid\" = to_regclass($6) AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"confkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"confrelid\" AND key_attribute.attnum = key_column.attnum) = ($7)::jsonb AND \"c\".\"confdeltype\" = $8 AND \"c\".\"confupdtype\" = $9)) AS \"result\"",
+        "params": [
+          "ProducerWallet_producerId_fkey",
+          "public",
+          "\"public\".\"ProducerWallet\"",
+          "f",
+          "[\"producerId\"]",
+          "\"public\".\"Producer\"",
+          "[\"id\"]",
+          "c",
+          "a"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.WalletTransaction.WalletTransaction_walletId_fkey",
+    "label": "Add foreign key \"WalletTransaction_walletId_fkey\" on \"WalletTransaction\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "WalletTransaction_walletId_fkey",
+        "table": "WalletTransaction"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"WalletTransaction_walletId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "WalletTransaction_walletId_fkey",
+          "public",
+          "\"public\".\"WalletTransaction\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"WalletTransaction_walletId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"WalletTransaction\"\nADD CONSTRAINT \"WalletTransaction_walletId_fkey\"\nFOREIGN KEY (\"walletId\")\nREFERENCES \"public\".\"ProducerWallet\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"WalletTransaction_walletId_fkey\" exists with the planned columns, referenced table and actions",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb AND \"c\".\"confrelid\" = to_regclass($6) AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"confkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"confrelid\" AND key_attribute.attnum = key_column.attnum) = ($7)::jsonb AND \"c\".\"confdeltype\" = $8 AND \"c\".\"confupdtype\" = $9)) AS \"result\"",
+        "params": [
+          "WalletTransaction_walletId_fkey",
+          "public",
+          "\"public\".\"WalletTransaction\"",
+          "f",
+          "[\"walletId\"]",
+          "\"public\".\"ProducerWallet\"",
+          "[\"id\"]",
+          "c",
+          "a"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.WalletTransaction.WalletTransaction_actorId_fkey",
+    "label": "Add foreign key \"WalletTransaction_actorId_fkey\" on \"WalletTransaction\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "WalletTransaction_actorId_fkey",
+        "table": "WalletTransaction"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"WalletTransaction_actorId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "WalletTransaction_actorId_fkey",
+          "public",
+          "\"public\".\"WalletTransaction\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"WalletTransaction_actorId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"WalletTransaction\"\nADD CONSTRAINT \"WalletTransaction_actorId_fkey\"\nFOREIGN KEY (\"actorId\")\nREFERENCES \"public\".\"User\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"WalletTransaction_actorId_fkey\" exists with the planned columns, referenced table and actions",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb AND \"c\".\"confrelid\" = to_regclass($6) AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"confkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"confrelid\" AND key_attribute.attnum = key_column.attnum) = ($7)::jsonb AND \"c\".\"confdeltype\" = $8 AND \"c\".\"confupdtype\" = $9)) AS \"result\"",
+        "params": [
+          "WalletTransaction_actorId_fkey",
+          "public",
+          "\"public\".\"WalletTransaction\"",
+          "f",
+          "[\"actorId\"]",
+          "\"public\".\"User\"",
+          "[\"id\"]",
+          "a",
+          "a"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.WithdrawalRequest.WithdrawalRequest_walletId_fkey",
+    "label": "Add foreign key \"WithdrawalRequest_walletId_fkey\" on \"WithdrawalRequest\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "WithdrawalRequest_walletId_fkey",
+        "table": "WithdrawalRequest"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"WithdrawalRequest_walletId_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "WithdrawalRequest_walletId_fkey",
+          "public",
+          "\"public\".\"WithdrawalRequest\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"WithdrawalRequest_walletId_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"WithdrawalRequest\"\nADD CONSTRAINT \"WithdrawalRequest_walletId_fkey\"\nFOREIGN KEY (\"walletId\")\nREFERENCES \"public\".\"ProducerWallet\" (\"id\")\nON DELETE CASCADE"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"WithdrawalRequest_walletId_fkey\" exists with the planned columns, referenced table and actions",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb AND \"c\".\"confrelid\" = to_regclass($6) AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"confkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"confrelid\" AND key_attribute.attnum = key_column.attnum) = ($7)::jsonb AND \"c\".\"confdeltype\" = $8 AND \"c\".\"confupdtype\" = $9)) AS \"result\"",
+        "params": [
+          "WithdrawalRequest_walletId_fkey",
+          "public",
+          "\"public\".\"WithdrawalRequest\"",
+          "f",
+          "[\"walletId\"]",
+          "\"public\".\"ProducerWallet\"",
+          "[\"id\"]",
+          "c",
+          "a"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.WithdrawalRequest.WithdrawalRequest_requestedById_fkey",
+    "label": "Add foreign key \"WithdrawalRequest_requestedById_fkey\" on \"WithdrawalRequest\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "WithdrawalRequest_requestedById_fkey",
+        "table": "WithdrawalRequest"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"WithdrawalRequest_requestedById_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "WithdrawalRequest_requestedById_fkey",
+          "public",
+          "\"public\".\"WithdrawalRequest\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"WithdrawalRequest_requestedById_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"WithdrawalRequest\"\nADD CONSTRAINT \"WithdrawalRequest_requestedById_fkey\"\nFOREIGN KEY (\"requestedById\")\nREFERENCES \"public\".\"User\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"WithdrawalRequest_requestedById_fkey\" exists with the planned columns, referenced table and actions",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb AND \"c\".\"confrelid\" = to_regclass($6) AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"confkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"confrelid\" AND key_attribute.attnum = key_column.attnum) = ($7)::jsonb AND \"c\".\"confdeltype\" = $8 AND \"c\".\"confupdtype\" = $9)) AS \"result\"",
+        "params": [
+          "WithdrawalRequest_requestedById_fkey",
+          "public",
+          "\"public\".\"WithdrawalRequest\"",
+          "f",
+          "[\"requestedById\"]",
+          "\"public\".\"User\"",
+          "[\"id\"]",
+          "a",
+          "a"
+        ]
+      }
+    ]
+  },
+  {
+    "id": "foreignKey.WithdrawalRequest.WithdrawalRequest_reviewedById_fkey",
+    "label": "Add foreign key \"WithdrawalRequest_reviewedById_fkey\" on \"WithdrawalRequest\"",
+    "operationClass": "additive",
+    "target": {
+      "id": "postgres",
+      "details": {
+        "schema": "public",
+        "objectType": "foreignKey",
+        "name": "WithdrawalRequest_reviewedById_fkey",
+        "table": "WithdrawalRequest"
+      }
+    },
+    "precheck": [
+      {
+        "description": "ensure FK \"WithdrawalRequest_reviewedById_fkey\" does not exist",
+        "sql": "SELECT NOT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3))) AS \"result\"",
+        "params": [
+          "WithdrawalRequest_reviewedById_fkey",
+          "public",
+          "\"public\".\"WithdrawalRequest\""
+        ]
+      }
+    ],
+    "execute": [
+      {
+        "description": "add FK \"WithdrawalRequest_reviewedById_fkey\"",
+        "sql": "ALTER TABLE \"public\".\"WithdrawalRequest\"\nADD CONSTRAINT \"WithdrawalRequest_reviewedById_fkey\"\nFOREIGN KEY (\"reviewedById\")\nREFERENCES \"public\".\"User\" (\"id\")"
+      }
+    ],
+    "postcheck": [
+      {
+        "description": "verify FK \"WithdrawalRequest_reviewedById_fkey\" exists with the planned columns, referenced table and actions",
+        "sql": "SELECT EXISTS (SELECT 1 AS \"one\" FROM \"pg_constraint\" AS \"c\" INNER JOIN \"pg_namespace\" AS \"n\" ON \"n\".\"oid\" = \"c\".\"connamespace\" WHERE (\"c\".\"conname\" = $1 AND \"n\".\"nspname\" = $2 AND \"c\".\"conrelid\" = to_regclass($3) AND \"c\".\"contype\" = $4 AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"conkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"conrelid\" AND key_attribute.attnum = key_column.attnum) = ($5)::jsonb AND \"c\".\"confrelid\" = to_regclass($6) AND (SELECT coalesce(jsonb_agg(key_attribute.attname ORDER BY key_column.position), '[]'::jsonb) FROM unnest(\"c\".\"confkey\"::int2[]) WITH ORDINALITY AS key_column(attnum, position) JOIN pg_attribute key_attribute ON key_attribute.attrelid = \"c\".\"confrelid\" AND key_attribute.attnum = key_column.attnum) = ($7)::jsonb AND \"c\".\"confdeltype\" = $8 AND \"c\".\"confupdtype\" = $9)) AS \"result\"",
+        "params": [
+          "WithdrawalRequest_reviewedById_fkey",
+          "public",
+          "\"public\".\"WithdrawalRequest\"",
+          "f",
+          "[\"reviewedById\"]",
+          "\"public\".\"User\"",
+          "[\"id\"]",
+          "a",
+          "a"
+        ]
+      }
+    ]
+  }
+]

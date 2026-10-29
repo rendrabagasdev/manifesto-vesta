@@ -153,7 +153,7 @@ export default async function WarehouseDashboardPage() {
       ) : null}
 
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
-        <section aria-labelledby="monitor-heading" className="rounded-xl border border-line bg-surface lg:col-span-2">
+        <section aria-labelledby="monitor-heading" className="min-w-0 rounded-xl border border-line bg-surface lg:col-span-2">
           <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
             <h2 id="monitor-heading" className="flex items-center gap-2 text-sm font-semibold text-ink">
               <Thermometer className="size-4" aria-hidden="true" />
@@ -204,7 +204,7 @@ export default async function WarehouseDashboardPage() {
           )}
         </section>
 
-        <section aria-labelledby="stage-heading" className="rounded-xl border border-line bg-surface p-4">
+        <section aria-labelledby="stage-heading" className="min-w-0 rounded-xl border border-line bg-surface p-4">
           <h2 id="stage-heading" className="flex items-center gap-2 text-sm font-semibold text-ink">
             <WarehouseIcon className="size-4" aria-hidden="true" />
             Sebaran tahap
