@@ -1,10 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import { connection } from "next/server";
-import {
-  Flame,
-  Lock,
-} from "lucide-react";
 import { requireSession } from "@/src/lib/auth/session";
 import {
   getBuyerQuotaStatus,
@@ -12,8 +8,7 @@ import {
   type RescueDealView,
 } from "@/src/lib/marketplace/queries";
 import { getDealAccess } from "@/src/lib/pricing/rescue";
-import { formatIdr, formatNumber } from "@/src/lib/batches/format";
-import { FreshnessMeter } from "@/src/components/marketplace/freshness-meter";
+import { formatIdr, formatKg, formatNumber } from "@/src/lib/batches/format";
 import { DirectBuyForm } from "@/src/components/marketplace/direct-buy-form";
 import { NotifyMe } from "@/src/components/marketplace/notify-me";
 import { buyRescueDealAction } from "@/app/(shop)/actions";
@@ -22,7 +17,7 @@ export const instant = false;
 
 export const metadata: Metadata = {
   title: "Penawaran Diskon — Vesta",
-  description: "Harga lebih murah untuk batch dengan skor kesegaran menurun.",
+  description: "Harga lebih murah untuk stok yang mendekati akhir masa jual.",
 };
 
 function DealCard({ deal, earlyAccessHours }: { deal: RescueDealView; earlyAccessHours: number }) {
@@ -38,96 +33,85 @@ function DealCard({ deal, earlyAccessHours }: { deal: RescueDealView; earlyAcces
   const locked = !access.accessible && access.reason === "EARLY_ACCESS_LOCKED";
 
   return (
-    <article className="flex h-full flex-col rounded-xl border border-line bg-surface p-4">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex min-w-0 items-start gap-3">
-          <div className="relative size-14 shrink-0 overflow-hidden rounded-lg bg-stage-rescue/25">
-            {deal.imageUrl ? (
-              <Image
-                src={deal.imageUrl}
-                alt=""
-                fill
-                sizes="56px"
-                className="object-cover"
-              />
-            ) : (
-              <Flame
-                className="absolute inset-0 m-auto size-5 text-ink/50"
-                strokeWidth={1.5}
-                aria-hidden="true"
-              />
-            )}
-          </div>
-          <div className="min-w-0">
-            <p className="text-xs font-medium text-ink-muted">
-              {deal.discountLabel}
-            </p>
-            <h2 className="mt-0.5 truncate text-sm font-semibold text-ink">{deal.productName}</h2>
-          </div>
-        </div>
-        {deal.discountPct > 0 ? (
-          <p className="shrink-0 rounded-lg bg-stage-rescue/25 px-2 py-1 text-sm font-bold tabular-nums text-ink">
-            −{formatNumber(deal.discountPct)}%
-          </p>
+    <article className="flex h-full flex-col overflow-hidden rounded-xl border border-line bg-surface">
+      <div className="relative flex h-28 items-center justify-center overflow-hidden bg-surface-muted sm:h-40">
+        {deal.imageUrl ? (
+          <Image
+            src={deal.imageUrl}
+            alt=""
+            fill
+            sizes="(min-width: 1024px) 33vw, 50vw"
+            className="object-cover"
+          />
         ) : null}
-      </div>
-
-      <p className="mt-1.5 truncate text-[13px] text-ink-muted">
-        {deal.warehouseName}
-        {deal.warehouseCity ? `, ${deal.warehouseCity}` : ""} · {deal.batchCode}
-      </p>
-
-      <div className="mt-3 flex items-baseline gap-2">
-        <span className="font-heading text-lg font-bold tabular-nums tracking-tight text-ink">
-          {formatIdr(deal.rescuePricePerKg)}
-        </span>
-        <span className="text-sm text-ink-muted">/ {deal.unit}</span>
-        {deal.originalPricePerKg > deal.rescuePricePerKg ? (
-          <span className="text-xs tabular-nums text-ink-muted line-through">
-            {formatIdr(deal.originalPricePerKg)}
+        {deal.discountPct > 0 ? (
+          <span className="absolute right-2 top-2 rounded-md bg-brand-strong px-2 py-0.5 text-[11px] font-bold tabular-nums text-on-brand">
+            -{formatNumber(deal.discountPct)}%
           </span>
         ) : null}
       </div>
 
-      <div className="mt-3">
-        <FreshnessMeter score={deal.freshnessScore} size="sm" />
-      </div>
+      <div className="flex flex-1 flex-col p-3.5">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-ink-muted">
+          {deal.discountLabel}
+        </p>
+        <h2 className="mt-1 truncate text-sm font-semibold text-ink">
+          {deal.productName}
+        </h2>
 
-      <div className="mt-auto pt-3">
-        {locked ? (
-          <div>
-            <div className="flex items-start gap-2 rounded-lg bg-surface-muted px-3 py-2.5">
-              <Lock className="mt-0.5 size-4 shrink-0 text-ink-muted" aria-hidden="true" />
-              <div className="min-w-0">
+        <p className="mt-0.5 truncate text-xs text-ink-muted">
+          {deal.warehouseName}
+          {deal.warehouseCity ? `, ${deal.warehouseCity}` : ""}
+        </p>
+
+        <p className="mt-2 flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5">
+          <span className="font-heading text-base font-bold tabular-nums tracking-tight text-ink">
+            {formatIdr(deal.rescuePricePerKg)}
+          </span>
+          <span className="text-xs text-ink-muted">/{deal.unit}</span>
+          {deal.originalPricePerKg > deal.rescuePricePerKg ? (
+            <span className="text-[11px] tabular-nums text-ink-muted line-through">
+              {formatIdr(deal.originalPricePerKg)}
+            </span>
+          ) : null}
+        </p>
+
+        <p className="mt-0.5 truncate text-xs text-ink-muted">
+          {formatKg(deal.availableKg)} tersedia
+        </p>
+
+        <div className="mt-auto pt-3">
+          {locked ? (
+            <div>
+              <div className="rounded-lg border border-line bg-surface-muted px-3 py-2.5">
                 <p className="text-xs font-semibold text-ink">
-                  Penawaran belum terbuka
+                  Belum bisa diakses
                 </p>
-                <p className="mt-0.5 text-xs text-ink-muted">
-                  Coba lagi nanti atau aktifkan notifikasi.
+                <p className="mt-0.5 text-xs leading-relaxed text-ink-muted">
+                  Coba lagi nanti atau minta kabar saat tersedia.
                 </p>
               </div>
+              <div className="mt-2">
+                <NotifyMe dealId={deal.id} />
+              </div>
             </div>
-            <div className="mt-2">
-              <NotifyMe dealId={deal.id} />
-            </div>
-          </div>
-        ) : !access.accessible ? (
-          <p className="rounded-lg bg-surface-muted px-3 py-2.5 text-xs text-ink-muted">
-            {access.reason === "EXPIRED"
-              ? "Penawaran sudah berakhir."
-              : "Penawaran belum aktif."}
-          </p>
-        ) : (
-          <DirectBuyForm
-            action={buyRescueDealAction}
-            batchId={deal.batchId}
-            source="RESCUE"
-            pricePerKg={deal.rescuePricePerKg}
-            maxKg={deal.availableKg}
-            unit={deal.unit}
-            label="Beli"
-          />
-        )}
+          ) : !access.accessible ? (
+            <p className="rounded-lg bg-surface-muted px-3 py-2.5 text-xs text-ink-muted">
+              {access.reason === "EXPIRED"
+                ? "Penawaran sudah berakhir."
+                : "Penawaran belum aktif."}
+            </p>
+          ) : (
+            <DirectBuyForm
+              action={buyRescueDealAction}
+              batchId={deal.batchId}
+              source="RESCUE"
+              pricePerKg={deal.rescuePricePerKg}
+              maxKg={deal.availableKg}
+              label="Beli"
+            />
+          )}
+        </div>
       </div>
     </article>
   );
@@ -148,7 +132,7 @@ export default async function RescueDealsPage() {
           Penawaran diskon
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-ink-muted">
-          Harga lebih murah untuk batch dengan skor kesegaran di bawah 70.
+          Harga lebih murah untuk stok yang mendekati akhir masa jual.
         </p>
       </header>
 
@@ -158,7 +142,7 @@ export default async function RescueDealsPage() {
           <p className="mt-1 text-sm text-ink-muted">Cek lagi nanti, ya.</p>
         </div>
       ) : (
-        <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
           {deals.map((deal) => (
             <li key={deal.id} className="h-full">
               <DealCard deal={deal} earlyAccessHours={quota.earlyAccessHours} />

@@ -42,6 +42,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    // Hydration-safe: persisted cart is loaded after mount so the first client render matches the server.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setItems(readCart());
     setSaved(readSaved());
     setReady(true);

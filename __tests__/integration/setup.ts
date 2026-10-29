@@ -8,5 +8,7 @@ process.env.NEXTAUTH_SECRET =
 process.env.NEXTAUTH_URL = "http://localhost:3000";
 process.env.MIDTRANS_SERVER_KEY = "";
 process.env.FONNTE_API_TOKEN = "";
+process.env.WEATHER_API_ENABLED = "false";
+process.env.ROUTING_API_ENABLED = "false";
 process.env.SIMULATE_TIME_ENABLED = "true";
 process.env.MAINTENANCE_MODE = "false";

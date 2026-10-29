@@ -17,6 +17,10 @@ import {
   runLoyaltyExpiry,
   type LoyaltyExpiryResult,
 } from "@/src/lib/loyalty/tiers";
+import {
+  getWeatherForWarehouse,
+  type WeatherSnapshot,
+} from "@/src/lib/weather/service";
 
 export const CASCADE_CONFIG = {
   thresholds: DEFAULT_PLATFORM_CONFIG.thresholds,
@@ -59,6 +63,8 @@ export interface SyncBatchOptions {
   requirePriceBreakdown?: boolean;
   /** Reuse one config read across a tick instead of querying per batch. */
   config?: PlatformConfigView;
+  /** Ambient weather resolved before the transaction; null means unavailable. */
+  weather?: WeatherSnapshot | null;
 }
 
 export interface BatchSyncResult {
@@ -139,6 +145,8 @@ export async function syncBatchState(
     idealTempC: product.idealTempC,
     shelfLifeDays: product.shelfLifeDays,
     category: product.category,
+    ambientTempC: options.weather?.temperatureC ?? null,
+    ambientHumidityPct: options.weather?.humidityPct ?? null,
     now,
   });
 
@@ -428,7 +436,20 @@ export async function runCascadeTick(
   options: { actorId?: number | null; requirePriceBreakdown?: boolean } = {},
 ): Promise<CascadeTickResult> {
   const config = await getPlatformConfig();
-  const batches = await db.orm.public.Batch.select("id").all();
+  const [batches, warehouses] = await Promise.all([
+    db.orm.public.Batch.select("id", "warehouseId").all(),
+    db.orm.public.Warehouse.select("id", "latitude", "longitude").all(),
+  ]);
+
+  const weatherByWarehouse = new Map<number, WeatherSnapshot | null>();
+  await Promise.all(
+    warehouses.map(async (warehouse) => {
+      weatherByWarehouse.set(
+        warehouse.id,
+        await getWeatherForWarehouse(warehouse),
+      );
+    }),
+  );
 
   const transitions: BatchSyncResult[] = [];
   let processed = 0;
@@ -444,6 +465,7 @@ export async function runCascadeTick(
           respectManualOverride: true,
           requirePriceBreakdown: options.requirePriceBreakdown,
           config,
+          weather: weatherByWarehouse.get(batch.warehouseId) ?? null,
         }),
       );
 

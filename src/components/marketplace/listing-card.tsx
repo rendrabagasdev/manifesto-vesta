@@ -1,14 +1,9 @@
-import { MapPin } from "lucide-react";
+import Image from "next/image";
 import type { SimpleListing } from "@/src/lib/marketplace/queries";
 import { formatIdr, formatKg } from "@/src/lib/batches/format";
-import { FreshnessMeter } from "@/src/components/marketplace/freshness-meter";
 import { DirectBuyForm } from "@/src/components/marketplace/direct-buy-form";
 import type { PurchaseState } from "@/app/(shop)/actions";
 
-/**
- * Card for feed and residue listings — the two downstream marketplaces of the
- * cascade. `source` decides which server action handles the purchase.
- */
 export function ListingCard({
   listing,
   source,
@@ -20,57 +15,61 @@ export function ListingCard({
   action: (state: PurchaseState, formData: FormData) => Promise<PurchaseState>;
   buyLabel: string;
 }) {
+  const fallbackTag = source === "FEED" ? "Pakan" : "Residu";
+
   return (
-    <article className="flex h-full flex-col rounded-xl border border-line bg-surface p-4">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          {listing.tag ? (
-            <p className="text-xs font-medium text-ink-muted">
-              {listing.tag}
-            </p>
-          ) : null}
-          <h2 className="mt-0.5 truncate text-sm font-semibold text-ink">
-            {listing.productName}
-          </h2>
-        </div>
-        <p className="shrink-0 text-right">
-          <span className="font-heading text-lg font-bold tabular-nums tracking-tight text-ink">
+    <article className="flex h-full flex-col overflow-hidden rounded-xl border border-line bg-surface">
+      <div className="relative flex h-28 items-center justify-center overflow-hidden bg-surface-muted sm:h-40">
+        {listing.imageUrl ? (
+          <Image
+            src={listing.imageUrl}
+            alt=""
+            fill
+            sizes="(min-width: 1024px) 33vw, 50vw"
+            className="object-cover"
+          />
+        ) : null}
+      </div>
+
+      <div className="flex flex-1 flex-col p-3.5">
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-ink-muted">
+          {listing.tag ?? fallbackTag}
+        </p>
+        <h2 className="mt-1 truncate text-sm font-semibold text-ink">
+          {listing.productName}
+        </h2>
+
+        <p className="mt-0.5 truncate text-xs text-ink-muted">
+          {listing.warehouseName}
+          {listing.warehouseCity ? `, ${listing.warehouseCity}` : ""}
+        </p>
+
+        {listing.description ? (
+          <p className="mt-1 hidden line-clamp-2 text-xs leading-relaxed text-ink-muted sm:block">
+            {listing.description}
+          </p>
+        ) : null}
+
+        <p className="mt-2 flex items-baseline gap-1">
+          <span className="font-heading text-base font-bold tabular-nums tracking-tight text-ink">
             {formatIdr(listing.pricePerKg)}
           </span>
-          <span className="block text-xs text-ink-muted">per kg</span>
+          <span className="text-xs text-ink-muted">/kg</span>
         </p>
-      </div>
-
-      <p className="mt-1.5 flex items-center gap-1 text-[13px] text-ink-muted">
-        <MapPin className="size-3.5 shrink-0" aria-hidden="true" />
-        <span className="min-w-0 truncate">
-          {listing.warehouseName}
-          {listing.warehouseCity ? `, ${listing.warehouseCity}` : ""} · {listing.batchCode}
-        </span>
-      </p>
-
-      {listing.description ? (
-        <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-ink-muted">
-          {listing.description}
+        <p className="mt-0.5 truncate text-xs text-ink-muted">
+          {formatKg(listing.availableKg)} tersedia
         </p>
-      ) : null}
 
-      <div className="mt-3">
-        <FreshnessMeter score={listing.freshnessScore} size="sm" />
-      </div>
-
-      <p className="mt-2 text-[13px] text-ink-muted">{formatKg(listing.availableKg)} tersedia</p>
-
-      <div className="mt-auto pt-3">
-        <DirectBuyForm
-          action={action}
-          listingId={listing.id}
-          source={source}
-          pricePerKg={listing.pricePerKg}
-          maxKg={listing.availableKg}
-          unit="kg"
-          label={buyLabel}
-        />
+        <div className="mt-auto pt-3">
+          <DirectBuyForm
+            action={action}
+            listingId={listing.id}
+            source={source}
+            pricePerKg={listing.pricePerKg}
+            maxKg={listing.availableKg}
+            label={buyLabel}
+          />
+        </div>
       </div>
     </article>
   );

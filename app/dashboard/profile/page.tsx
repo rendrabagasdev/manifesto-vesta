@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
-import { CalendarDays, IdCard, Mail, MapPin } from "lucide-react";
 import { requireSession } from "@/src/lib/auth/session";
 import { ROLE_LABELS } from "@/src/lib/auth/roles";
 import { db } from "@/src/prisma/db";
@@ -42,19 +41,12 @@ export default async function ProfilePage() {
   return (
     <div>
       <header className="max-w-2xl">
-        <div className="flex items-start gap-3">
-          <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand-strong">
-            <IdCard className="size-5" aria-hidden="true" />
-          </span>
-          <div>
-            <h1 className="font-heading text-2xl font-bold tracking-tight text-ink">
-              Profil
-            </h1>
-            <p className="mt-1 text-sm leading-relaxed text-ink-muted">
-              Kelola informasi pribadi dan alamat pengiriman Anda.
-            </p>
-          </div>
-        </div>
+        <h1 className="font-heading text-2xl font-bold tracking-tight text-ink sm:text-3xl">
+          Profil
+        </h1>
+        <p className="mt-2 text-sm leading-relaxed text-ink-muted">
+          Kelola informasi pribadi dan alamat pengiriman Anda.
+        </p>
       </header>
 
       <div className="mt-6 grid max-w-5xl gap-4 lg:grid-cols-[1fr_320px]">
@@ -86,40 +78,24 @@ export default async function ProfilePage() {
             </div>
           </div>
 
-          <dl className="mt-4 space-y-3 border-t border-line pt-4 text-sm">
-            <div className="flex items-start gap-2.5">
-              <Mail
-                className="mt-0.5 size-4 shrink-0 text-ink-muted"
-                aria-hidden="true"
-              />
-              <div className="min-w-0">
-                <dt className="text-xs text-ink-muted">Email</dt>
-                <dd className="mt-0.5 break-all text-ink">{user.email}</dd>
-              </div>
+          <dl className="mt-4 space-y-2.5 border-t border-line pt-4 text-sm">
+            <div className="flex items-start justify-between gap-3">
+              <dt className="shrink-0 text-ink-muted">Email</dt>
+              <dd className="min-w-0 break-all text-right text-ink">
+                {user.email}
+              </dd>
             </div>
-            <div className="flex items-start gap-2.5">
-              <MapPin
-                className="mt-0.5 size-4 shrink-0 text-ink-muted"
-                aria-hidden="true"
-              />
-              <div className="min-w-0">
-                <dt className="text-xs text-ink-muted">Kota</dt>
-                <dd className="mt-0.5 text-ink">
-                  {user.city ?? "Belum diisi"}
-                </dd>
-              </div>
+            <div className="flex items-start justify-between gap-3">
+              <dt className="shrink-0 text-ink-muted">Kota</dt>
+              <dd className="min-w-0 text-right text-ink">
+                {user.city ?? "Belum diisi"}
+              </dd>
             </div>
-            <div className="flex items-start gap-2.5">
-              <CalendarDays
-                className="mt-0.5 size-4 shrink-0 text-ink-muted"
-                aria-hidden="true"
-              />
-              <div className="min-w-0">
-                <dt className="text-xs text-ink-muted">Bergabung</dt>
-                <dd className="mt-0.5 text-ink">
-                  {formatDate(user.createdAt.slice(0, 10))}
-                </dd>
-              </div>
+            <div className="flex items-start justify-between gap-3">
+              <dt className="shrink-0 text-ink-muted">Bergabung</dt>
+              <dd className="text-right tabular-nums text-ink">
+                {formatDate(user.createdAt.slice(0, 10))}
+              </dd>
             </div>
           </dl>
         </aside>

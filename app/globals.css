@@ -145,6 +145,44 @@ body {
   color: var(--foreground);
 }
 
+/* Leaflet keeps its own stacking context so map controls never cover the header. */
+.delivery-map {
+  position: relative;
+  isolation: isolate;
+  z-index: 0;
+}
+
+.delivery-map .leaflet-container {
+  background: var(--surface-muted);
+  font-family: inherit;
+}
+
+.delivery-map .leaflet-control-attribution {
+  background: var(--surface);
+  color: var(--ink-muted);
+  font-size: 10px;
+}
+
+.delivery-map .leaflet-control-attribution a {
+  color: var(--brand-ink);
+}
+
+.vesta-map-pin {
+  display: grid;
+  place-items: center;
+  border: 3px solid var(--surface);
+  border-radius: 9999px;
+  background: var(--brand-strong);
+  box-shadow: 0 8px 20px oklch(0.22 0.015 160 / 0.3);
+}
+
+.vesta-map-pin span {
+  width: 8px;
+  height: 8px;
+  border-radius: 9999px;
+  background: var(--on-brand);
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

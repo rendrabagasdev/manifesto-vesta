@@ -150,6 +150,8 @@ export async function createWorld(): Promise<TestWorld> {
     city: "Bandung",
     capacityKg: 5000,
     managerId: warehouse.id,
+    latitude: -6.943,
+    longitude: 107.625,
   });
 
   const otherWarehouseRow = await db.orm.public.Warehouse.create({
@@ -158,6 +160,8 @@ export async function createWorld(): Promise<TestWorld> {
     city: "Cimahi",
     capacityKg: 1000,
     managerId: otherWarehouse.id,
+    latitude: -6.8722,
+    longitude: 107.5425,
   });
 
   const [tomato, spinach, apple, rice, chicken, herb, otherTomato] =

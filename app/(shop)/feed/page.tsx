@@ -25,9 +25,7 @@ export default async function FeedPage() {
           Marketplace pakan
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-ink-muted">
-          Batch dengan skor 10–29 tidak layak untuk manusia, tapi masih bernilai
-          sebagai pakan ternak — harga per kg yang jauh lebih rendah dari harga
-          segar.
+          Stok pakan ternak dengan harga di bawah pasar, langsung dari gudang.
         </p>
       </header>
 
@@ -35,11 +33,11 @@ export default async function FeedPage() {
         <div className="mt-6">
           <EmptyState
             title="Belum ada listing pakan"
-            description="Batch akan muncul di sini ketika cascade memindahkannya ke tahap FEED. Gunakan simulasi waktu di dashboard admin untuk demo."
+            description="Stok pakan akan muncul di sini saat tersedia. Gunakan simulasi waktu di dashboard admin untuk demo."
           />
         </div>
       ) : (
-        <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
           {listings.map((listing) => (
             <li key={listing.id} className="h-full">
               <ListingCard

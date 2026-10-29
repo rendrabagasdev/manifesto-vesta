@@ -40,21 +40,23 @@ export default async function ResiduePage({
           Marketplace residu
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-ink-muted">
-          Skor 1–9 berarti batch bernilai sebagai bahan baku: kompos, biogas,
-          atau media maggot BSF. Tahap terakhir sebelum sesuatu benar-benar
-          terbuang.
+          Bahan baku kompos, biogas, dan media maggot dari stok yang tidak lagi
+          layak jual.
         </p>
       </header>
 
       {processingTypes.length > 0 ? (
-        <nav aria-label="Filter jenis pengolahan" className="mt-5 flex flex-wrap gap-2">
+        <nav
+          aria-label="Filter jenis pengolahan"
+          className="-mx-4 mt-5 flex gap-2 overflow-x-auto overscroll-x-contain px-4 pb-1 [scrollbar-width:none] sm:-mx-6 sm:px-6 [&::-webkit-scrollbar]:hidden"
+        >
           <Link
             href="/residue"
             aria-current={active === null ? "true" : undefined}
-            className={`inline-flex h-9 items-center rounded-lg border px-3.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
+            className={`inline-flex h-8 shrink-0 items-center rounded-md px-3 text-xs font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
               active === null
-                ? "border-brand bg-brand-soft text-brand-ink"
-                : "border-line bg-surface text-ink-muted hover:bg-surface-muted hover:text-ink"
+                ? "bg-brand-strong font-semibold text-on-brand"
+                : "border border-line bg-surface text-ink-muted hover:text-ink"
             }`}
           >
             Semua ({all.length})
@@ -64,10 +66,10 @@ export default async function ResiduePage({
               key={type}
               href={`/residue?jenis=${encodeURIComponent(type)}`}
               aria-current={active === type ? "true" : undefined}
-              className={`inline-flex h-9 items-center rounded-lg border px-3.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
+              className={`inline-flex h-8 shrink-0 items-center rounded-md px-3 text-xs font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand ${
                 active === type
-                  ? "border-brand bg-brand-soft text-brand-ink"
-                  : "border-line bg-surface text-ink-muted hover:bg-surface-muted hover:text-ink"
+                  ? "bg-brand-strong font-semibold text-on-brand"
+                  : "border border-line bg-surface text-ink-muted hover:text-ink"
               }`}
             >
               {type} ({all.filter((listing) => listing.tag === type).length})
@@ -98,7 +100,7 @@ export default async function ResiduePage({
           />
         </div>
       ) : (
-        <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
           {listings.map((listing) => (
             <li key={listing.id} className="h-full">
               <ListingCard

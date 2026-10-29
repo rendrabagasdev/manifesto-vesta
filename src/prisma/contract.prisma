@@ -48,6 +48,29 @@ enum LedgerType {
   ADJUST = "ADJUST"
 }
 
+enum WalletTransactionType {
+  @@type("pg/text@1")
+
+  CREDIT = "CREDIT"
+  DEBIT  = "DEBIT"
+}
+
+enum WalletTransactionSource {
+  @@type("pg/text@1")
+
+  ORDER      = "ORDER"
+  WITHDRAWAL = "WITHDRAWAL"
+  ADJUSTMENT = "ADJUSTMENT"
+}
+
+enum WithdrawalStatus {
+  @@type("pg/text@1")
+
+  PENDING  = "PENDING"
+  APPROVED = "APPROVED"
+  REJECTED = "REJECTED"
+}
+
 enum OrderStatus {
   @@type("pg/text@1")
 
@@ -83,6 +106,9 @@ model User {
   loyaltyLedger LoyaltyLedger[]
   rescueQuotaUsages RescueQuotaUsage[]
   cascadeEvents CascadeEvent[]
+  walletTransactions    WalletTransaction[]
+  withdrawalsRequested  WithdrawalRequest[] @relation("WithdrawalRequester")
+  withdrawalsReviewed   WithdrawalRequest[] @relation("WithdrawalReviewer")
   createdAt    TimestamptzString @default(now())
   updatedAt    temporal.updatedAtString()
 }
@@ -104,7 +130,10 @@ model Producer {
   farmName  String
   address   String?
   phone     String?
+  latitude  Float?
+  longitude Float?
   products  Product[]
+  wallet    ProducerWallet?
   createdAt TimestamptzString @default(now())
   updatedAt temporal.updatedAtString()
 }
@@ -114,6 +143,8 @@ model Warehouse {
   name       String
   address    String?
   city       String?
+  latitude   Float?
+  longitude  Float?
   capacityKg Float
   managerId  Int?
   manager    User?    @relation(fields: [managerId], references: [id])
@@ -293,6 +324,69 @@ model ResidueListing {
   @@index([isActive])
 }
 
+model ProducerWallet {
+  id             Int      @id @default(autoincrement())
+  producerId     Int      @unique
+  producer       Producer @relation(fields: [producerId], references: [id], onDelete: Cascade)
+  /// Available rupiah balance. The wallet transaction ledger is the source of
+  /// truth; this column is always updated inside the same transaction that
+  /// appends a ledger row.
+  balance        Int      @default(0)
+  /// Cumulative rupiah already paid out through approved withdrawals.
+  withdrawnTotal Int      @default(0)
+  transactions   WalletTransaction[]
+  withdrawals    WithdrawalRequest[]
+  createdAt      TimestamptzString @default(now())
+  updatedAt      temporal.updatedAtString()
+}
+
+model WalletTransaction {
+  id           Int                     @id @default(autoincrement())
+  walletId     Int
+  wallet       ProducerWallet          @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  type         WalletTransactionType
+  source       WalletTransactionSource @default(ADJUSTMENT)
+  /// Signed rupiah delta: positive for CREDIT, negative for DEBIT.
+  amount       Int
+  balanceAfter Int
+  /// Idempotency key within one wallet, e.g. `ORDER-ORD-...-code` or a
+  /// withdrawal code. Unique per [wallet, source, reference] so a replayed
+  /// payment webhook cannot credit the same order twice.
+  reference    String?
+  description  String?
+  actorId      Int?
+  actor        User?                   @relation(fields: [actorId], references: [id])
+  createdAt    TimestamptzString @default(now())
+
+  @@unique([walletId, source, reference])
+  @@index([walletId])
+}
+
+model WithdrawalRequest {
+  id                Int                        @id @default(autoincrement())
+  walletId          Int
+  wallet            ProducerWallet             @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  amount            Int
+  status            WithdrawalStatus           @default(PENDING)
+  bankName          String
+  bankAccountName   String
+  bankAccountNumber String
+  note              String?
+  decisionNote      String?
+  requestedById     Int
+  requestedBy       User                       @relation("WithdrawalRequester", fields: [requestedById], references: [id])
+  reviewedById      Int?
+  reviewedBy        User?                      @relation("WithdrawalReviewer", fields: [reviewedById], references: [id])
+  reviewedAt        TimestamptzString?
+  /// WalletTransaction.id created when the admin approved the payout.
+  transactionId     Int?
+  createdAt         TimestamptzString @default(now())
+  updatedAt         temporal.updatedAtString()
+
+  @@index([walletId])
+  @@index([status])
+}
+
 model Order {
   id              Int         @id @default(autoincrement())
   code            String      @unique
@@ -302,12 +396,17 @@ model Order {
   status          OrderStatus @default(PENDING)
   subtotal        Int
   discount        Int         @default(0)
+  shippingCost    Int         @default(0)
   total           Int
   tierAtPurchase  TierName    @default(STARTER)
   deliveryAddress String?
   deliveryCity    String?
   deliveryMethod  String?
   estimatedDeliveryAt TimestamptzString?
+  deliveryLatitude       Float?
+  deliveryLongitude      Float?
+  deliveryDistanceKm     Float?
+  deliveryDurationMinutes Int?
   contactPhone    String?
   scheduledFor    DateString?
   notes           String?

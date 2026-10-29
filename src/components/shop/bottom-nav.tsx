@@ -57,10 +57,8 @@ export function BottomNav() {
               >
                 <span
                   className={cn(
-                    "relative flex size-8 items-center justify-center rounded-full transition-colors",
-                    active
-                      ? "bg-brand-soft text-brand-ink"
-                      : "text-ink-muted",
+                    "relative flex size-8 items-center justify-center transition-colors",
+                    active ? "text-brand-ink" : "text-ink-muted",
                   )}
                 >
                   <Icon className="size-[18px]" aria-hidden="true" />
@@ -72,8 +70,10 @@ export function BottomNav() {
                 </span>
                 <span
                   className={cn(
-                    "text-[10px] font-medium leading-none",
-                    active ? "text-brand-ink" : "text-ink-muted",
+                    "text-[10px] leading-none",
+                    active
+                      ? "font-semibold text-brand-ink"
+                      : "font-medium text-ink-muted",
                   )}
                 >
                   {item.label}

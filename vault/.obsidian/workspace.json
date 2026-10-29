@@ -11,21 +11,18 @@
             "id": "aefbd595902ba19d",
             "type": "leaf",
             "state": {
-              "type": "kanban",
+              "type": "markdown",
               "state": {
-                "file": "05-Timeline/📋 Kanban Board.md",
-                "kanbanViewState": {
-                  "kanban-plugin": "board",
-                  "list-collapse": [
-                    null
-                  ]
-                }
+                "file": "file:/Users/bagaskara/Development/vesta/DESIGN.md",
+                "mode": "preview",
+                "source": false
               },
-              "icon": "lucide-trello",
-              "title": "📋 Kanban Board"
+              "icon": "lucide-file",
+              "title": "DESIGN"
             }
           }
-        ]
+        ],
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -193,22 +190,23 @@
       "obsidian-kanban:Create new board": false
     }
   },
-  "active": "aefbd595902ba19d",
+  "active": "ac7e49b8c17ae422",
   "lastOpenFiles": [
+    "02-Fitur/🌍 Impact Ledger.md",
+    "02-Fitur/🔄 Cascade State Machine.md",
+    "02-Fitur/🧪 Freshness Score.md",
+    "00-MOC/🏠 Home.md",
+    "05-Timeline/📋 Kanban Board.md",
+    "Untitled.base",
     "05-Timeline/⏱ Timeline Sprint 8 Hari.md",
     "04-Database/🗄 Database Schema.md",
     "04-Database/🔌 API Endpoints.md",
     "03-Tech-Stack/🏗 Arsitektur & Tech Stack.md",
-    "02-Fitur/🧪 Freshness Score.md",
-    "02-Fitur/🔄 Cascade State Machine.md",
     "02-Fitur/💰 Dynamic Rescue Pricing.md",
     "02-Fitur/🏅 Loyalty Tier System.md",
-    "02-Fitur/🌍 Impact Ledger.md",
     "01-Overview/📋 Ringkasan Produk.md",
     "01-Overview/👥 Peran Pengguna.md",
     "01-Overview/🎯 Scope & Non-Goals.md",
-    "00-MOC/🏠 Home.md",
-    "05-Timeline/📋 Kanban Board.md",
     "08-Templates/📝 Template Daily Note.md",
     "06-Demo-Strategy/🎭 Strategi Demo.md",
     "06-Demo-Strategy/⚠️ Risiko & Mitigasi.md",

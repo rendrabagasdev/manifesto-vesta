@@ -323,9 +323,7 @@ export async function placeOrderAction(
       code: result.code,
       paid: result.paid,
       paymentUrl: result.paymentUrl,
-      message: result.paid
-        ? "Pembayaran demo berhasil — pesanan ditandai lunas."
-        : "Mengarahkan ke halaman pembayaran Midtrans...",
+      message: "Pesanan COD dibuat. Bayar tunai saat pesanan tiba.",
     };
   } catch (error) {
     return mapError(error, "Checkout gagal. Coba lagi.");

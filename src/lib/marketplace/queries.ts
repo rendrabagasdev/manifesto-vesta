@@ -5,6 +5,7 @@ import {
   type QuotaStatus,
 } from "@/src/lib/loyalty/tiers";
 import { getImpactSummary, type ImpactSummary } from "@/src/lib/impact/ledger";
+import { calculateProducerShareForItem } from "@/src/lib/wallet/share";
 
 type QueryClient = Pick<typeof db, "orm">;
 
@@ -228,6 +229,7 @@ export interface SimpleListing {
   productName: string;
   category: string;
   unit: string;
+  imageUrl: string | null;
   warehouseName: string;
   warehouseCity: string | null;
   pricePerKg: number;
@@ -245,7 +247,7 @@ export async function getFeedListings(
     .include("batch", (batch) =>
       batch
         .include("product", (product) =>
-          product.select("id", "name", "category", "unit"),
+          product.select("id", "name", "category", "unit", "imageUrl"),
         )
         .include("warehouse", (warehouse) =>
           warehouse.select("id", "name", "city"),
@@ -275,6 +277,7 @@ export async function getFeedListings(
       productName: listing.batch.product.name,
       category: listing.batch.product.category,
       unit: listing.batch.product.unit,
+      imageUrl: listing.batch.product.imageUrl,
       warehouseName: listing.batch.warehouse.name,
       warehouseCity: listing.batch.warehouse.city,
       pricePerKg: listing.pricePerKg,
@@ -300,7 +303,7 @@ export async function getResidueListings(
     .include("batch", (batch) =>
       batch
         .include("product", (product) =>
-          product.select("id", "name", "category", "unit"),
+          product.select("id", "name", "category", "unit", "imageUrl"),
         )
         .include("warehouse", (warehouse) =>
           warehouse.select("id", "name", "city"),
@@ -330,6 +333,7 @@ export async function getResidueListings(
       productName: listing.batch.product.name,
       category: listing.batch.product.category,
       unit: listing.batch.product.unit,
+      imageUrl: listing.batch.product.imageUrl,
       warehouseName: listing.batch.warehouse.name,
       warehouseCity: listing.batch.warehouse.city,
       pricePerKg: listing.pricePerKg,
@@ -359,8 +363,10 @@ export interface OrderSummaryView {
   code: string;
   kind: string;
   status: string;
+  paymentProvider: string | null;
   subtotal: number;
   discount: number;
+  shippingCost: number;
   total: number;
   createdAt: string;
   paidAt: string | null;
@@ -417,8 +423,10 @@ export async function getOrdersForUser(
       code: order.code,
       kind: order.kind,
       status: order.status,
+      paymentProvider: order.paymentProvider,
       subtotal: order.subtotal,
       discount: order.discount,
+      shippingCost: order.shippingCost,
       total: order.total,
       createdAt: order.createdAt,
       paidAt: order.paidAt,
@@ -820,9 +828,11 @@ export async function getSalesForProducer(
       order.include("buyer", (buyer) => buyer.select("id", "name")),
     )
     .include("batch", (batch) =>
-      batch.include("product", (product) =>
-        product.select("id", "name", "producerId"),
-      ),
+      batch
+        .include("product", (product) =>
+          product.select("id", "name", "producerId", "basePricePerKg"),
+        )
+        .include("priceBreakdown"),
     )
     .orderBy((item) => item.createdAt.desc())
     .all();
@@ -860,7 +870,14 @@ export async function getSalesForProducer(
       lineTotal: item.lineTotal,
       stage: item.stage,
     });
-    view.producerTotal += item.lineTotal;
+
+    // Mirror the producer wallet split: base price cut by the cascade
+    // discount, so this figure never differs from the wallet ledger.
+    view.producerTotal += calculateProducerShareForItem({
+      basePricePerKg: item.batch.product.basePricePerKg,
+      rescueDiscountPct: item.batch.priceBreakdown?.rescueDiscountPct ?? 0,
+      quantityKg: item.quantityKg,
+    });
   }
 
   return Array.from(byOrder.values());

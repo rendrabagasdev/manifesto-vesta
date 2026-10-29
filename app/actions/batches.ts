@@ -26,6 +26,7 @@ import { getProducerForUser } from "@/src/lib/batches/queries";
 import { createBatchSchema } from "@/src/lib/batches/validation";
 import { syncBatchState } from "@/src/lib/cascade/service";
 import { sendCascadeAlert } from "@/src/lib/notifications/fonnte";
+import { getWeatherForWarehouse } from "@/src/lib/weather/service";
 
 export type BatchStatusValue =
   | "FRESH"
@@ -194,12 +195,13 @@ export async function createBatchAction(
   const warehouse = await db.orm.public.Warehouse.where({
     id: data.warehouseId,
   })
-    .select("id", "name")
+    .select("id", "name", "latitude", "longitude")
     .first();
 
   if (!warehouse) return failure("Gudang tidak ditemukan.");
 
   const now = new Date();
+  const weather = await getWeatherForWarehouse(warehouse);
   const freshness = calculateFreshnessScore({
     harvestDate: data.harvestDate,
     receivedAt: now,
@@ -207,6 +209,8 @@ export async function createBatchAction(
     idealTempC: product.idealTempC,
     shelfLifeDays: product.shelfLifeDays,
     category: product.category,
+    ambientTempC: weather?.temperatureC ?? null,
+    ambientHumidityPct: weather?.humidityPct ?? null,
     now,
   });
 
@@ -257,6 +261,7 @@ export async function createBatchAction(
         now,
         actorId: Number(user.id),
         ignoreStageTimers: true,
+        weather,
       });
 
       return batch;
@@ -300,7 +305,7 @@ export async function updateBatchQualityAction(
       product.select("id", "name", "category", "shelfLifeDays", "idealTempC"),
     )
     .include("warehouse", (warehouse) =>
-      warehouse.select("id", "managerId", "name", "city"),
+      warehouse.select("id", "managerId", "name", "city", "latitude", "longitude"),
     )
     .first();
 
@@ -314,6 +319,8 @@ export async function updateBatchQualityAction(
   ) {
     return failure("Batch ini bukan tanggung jawab gudang Anda.");
   }
+
+  const weather = await getWeatherForWarehouse(batch.warehouse);
 
   try {
     const result = await db.transaction(async (tx) => {
@@ -333,6 +340,7 @@ export async function updateBatchQualityAction(
         actorId: Number(user.id),
         reason: `Kualitas batch diperbarui oleh ${user.name ?? "petugas gudang"}.`,
         ignoreStageTimers: true,
+        weather,
       });
     });
 
@@ -400,7 +408,7 @@ export async function syncBatchStateAction(
       product.select("id", "name", "producerId"),
     )
     .include("warehouse", (warehouse) =>
-      warehouse.select("id", "name", "city", "managerId"),
+      warehouse.select("id", "name", "city", "managerId", "latitude", "longitude"),
     )
     .first();
 
@@ -415,11 +423,14 @@ export async function syncBatchStateAction(
     return failure("Batch ini bukan tanggung jawab gudang Anda.");
   }
 
+  const weather = await getWeatherForWarehouse(batch.warehouse);
+
   try {
     const result = await syncBatchState(db, batch.id, {
       actorId: Number(user.id),
       reason: `Sinkronisasi manual oleh ${user.name ?? "petugas"}.`,
       ignoreStageTimers: true,
+      weather,
     });
 
     if (!result) return failure("Batch tidak dapat disinkronkan.");

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
-import { ArrowRight } from "lucide-react";
 import { requireSession } from "@/src/lib/auth/session";
 import { getOrdersForUser } from "@/src/lib/marketplace/queries";
 import { formatDateTime, formatIdr } from "@/src/lib/batches/format";
@@ -12,7 +11,7 @@ export const instant = false;
 
 export const metadata: Metadata = {
   title: "Pesanan — Vesta",
-  description: "Riwayat pesanan dan status pembayaran Anda.",
+  description: "Riwayat pesanan dan statusnya.",
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -43,7 +42,7 @@ export default async function OrdersPage() {
         <div className="mt-6">
           <EmptyState
             title="Belum ada pesanan"
-            description="Mulai dari marketplace segar atau penawaran diskon."
+            description="Mulai dari katalog produk atau penawaran diskon."
             action={
               <Link
                 href="/marketplace"
@@ -66,10 +65,13 @@ export default async function OrdersPage() {
                   <p className="flex flex-wrap items-center gap-2 text-sm font-semibold text-ink">
                     {order.code}
                     <span className="rounded-full bg-surface-muted px-2 py-0.5 text-[11px] font-medium text-ink-muted">
-                      {STATUS_LABELS[order.status] ?? order.status}
+                      {order.status === "PENDING" &&
+                      order.paymentProvider === "COD"
+                        ? "Menunggu konfirmasi"
+                        : (STATUS_LABELS[order.status] ?? order.status)}
                     </span>
                     {order.kind === "PREORDER" ? (
-                      <span className="rounded-full bg-brand-soft px-2 py-0.5 text-[11px] font-medium text-brand-ink">
+                      <span className="rounded-md bg-brand-soft px-2 py-0.5 text-[11px] font-medium text-brand-ink">
                         Pre-order
                       </span>
                     ) : null}
@@ -91,10 +93,9 @@ export default async function OrdersPage() {
                   <span className="text-sm font-semibold tabular-nums text-ink">
                     {formatIdr(order.total)}
                   </span>
-                  <ArrowRight
-                    className="size-4 text-ink-muted transition-colors group-hover:text-brand"
-                    aria-hidden="true"
-                  />
+                  <span className="text-xs font-semibold text-ink-muted transition-colors group-hover:text-brand-ink">
+                    Detail
+                  </span>
                 </div>
               </Link>
             </li>

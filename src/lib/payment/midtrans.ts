@@ -12,6 +12,7 @@
 import { createHash, timingSafeEqual } from "node:crypto";
 import { db } from "@/src/prisma/db";
 import { ApiError } from "@/src/lib/api/http";
+import { creditOrderPayment, revokeOrderPayment } from "@/src/lib/wallet/service";
 
 const SANDBOX_SNAP_ENDPOINT =
   "https://app.sandbox.midtrans.com/snap/v1/transactions";
@@ -341,30 +342,82 @@ export async function handleNotification(
     };
   }
 
-  const update: {
-    status: OrderStatus;
-    paymentProvider: string;
-    paymentRef: string;
-    paidAt?: string;
-  } = {
-    status: mappedStatus,
-    paymentProvider: "MIDTRANS_SNAP",
-    paymentRef: payload.transaction_id ?? orderId,
-  };
-
-  if (mappedStatus === "PAID") {
-    update.paidAt = new Date().toISOString();
+  // Tampering guard: wallet amounts are derived from local order records only,
+  // but the mismatch is worth surfacing for payment troubleshooting.
+  if (
+    Number.isFinite(grossAmount) &&
+    grossAmount > 0 &&
+    Math.abs(grossAmount - order.total) > 1
+  ) {
+    console.warn(
+      `[midtrans] gross_amount (${grossAmount}) != order.total (${order.total}) untuk ${orderId}; wallet dihitung dari data lokal`,
+    );
   }
 
-  await db.orm.public.Order.where({ id: order.id }).update(update);
+  const result = await db.transaction(async (tx) => {
+    // Lock the order so a duplicate notification replay cannot race another
+    // settlement path into double-crediting producer wallets.
+    const locked = await tx.orm.public.Order
+      .where({ id: order.id })
+      .forUpdate()
+      .first();
 
-  return {
-    orderId,
-    status: mappedStatus,
-    transactionStatus: payload.transaction_status,
-    fraudStatus: payload.fraud_status ?? null,
-    paid: mappedStatus === "PAID",
-    found: true,
-    grossAmount: Number.isFinite(grossAmount) ? grossAmount : order.total,
-  };
+    if (!locked) {
+      return {
+        orderId,
+        status: mappedStatus,
+        transactionStatus: payload.transaction_status,
+        fraudStatus: payload.fraud_status ?? null,
+        paid: false,
+        found: false,
+        grossAmount: Number.isFinite(grossAmount) ? grossAmount : 0,
+      } satisfies PaymentResult;
+    }
+
+    const previousStatus = locked.status;
+
+    const update: {
+      status: OrderStatus;
+      paymentProvider: string;
+      paymentRef: string;
+      paidAt?: string;
+    } = {
+      status: mappedStatus,
+      paymentProvider: "MIDTRANS_SNAP",
+      paymentRef: payload.transaction_id ?? orderId,
+    };
+
+    if (mappedStatus === "PAID" && previousStatus !== "PAID") {
+      update.paidAt = new Date().toISOString();
+    }
+
+    await tx.orm.public.Order.where({ id: locked.id }).update(update);
+
+    // Wallet only reacts on real transitions, never on notification replays:
+    // - PENDING → PAID credits every producer wallet on the order
+    // - PAID → CANCELLED (refund/cancel) reverses the prior credit
+    if (mappedStatus === "PAID" && previousStatus !== "PAID") {
+      await creditOrderPayment(tx, {
+        orderId: locked.id,
+        orderCode: locked.code,
+      });
+    } else if (mappedStatus === "CANCELLED" && previousStatus === "PAID") {
+      await revokeOrderPayment(tx, {
+        orderId: locked.id,
+        orderCode: locked.code,
+      });
+    }
+
+    return {
+      orderId,
+      status: mappedStatus,
+      transactionStatus: payload.transaction_status,
+      fraudStatus: payload.fraud_status ?? null,
+      paid: mappedStatus === "PAID",
+      found: true,
+      grossAmount: Number.isFinite(grossAmount) ? grossAmount : locked.total,
+    } satisfies PaymentResult;
+  });
+
+  return result;
 }

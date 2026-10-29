@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { connection } from "next/server";
-import { Download, Droplets, Leaf, Recycle } from "lucide-react";
 import { requireSession } from "@/src/lib/auth/session";
 import { getImpactSummaryFor } from "@/src/lib/marketplace/queries";
 import {
@@ -53,17 +52,15 @@ export default async function ImpactCertificatePage() {
             </div>
             <a
               href="/api/certificate"
-              className="inline-flex h-10 shrink-0 items-center justify-center gap-1.5 rounded-lg bg-brand-strong px-4 text-sm font-semibold text-on-brand transition-colors hover:bg-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+              className="inline-flex h-10 shrink-0 items-center justify-center rounded-lg bg-brand-strong px-4 text-sm font-semibold text-on-brand transition-colors hover:bg-brand focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
             >
-              <Download className="size-4" aria-hidden="true" />
               Unduh PDF
             </a>
           </div>
 
           <ul className="mt-4 grid gap-px overflow-hidden rounded-lg border border-line bg-line sm:grid-cols-3">
             <li className="bg-surface p-4">
-              <p className="flex items-center gap-1.5 text-xs text-ink-muted">
-                <Leaf className="size-3.5" aria-hidden="true" />
+              <p className="text-xs text-ink-muted">
                 Bahan tidak terbuang
               </p>
               <p className="mt-1 text-2xl font-semibold tabular-nums tracking-tight text-ink">
@@ -72,8 +69,7 @@ export default async function ImpactCertificatePage() {
               </p>
             </li>
             <li className="bg-surface p-4">
-              <p className="flex items-center gap-1.5 text-xs text-ink-muted">
-                <Recycle className="size-3.5" aria-hidden="true" />
+              <p className="text-xs text-ink-muted">
                 CO₂e dihindari
               </p>
               <p className="mt-1 text-2xl font-semibold tabular-nums tracking-tight text-ink">
@@ -82,8 +78,7 @@ export default async function ImpactCertificatePage() {
               </p>
             </li>
             <li className="bg-surface p-4">
-              <p className="flex items-center gap-1.5 text-xs text-ink-muted">
-                <Droplets className="size-3.5" aria-hidden="true" />
+              <p className="text-xs text-ink-muted">
                 Air dihemat
               </p>
               <p className="mt-1 text-2xl font-semibold tabular-nums tracking-tight text-ink">
@@ -143,7 +138,7 @@ export default async function ImpactCertificatePage() {
         <div className="mt-6">
           <EmptyState
             title="Belum ada dampak yang tercatat"
-            description="Sertifikat akan terisi otomatis setelah transaksi pertama Anda selesai — mulai dari marketplace segar atau penawaran diskon."
+            description="Sertifikat akan terisi otomatis setelah transaksi pertama Anda selesai — mulai dari katalog produk atau penawaran diskon."
           />
         </div>
       ) : null}

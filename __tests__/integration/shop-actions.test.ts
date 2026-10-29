@@ -85,7 +85,7 @@ afterAll(async () => {
 });
 
 describe("checkoutAction", () => {
-  it("checks out a cart and reports demo payment success", async () => {
+  it("checks out a cart and creates a pending COD order", async () => {
     const world = await createWorld();
     await createBuyerTier({ userId: world.users.consumer.id });
     state.user = sessionUser(world.users.consumer.id, "CONSUMER");
@@ -105,8 +105,13 @@ describe("checkoutAction", () => {
 
     expect(result.ok).toBe(true);
     expect(result.code).toMatch(/^ORD-/);
-    expect(result.message).toContain("demo berhasil");
-    expect(await db.orm.public.Order.all()).toHaveLength(1);
+    expect(result.paymentUrl).toBeNull();
+    expect(result.message).toContain("Pesanan COD dibuat");
+
+    const orders = await db.orm.public.Order.all();
+    expect(orders).toHaveLength(1);
+    expect(orders[0].status).toBe("PENDING");
+    expect(orders[0].paymentProvider).toBe("COD");
   });
 
   it("rejects malformed cart JSON", async () => {

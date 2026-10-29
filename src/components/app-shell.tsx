@@ -11,6 +11,7 @@ import {
 import type { SessionUser } from "@/src/lib/auth/session";
 import { initials } from "@/src/lib/batches/format";
 import { DashboardNav } from "@/src/components/dashboard-nav";
+import { MobileMenu } from "@/src/components/dashboard/mobile-menu";
 import { BottomNav } from "@/src/components/shop/bottom-nav";
 
 export function AppShell({
@@ -52,7 +53,6 @@ export function AppShell({
             <DashboardNav
               role={user.role}
               canViewBatches={canViewBatches}
-              variant="sidebar"
             />
           </div>
 
@@ -89,15 +89,18 @@ export function AppShell({
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col lg:min-h-0">
-          <header className="flex h-12 shrink-0 items-center justify-between gap-3 px-4 sm:px-5">
+          <header className="flex h-12 shrink-0 items-center justify-between gap-3 px-4 lg:px-5">
             <div className="flex min-w-0 items-center gap-3">
               <Link
                 href="/dashboard"
                 aria-label="Beranda dashboard"
-                className="inline-flex items-center rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand lg:hidden"
+                className="inline-flex items-center gap-2.5 rounded-lg font-semibold tracking-tight text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand lg:px-2 lg:py-1"
               >
                 <span className="flex size-9 items-center justify-center rounded-lg bg-brand-strong text-on-brand">
                   <Leaf className="size-4" aria-hidden="true" />
+                </span>
+                <span className="lg:hidden text-[15px]">
+                  Vesta
                 </span>
               </Link>
               <span className="hidden items-center gap-1.5 text-xs text-ink-muted lg:flex">
@@ -108,26 +111,14 @@ export function AppShell({
             </div>
 
             <div className="flex items-center gap-1.5">
-              <div className="lg:hidden">
-                <DashboardNav
-                  role={user.role}
-                  canViewBatches={canViewBatches}
-                  variant="mobile"
-                />
-              </div>
-              <span className="hidden rounded-full border border-line bg-surface px-2.5 py-1 text-[11px] font-medium text-ink-muted sm:inline">
+              <span className="hidden rounded-full border border-line bg-surface px-2.5 py-1 text-[11px] font-medium text-ink-muted md:inline">
                 Mode demo
               </span>
-              <form action={signOutAction} className="lg:hidden">
-                <button
-                  type="submit"
-                  aria-label="Keluar"
-                  title="Keluar"
-                  className="inline-flex size-11 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-                >
-                  <LogOut className="size-4" aria-hidden="true" />
-                </button>
-              </form>
+              <MobileMenu
+                role={user.role}
+                canViewBatches={canViewBatches}
+                displayName={displayName}
+              />
             </div>
           </header>
 

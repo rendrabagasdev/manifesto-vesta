@@ -1,40 +1,44 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useSyncExternalStore } from "react";
 import Link from "next/link";
-import { Bookmark } from "lucide-react";
-import { readSaved, writeSaved, type SavedItem } from "@/src/lib/marketplace/cart";
+import {
+  savedServerSnapshot,
+  savedSnapshot,
+  subscribeSaved,
+  writeSaved,
+  type SavedItem,
+} from "@/src/lib/marketplace/cart";
 import { formatIdr } from "@/src/lib/batches/format";
 
-/** Buyer's saved products, persisted in localStorage by the bookmark toggle. */
-export function SavedItems() {
-  const [items, setItems] = useState<SavedItem[] | null>(null);
+function parseSaved(snapshot: string): SavedItem[] {
+  try {
+    const entries = JSON.parse(snapshot) as SavedItem[];
+    return Array.isArray(entries) ? entries : [];
+  } catch {
+    return [];
+  }
+}
 
-  useEffect(() => {
-    setItems(readSaved());
-  }, []);
+/** Buyer's saved products, persisted in localStorage by the save toggle. */
+export function SavedItems() {
+  const items = parseSaved(
+    useSyncExternalStore(
+      subscribeSaved,
+      savedSnapshot,
+      savedServerSnapshot,
+    ),
+  );
 
   function remove(productId: number) {
-    const next = (items ?? []).filter((item) => item.productId !== productId);
-    writeSaved(next);
-    setItems(next);
-  }
-
-  if (items === null) {
-    return (
-      <p className="px-4 py-6 text-sm text-ink-muted" aria-busy="true">
-        Memuat simpanan...
-      </p>
-    );
+    writeSaved(items.filter((item) => item.productId !== productId));
   }
 
   if (items.length === 0) {
     return (
       <div className="px-4 py-6 text-center">
-        <Bookmark className="mx-auto size-4 text-ink-muted" aria-hidden="true" />
-        <p className="mt-2 text-sm text-ink-muted">
-          Belum ada produk simpanan. Tekan ikon penanda di kartu marketplace untuk
-          menyimpan.
+        <p className="text-sm text-ink-muted">
+          Belum ada produk simpanan. Tekan tombol Simpan di kartu marketplace.
         </p>
       </div>
     );

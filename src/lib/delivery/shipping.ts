@@ -5,25 +5,32 @@ export interface DeliveryCity {
   label: string;
   metro: string;
   island: string;
+  latitude: number;
+  longitude: number;
 }
 
 export const DELIVERY_CITIES: readonly DeliveryCity[] = [
-  { id: "bandung", label: "Kota Bandung", metro: "bandung", island: "jawa" },
-  { id: "cimahi", label: "Kota Cimahi", metro: "bandung", island: "jawa" },
-  { id: "bandung-barat", label: "Kab. Bandung Barat", metro: "bandung", island: "jawa" },
-  { id: "jakarta", label: "Jakarta", metro: "jabodetabek", island: "jawa" },
-  { id: "bogor", label: "Kota Bogor", metro: "jabodetabek", island: "jawa" },
-  { id: "depok", label: "Kota Depok", metro: "jabodetabek", island: "jawa" },
-  { id: "tangerang", label: "Kota Tangerang", metro: "jabodetabek", island: "jawa" },
-  { id: "bekasi", label: "Kota Bekasi", metro: "jabodetabek", island: "jawa" },
-  { id: "semarang", label: "Kota Semarang", metro: "semarang", island: "jawa" },
-  { id: "yogyakarta", label: "Yogyakarta", metro: "yogyakarta", island: "jawa" },
-  { id: "surabaya", label: "Kota Surabaya", metro: "surabaya", island: "jawa" },
-  { id: "denpasar", label: "Kota Denpasar", metro: "denpasar", island: "bali" },
-  { id: "palembang", label: "Kota Palembang", metro: "palembang", island: "sumatera" },
-  { id: "medan", label: "Kota Medan", metro: "medan", island: "sumatera" },
-  { id: "makassar", label: "Kota Makassar", metro: "makassar", island: "sulawesi" },
+  { id: "bandung", label: "Kota Bandung", metro: "bandung", island: "jawa", latitude: -6.9175, longitude: 107.6191 },
+  { id: "cimahi", label: "Kota Cimahi", metro: "bandung", island: "jawa", latitude: -6.8722, longitude: 107.5425 },
+  { id: "bandung-barat", label: "Kab. Bandung Barat", metro: "bandung", island: "jawa", latitude: -6.8324, longitude: 107.4833 },
+  { id: "jakarta", label: "Jakarta", metro: "jabodetabek", island: "jawa", latitude: -6.2088, longitude: 106.8456 },
+  { id: "bogor", label: "Kota Bogor", metro: "jabodetabek", island: "jawa", latitude: -6.595, longitude: 106.8166 },
+  { id: "depok", label: "Kota Depok", metro: "jabodetabek", island: "jawa", latitude: -6.4025, longitude: 106.7942 },
+  { id: "tangerang", label: "Kota Tangerang", metro: "jabodetabek", island: "jawa", latitude: -6.1783, longitude: 106.6319 },
+  { id: "bekasi", label: "Kota Bekasi", metro: "jabodetabek", island: "jawa", latitude: -6.2383, longitude: 106.9756 },
+  { id: "semarang", label: "Kota Semarang", metro: "semarang", island: "jawa", latitude: -6.9667, longitude: 110.4167 },
+  { id: "yogyakarta", label: "Yogyakarta", metro: "yogyakarta", island: "jawa", latitude: -7.7956, longitude: 110.3695 },
+  { id: "surabaya", label: "Kota Surabaya", metro: "surabaya", island: "jawa", latitude: -7.2575, longitude: 112.7521 },
+  { id: "denpasar", label: "Kota Denpasar", metro: "denpasar", island: "bali", latitude: -8.6705, longitude: 115.2126 },
+  { id: "palembang", label: "Kota Palembang", metro: "palembang", island: "sumatera", latitude: -2.9761, longitude: 104.7754 },
+  { id: "medan", label: "Kota Medan", metro: "medan", island: "sumatera", latitude: 3.5952, longitude: 98.6722 },
+  { id: "makassar", label: "Kota Makassar", metro: "makassar", island: "sulawesi", latitude: -5.1477, longitude: 119.4327 },
 ];
+
+export function findDeliveryCityById(id: string | null | undefined): DeliveryCity | null {
+  if (!id) return null;
+  return DELIVERY_CITIES.find((city) => city.id === id) ?? null;
+}
 
 export const DELIVERY_METHODS: readonly {
   id: DeliveryMethodId;
@@ -34,6 +41,36 @@ export const DELIVERY_METHODS: readonly {
   { id: "SAME_DAY", label: "Kilat", description: "Dikirim pada hari yang sama" },
   { id: "REGULAR", label: "Reguler", description: "Pengiriman hemat" },
 ];
+
+/** Tarif dasar dan per-km per metode; dibulatkan ke atas per Rp 500. */
+export const SHIPPING_RATES: Record<
+  DeliveryMethodId,
+  { base: number; perKm: number }
+> = {
+  INSTANT: { base: 8_000, perKm: 1_500 },
+  SAME_DAY: { base: 6_000, perKm: 1_100 },
+  REGULAR: { base: 4_000, perKm: 800 },
+};
+
+export function calculateShippingCost(
+  distanceKm: number | null | undefined,
+  method: string | null | undefined,
+): number {
+  if (
+    typeof distanceKm !== "number" ||
+    !Number.isFinite(distanceKm) ||
+    distanceKm <= 0 ||
+    !method
+  ) {
+    return 0;
+  }
+
+  const rate = SHIPPING_RATES[method as DeliveryMethodId];
+  if (!rate) return 0;
+
+  return Math.ceil((rate.base + rate.perKm * distanceKm) / 500) * 500;
+}
+
 
 export interface DeliveryOption {
   id: DeliveryMethodId;

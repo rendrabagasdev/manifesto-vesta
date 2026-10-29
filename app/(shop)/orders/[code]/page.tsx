@@ -2,23 +2,21 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { connection } from "next/server";
-import { ArrowLeft, CheckCircle2, Clock, Droplets, Leaf, Recycle } from "lucide-react";
 import { requireSession } from "@/src/lib/auth/session";
 import { getOrderByCode } from "@/src/lib/marketplace/queries";
 import {
   formatDate,
   formatDateTime,
   formatIdr,
+  formatInteger,
   formatKg,
   formatNumber,
 } from "@/src/lib/batches/format";
-import { isBatchStatus } from "@/src/lib/batches/freshness";
 import {
   deliveryCityLabel,
   deliveryMethodLabel,
   formatDeliveryEstimate,
 } from "@/src/lib/delivery/shipping";
-import { StatusPill } from "@/src/components/status-pill";
 
 export const instant = false;
 
@@ -35,6 +33,12 @@ const STATUS_LABELS: Record<string, string> = {
   CANCELLED: "Dibatalkan",
 };
 
+const PAYMENT_LABELS: Record<string, string> = {
+  COD: "Bayar di tempat (COD)",
+  MIDTRANS_SNAP: "Midtrans",
+  DEMO: "Pembayaran demo",
+};
+
 export default async function OrderDetailPage({
   params,
 }: {
@@ -46,6 +50,14 @@ export default async function OrderDetailPage({
   const order = await getOrderByCode(code);
 
   if (!order || order.buyerId !== Number(user.id)) notFound();
+
+  const statusLabel =
+    order.status === "PENDING" && order.paymentProvider === "COD"
+      ? "Menunggu konfirmasi"
+      : (STATUS_LABELS[order.status] ?? order.status);
+  const paymentLabel = order.paymentProvider
+    ? (PAYMENT_LABELS[order.paymentProvider] ?? order.paymentProvider)
+    : "Belum ditentukan";
 
   const impact = order.impactLogs.reduce(
     (acc, log) => ({
@@ -60,9 +72,8 @@ export default async function OrderDetailPage({
     <div>
       <Link
         href="/orders"
-        className="inline-flex items-center gap-1.5 text-sm font-medium text-ink-muted transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+        className="inline-flex items-center text-sm font-medium text-ink-muted transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
       >
-        <ArrowLeft className="size-4" aria-hidden="true" />
         Semua pesanan
       </Link>
 
@@ -74,13 +85,8 @@ export default async function OrderDetailPage({
           <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-ink-muted">
             {formatDateTime(order.createdAt)}
             <span aria-hidden="true">·</span>
-            <span className="flex items-center gap-1 font-medium text-ink">
-              {order.status === "PENDING" ? (
-                <Clock className="size-4" aria-hidden="true" />
-              ) : (
-                <CheckCircle2 className="size-4" aria-hidden="true" />
-              )}
-              {STATUS_LABELS[order.status] ?? order.status}
+            <span className="rounded-md bg-surface-muted px-2 py-0.5 text-xs font-medium text-ink">
+              {statusLabel}
             </span>
           </p>
         </div>
@@ -106,9 +112,8 @@ export default async function OrderDetailPage({
               <li key={item.id} className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-4 py-3.5 last:border-0">
                 <div className="min-w-0">
                   <p className="truncate text-sm font-semibold text-ink">{item.batch?.product?.name ?? "Produk"}</p>
-                  <p className="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-ink-muted">
-                    <span>{item.batch?.code ?? "-"}</span>
-                    {isBatchStatus(item.stage) ? <StatusPill status={item.stage} /> : null}
+                  <p className="mt-0.5 text-xs text-ink-muted">
+                    {item.batch?.code ?? "-"}
                   </p>
                 </div>
                 <div className="text-right">
@@ -127,6 +132,12 @@ export default async function OrderDetailPage({
               <dt className="text-ink-muted">Subtotal</dt>
               <dd className="font-semibold tabular-nums text-ink">{formatIdr(order.subtotal)}</dd>
             </div>
+            {order.shippingCost > 0 ? (
+              <div className="flex items-center justify-between gap-3">
+                <dt className="text-ink-muted">Ongkir</dt>
+                <dd className="font-semibold tabular-nums text-ink">{formatIdr(order.shippingCost)}</dd>
+              </div>
+            ) : null}
             {order.discount > 0 ? (
               <div className="flex items-center justify-between gap-3">
                 <dt className="text-ink-muted">Diskon</dt>
@@ -149,28 +160,19 @@ export default async function OrderDetailPage({
             </h2>
             <ul className="mt-3 space-y-2.5 text-sm">
               <li className="flex items-center justify-between gap-3">
-                <span className="flex items-center gap-2 text-ink-muted">
-                  <Leaf className="size-4" aria-hidden="true" />
-                  Tidak terbuang
-                </span>
+                <span className="text-ink-muted">Tidak terbuang</span>
                 <span className="font-semibold tabular-nums text-ink">
                   {formatKg(impact.rescuedKg)}
                 </span>
               </li>
               <li className="flex items-center justify-between gap-3">
-                <span className="flex items-center gap-2 text-ink-muted">
-                  <Recycle className="size-4" aria-hidden="true" />
-                  CO₂e dihindari
-                </span>
+                <span className="text-ink-muted">CO₂e dihindari</span>
                 <span className="font-semibold tabular-nums text-ink">
                   {formatNumber(impact.co2eSavedKg)} kg
                 </span>
               </li>
               <li className="flex items-center justify-between gap-3">
-                <span className="flex items-center gap-2 text-ink-muted">
-                  <Droplets className="size-4" aria-hidden="true" />
-                  Air dihemat
-                </span>
+                <span className="text-ink-muted">Air dihemat</span>
                 <span className="font-semibold tabular-nums text-ink">
                   {formatNumber(impact.waterSavedLiters)} L
                 </span>
@@ -221,6 +223,38 @@ export default async function OrderDetailPage({
                   </dd>
                 </div>
               ) : null}
+              {order.deliveryDistanceKm !== null ? (
+                <div className="flex items-start justify-between gap-3">
+                  <dt className="shrink-0 text-ink-muted">Jarak rute</dt>
+                  <dd className="text-right font-semibold tabular-nums text-ink">
+                    {formatNumber(order.deliveryDistanceKm)} km
+                  </dd>
+                </div>
+              ) : null}
+              {order.deliveryDurationMinutes !== null ? (
+                <div className="flex items-start justify-between gap-3">
+                  <dt className="shrink-0 text-ink-muted">Waktu tempuh</dt>
+                  <dd className="text-right font-semibold tabular-nums text-ink">
+                    {formatInteger(order.deliveryDurationMinutes)} menit
+                  </dd>
+                </div>
+              ) : null}
+              {order.deliveryLatitude !== null &&
+              order.deliveryLongitude !== null ? (
+                <div className="flex items-start justify-between gap-3">
+                  <dt className="shrink-0 text-ink-muted">Titik peta</dt>
+                  <dd className="text-right">
+                    <a
+                      href={`https://www.openstreetmap.org/?mlat=${order.deliveryLatitude}&mlon=${order.deliveryLongitude}#map=16/${order.deliveryLatitude}/${order.deliveryLongitude}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="text-xs font-semibold text-brand-ink hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                    >
+                      Lihat titik pengiriman
+                    </a>
+                  </dd>
+                </div>
+              ) : null}
               {order.scheduledFor ? (
                 <div className="flex items-start justify-between gap-3">
                   <dt className="shrink-0 text-ink-muted">Jadwal</dt>
@@ -233,6 +267,26 @@ export default async function OrderDetailPage({
                 <div className="flex items-start justify-between gap-3">
                   <dt className="shrink-0 text-ink-muted">Catatan</dt>
                   <dd className="min-w-0 text-right text-xs leading-relaxed text-ink">{order.notes}</dd>
+                </div>
+              ) : null}
+            </dl>
+          </section>
+
+          <section aria-labelledby="payment-heading" className="rounded-xl border border-line bg-surface p-4">
+            <h2 id="payment-heading" className="text-sm font-semibold text-ink">
+              Pembayaran
+            </h2>
+            <dl className="mt-3 space-y-2 text-sm">
+              <div className="flex items-start justify-between gap-3">
+                <dt className="shrink-0 text-ink-muted">Metode</dt>
+                <dd className="text-right font-semibold text-ink">{paymentLabel}</dd>
+              </div>
+              {order.paymentProvider === "COD" ? (
+                <div className="flex items-start justify-between gap-3">
+                  <dt className="shrink-0 text-ink-muted">Cara bayar</dt>
+                  <dd className="min-w-0 text-right text-xs leading-relaxed text-ink">
+                    Bayar tunai saat pesanan tiba.
+                  </dd>
                 </div>
               ) : null}
             </dl>

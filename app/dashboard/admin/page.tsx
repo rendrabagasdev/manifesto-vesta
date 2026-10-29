@@ -108,7 +108,7 @@ export default async function AdminDashboardPage() {
       </section>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
-        <section aria-labelledby="cascade-heading" className="rounded-xl border border-line bg-surface lg:col-span-2">
+        <section aria-labelledby="cascade-heading" className="min-w-0 rounded-xl border border-line bg-surface lg:col-span-2">
           <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
             <h2 id="cascade-heading" className="text-sm font-semibold text-ink">
               Pemantauan cascade — {formatInteger(summary.total)} batch
@@ -153,7 +153,7 @@ export default async function AdminDashboardPage() {
           )}
         </section>
 
-        <section aria-labelledby="stage-heading" className="rounded-xl border border-line bg-surface p-4">
+        <section aria-labelledby="stage-heading" className="min-w-0 rounded-xl border border-line bg-surface p-4">
           <h2 id="stage-heading" className="text-sm font-semibold text-ink">
             Sebaran tahap
           </h2>

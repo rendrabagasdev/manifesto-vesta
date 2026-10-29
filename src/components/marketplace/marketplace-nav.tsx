@@ -19,7 +19,7 @@ export function MarketplaceNav({ variant }: { variant: "desktop" | "mobile" }) {
     <nav
       aria-label="Navigasi marketplace"
       className={cn(
-        variant === "desktop" ? "hidden md:flex items-center gap-1" : "flex",
+        variant === "desktop" ? "hidden md:flex items-stretch gap-5" : "flex gap-4",
       )}
     >
       {NAV_ITEMS.map((item) => {
@@ -35,13 +35,11 @@ export function MarketplaceNav({ variant }: { variant: "desktop" | "mobile" }) {
             href={item.href}
             aria-current={active ? "page" : undefined}
             className={cn(
-              "inline-flex items-center whitespace-nowrap rounded-lg text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
-              variant === "desktop"
-                ? "h-9 px-3"
-                : "h-10 px-3.5 border border-line bg-surface",
+              "inline-flex items-center whitespace-nowrap border-b-2 text-sm transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand",
+              variant === "desktop" ? "h-14 px-0.5" : "h-10 px-0.5",
               active
-                ? "bg-brand-soft text-brand-ink"
-                : "text-ink-muted hover:bg-surface-muted hover:text-ink",
+                ? "border-brand-strong font-semibold text-ink"
+                : "border-transparent font-medium text-ink-muted hover:text-ink",
             )}
           >
             {item.label}

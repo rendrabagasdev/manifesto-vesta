@@ -23,9 +23,10 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'b7ea73eaef6994f9a68c6f7e85b49378c1391703fc8454ee610dc5310803f070'>;
+  StorageHashBase<'f704f2e476fb59687fa9e76f957e3cee9b932f55eb20900577a64fe24eec70be'>;
+  StorageHashBase<'c49ac54cf17a4dbd91a8d2e7d67fa7e8bd52e023ffad6d1c86a10c99c6b04727'>;
 export type ExecutionHash =
-  ExecutionHashBase<'72a678ae5abbc20560d5d389981a277cdba90fae0226162c86ebb90e86df1123'>;
+  ExecutionHashBase<'62a1a07b83615afa3c4e9219f025941cbb883c5f624b1f85601f4ef34d1c879c'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -301,6 +302,19 @@ type FieldTypeOverrides = {
           readonly input: 'ADMIN' | 'PRODUCER' | 'WAREHOUSE' | 'CONSUMER' | 'BUSINESS';
         };
       };
+      readonly WalletTransaction: {
+        readonly source: {
+          readonly output: 'ORDER' | 'WITHDRAWAL' | 'ADJUSTMENT';
+          readonly input: 'ORDER' | 'WITHDRAWAL' | 'ADJUSTMENT';
+        };
+        readonly type: { readonly output: 'CREDIT' | 'DEBIT'; readonly input: 'CREDIT' | 'DEBIT' };
+      };
+      readonly WithdrawalRequest: {
+        readonly status: {
+          readonly output: 'PENDING' | 'APPROVED' | 'REJECTED';
+          readonly input: 'PENDING' | 'APPROVED' | 'REJECTED';
+        };
+      };
     };
   };
 };
@@ -378,6 +392,19 @@ type ColumnTypeOverrides = {
       readonly role: {
         readonly output: 'ADMIN' | 'PRODUCER' | 'WAREHOUSE' | 'CONSUMER' | 'BUSINESS';
         readonly input: 'ADMIN' | 'PRODUCER' | 'WAREHOUSE' | 'CONSUMER' | 'BUSINESS';
+      };
+    };
+    readonly WalletTransaction: {
+      readonly source: {
+        readonly output: 'ORDER' | 'WITHDRAWAL' | 'ADJUSTMENT';
+        readonly input: 'ORDER' | 'WITHDRAWAL' | 'ADJUSTMENT';
+      };
+      readonly type: { readonly output: 'CREDIT' | 'DEBIT'; readonly input: 'CREDIT' | 'DEBIT' };
+    };
+    readonly WithdrawalRequest: {
+      readonly status: {
+        readonly output: 'PENDING' | 'APPROVED' | 'REJECTED';
+        readonly input: 'PENDING' | 'APPROVED' | 'REJECTED';
       };
     };
   };
@@ -509,6 +536,10 @@ export namespace Models {
     createdAt: FieldOutputTypes['public']['Order']['createdAt'];
     deliveryAddress: FieldOutputTypes['public']['Order']['deliveryAddress'];
     deliveryCity: FieldOutputTypes['public']['Order']['deliveryCity'];
+    deliveryDistanceKm: FieldOutputTypes['public']['Order']['deliveryDistanceKm'];
+    deliveryDurationMinutes: FieldOutputTypes['public']['Order']['deliveryDurationMinutes'];
+    deliveryLatitude: FieldOutputTypes['public']['Order']['deliveryLatitude'];
+    deliveryLongitude: FieldOutputTypes['public']['Order']['deliveryLongitude'];
     deliveryMethod: FieldOutputTypes['public']['Order']['deliveryMethod'];
     discount: FieldOutputTypes['public']['Order']['discount'];
     estimatedDeliveryAt: FieldOutputTypes['public']['Order']['estimatedDeliveryAt'];
@@ -520,6 +551,7 @@ export namespace Models {
     paymentRef: FieldOutputTypes['public']['Order']['paymentRef'];
     paymentUrl: FieldOutputTypes['public']['Order']['paymentUrl'];
     scheduledFor: FieldOutputTypes['public']['Order']['scheduledFor'];
+    shippingCost: FieldOutputTypes['public']['Order']['shippingCost'];
     status: FieldOutputTypes['public']['Order']['status'];
     subtotal: FieldOutputTypes['public']['Order']['subtotal'];
     tierAtPurchase: FieldOutputTypes['public']['Order']['tierAtPurchase'];
@@ -593,12 +625,27 @@ export namespace Models {
     createdAt: FieldOutputTypes['public']['Producer']['createdAt'];
     farmName: FieldOutputTypes['public']['Producer']['farmName'];
     id: FieldOutputTypes['public']['Producer']['id'];
+    latitude: FieldOutputTypes['public']['Producer']['latitude'];
+    longitude: FieldOutputTypes['public']['Producer']['longitude'];
     phone: FieldOutputTypes['public']['Producer']['phone'];
     updatedAt: FieldOutputTypes['public']['Producer']['updatedAt'];
     userId: FieldOutputTypes['public']['Producer']['userId'];
     products: public_Product[];
     user: public_User;
-    readonly [RelationKeys]?: 'products' | 'user';
+    wallet: public_ProducerWallet | null;
+    readonly [RelationKeys]?: 'products' | 'user' | 'wallet';
+  };
+  export type public_ProducerWallet = {
+    balance: FieldOutputTypes['public']['ProducerWallet']['balance'];
+    createdAt: FieldOutputTypes['public']['ProducerWallet']['createdAt'];
+    id: FieldOutputTypes['public']['ProducerWallet']['id'];
+    producerId: FieldOutputTypes['public']['ProducerWallet']['producerId'];
+    updatedAt: FieldOutputTypes['public']['ProducerWallet']['updatedAt'];
+    withdrawnTotal: FieldOutputTypes['public']['ProducerWallet']['withdrawnTotal'];
+    producer: public_Producer;
+    transactions: public_WalletTransaction[];
+    withdrawals: public_WithdrawalRequest[];
+    readonly [RelationKeys]?: 'producer' | 'transactions' | 'withdrawals';
   };
   export type public_Product = {
     basePricePerKg: FieldOutputTypes['public']['Product']['basePricePerKg'];
@@ -673,7 +720,10 @@ export namespace Models {
     posts: public_Post[];
     producer: public_Producer | null;
     rescueQuotaUsages: public_RescueQuotaUsage[];
+    walletTransactions: public_WalletTransaction[];
     warehouses: public_Warehouse[];
+    withdrawalsRequested: public_WithdrawalRequest[];
+    withdrawalsReviewed: public_WithdrawalRequest[];
     readonly [RelationKeys]?:
       | 'buyerTier'
       | 'cascadeEvents'
@@ -682,7 +732,25 @@ export namespace Models {
       | 'posts'
       | 'producer'
       | 'rescueQuotaUsages'
-      | 'warehouses';
+      | 'walletTransactions'
+      | 'warehouses'
+      | 'withdrawalsRequested'
+      | 'withdrawalsReviewed';
+  };
+  export type public_WalletTransaction = {
+    actorId: FieldOutputTypes['public']['WalletTransaction']['actorId'];
+    amount: FieldOutputTypes['public']['WalletTransaction']['amount'];
+    balanceAfter: FieldOutputTypes['public']['WalletTransaction']['balanceAfter'];
+    createdAt: FieldOutputTypes['public']['WalletTransaction']['createdAt'];
+    description: FieldOutputTypes['public']['WalletTransaction']['description'];
+    id: FieldOutputTypes['public']['WalletTransaction']['id'];
+    reference: FieldOutputTypes['public']['WalletTransaction']['reference'];
+    source: FieldOutputTypes['public']['WalletTransaction']['source'];
+    type: FieldOutputTypes['public']['WalletTransaction']['type'];
+    walletId: FieldOutputTypes['public']['WalletTransaction']['walletId'];
+    actor: public_User | null;
+    wallet: public_ProducerWallet;
+    readonly [RelationKeys]?: 'actor' | 'wallet';
   };
   export type public_Warehouse = {
     address: FieldOutputTypes['public']['Warehouse']['address'];
@@ -690,12 +758,35 @@ export namespace Models {
     city: FieldOutputTypes['public']['Warehouse']['city'];
     createdAt: FieldOutputTypes['public']['Warehouse']['createdAt'];
     id: FieldOutputTypes['public']['Warehouse']['id'];
+    latitude: FieldOutputTypes['public']['Warehouse']['latitude'];
+    longitude: FieldOutputTypes['public']['Warehouse']['longitude'];
     managerId: FieldOutputTypes['public']['Warehouse']['managerId'];
     name: FieldOutputTypes['public']['Warehouse']['name'];
     updatedAt: FieldOutputTypes['public']['Warehouse']['updatedAt'];
     batches: public_Batch[];
     manager: public_User | null;
     readonly [RelationKeys]?: 'batches' | 'manager';
+  };
+  export type public_WithdrawalRequest = {
+    amount: FieldOutputTypes['public']['WithdrawalRequest']['amount'];
+    bankAccountName: FieldOutputTypes['public']['WithdrawalRequest']['bankAccountName'];
+    bankAccountNumber: FieldOutputTypes['public']['WithdrawalRequest']['bankAccountNumber'];
+    bankName: FieldOutputTypes['public']['WithdrawalRequest']['bankName'];
+    createdAt: FieldOutputTypes['public']['WithdrawalRequest']['createdAt'];
+    decisionNote: FieldOutputTypes['public']['WithdrawalRequest']['decisionNote'];
+    id: FieldOutputTypes['public']['WithdrawalRequest']['id'];
+    note: FieldOutputTypes['public']['WithdrawalRequest']['note'];
+    requestedById: FieldOutputTypes['public']['WithdrawalRequest']['requestedById'];
+    reviewedAt: FieldOutputTypes['public']['WithdrawalRequest']['reviewedAt'];
+    reviewedById: FieldOutputTypes['public']['WithdrawalRequest']['reviewedById'];
+    status: FieldOutputTypes['public']['WithdrawalRequest']['status'];
+    transactionId: FieldOutputTypes['public']['WithdrawalRequest']['transactionId'];
+    updatedAt: FieldOutputTypes['public']['WithdrawalRequest']['updatedAt'];
+    walletId: FieldOutputTypes['public']['WithdrawalRequest']['walletId'];
+    requestedBy: public_User;
+    reviewedBy: public_User | null;
+    wallet: public_ProducerWallet;
+    readonly [RelationKeys]?: 'requestedBy' | 'reviewedBy' | 'wallet';
   };
 }
 
@@ -713,12 +804,15 @@ export declare const models: {
     Post: Models.public_Post;
     PriceBreakdown: Models.public_PriceBreakdown;
     Producer: Models.public_Producer;
+    ProducerWallet: Models.public_ProducerWallet;
     Product: Models.public_Product;
     RescueDeal: Models.public_RescueDeal;
     RescueQuotaUsage: Models.public_RescueQuotaUsage;
     ResidueListing: Models.public_ResidueListing;
     User: Models.public_User;
+    WalletTransaction: Models.public_WalletTransaction;
     Warehouse: Models.public_Warehouse;
+    WithdrawalRequest: Models.public_WithdrawalRequest;
   };
 };
 
@@ -1482,6 +1576,30 @@ type ContractBase = Omit<
                   readonly nullable: true;
                   readonly many: false;
                 };
+                readonly deliveryDistanceKm: {
+                  readonly dataType: 'pg/float8';
+                  readonly codecId: 'pg/float8@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly deliveryDurationMinutes: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly deliveryLatitude: {
+                  readonly dataType: 'pg/float8';
+                  readonly codecId: 'pg/float8@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly deliveryLongitude: {
+                  readonly dataType: 'pg/float8';
+                  readonly codecId: 'pg/float8@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
                 readonly deliveryMethod: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
@@ -1558,6 +1676,16 @@ type ContractBase = Omit<
                   readonly dataType: 'pg/date';
                   readonly codecId: 'pg/date-string@1';
                   readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly shippingCost: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
+                  };
                   readonly many: false;
                 };
                 readonly status: {
@@ -2094,6 +2222,18 @@ type ContractBase = Omit<
                   };
                   readonly many: false;
                 };
+                readonly latitude: {
+                  readonly dataType: 'pg/float8';
+                  readonly codecId: 'pg/float8@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly longitude: {
+                  readonly dataType: 'pg/float8';
+                  readonly codecId: 'pg/float8@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
                 readonly phone: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
@@ -2126,6 +2266,76 @@ type ContractBase = Omit<
                   readonly target: {
                     readonly namespaceId: 'public' & NamespaceId;
                     readonly tableName: 'User';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
+            readonly ProducerWallet: {
+              columns: {
+                readonly balance: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
+                  };
+                  readonly many: false;
+                };
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                  readonly many: false;
+                };
+                readonly producerId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly updatedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly withdrawnTotal: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/int4@1', 0>;
+                  };
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [{ readonly columns: readonly ['producerId'] }];
+              indexes: readonly [];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'ProducerWallet';
+                    readonly columns: readonly ['producerId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'Producer';
                     readonly columns: readonly ['id'];
                   };
                 },
@@ -2590,6 +2800,123 @@ type ContractBase = Omit<
               indexes: readonly [];
               foreignKeys: readonly [];
             };
+            readonly WalletTransaction: {
+              columns: {
+                readonly actorId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly amount: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly balanceAfter: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly description: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                  readonly many: false;
+                };
+                readonly reference: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly source: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'ADJUSTMENT'>;
+                  };
+                  readonly many: false;
+                };
+                readonly type: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly walletId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [
+                { readonly columns: readonly ['walletId', 'source', 'reference'] },
+              ];
+              indexes: readonly [
+                {
+                  readonly name: 'WalletTransaction_actorId_idx_a58f6b4b';
+                  readonly prefix: 'WalletTransaction_actorId_idx';
+                  readonly columns: readonly ['actorId'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'WalletTransaction_walletId_idx_2e003173';
+                  readonly prefix: 'WalletTransaction_walletId_idx';
+                  readonly columns: readonly ['walletId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'WalletTransaction';
+                    readonly columns: readonly ['walletId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'ProducerWallet';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'WalletTransaction';
+                    readonly columns: readonly ['actorId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'User';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
             readonly Warehouse: {
               columns: {
                 readonly address: {
@@ -2625,6 +2952,18 @@ type ContractBase = Omit<
                     readonly kind: 'function';
                     readonly expression: 'autoincrement()';
                   };
+                  readonly many: false;
+                };
+                readonly latitude: {
+                  readonly dataType: 'pg/float8';
+                  readonly codecId: 'pg/float8@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly longitude: {
+                  readonly dataType: 'pg/float8';
+                  readonly codecId: 'pg/float8@1';
+                  readonly nullable: true;
                   readonly many: false;
                 };
                 readonly managerId: {
@@ -2671,6 +3010,175 @@ type ContractBase = Omit<
                 },
               ];
             };
+            readonly WithdrawalRequest: {
+              columns: {
+                readonly amount: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly bankAccountName: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly bankAccountNumber: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly bankName: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly createdAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly default: { readonly kind: 'function'; readonly expression: 'now()' };
+                  readonly many: false;
+                };
+                readonly decisionNote: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly id: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'function';
+                    readonly expression: 'autoincrement()';
+                  };
+                  readonly many: false;
+                };
+                readonly note: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly requestedById: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly reviewedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly reviewedById: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly status: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
+                  readonly default: {
+                    readonly kind: 'literal';
+                    readonly value: DefaultLiteralValue<'pg/text@1', 'PENDING'>;
+                  };
+                  readonly many: false;
+                };
+                readonly transactionId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly updatedAt: {
+                  readonly dataType: 'pg/timestamptz';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+                readonly walletId: {
+                  readonly dataType: 'pg/int4';
+                  readonly codecId: 'pg/int4@1';
+                  readonly nullable: false;
+                  readonly many: false;
+                };
+              };
+              primaryKey: { readonly columns: readonly ['id'] };
+              uniques: readonly [];
+              indexes: readonly [
+                {
+                  readonly name: 'WithdrawalRequest_requestedById_idx_f9a56c66';
+                  readonly prefix: 'WithdrawalRequest_requestedById_idx';
+                  readonly columns: readonly ['requestedById'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'WithdrawalRequest_reviewedById_idx_e2835478';
+                  readonly prefix: 'WithdrawalRequest_reviewedById_idx';
+                  readonly columns: readonly ['reviewedById'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'WithdrawalRequest_status_idx_e98638ab';
+                  readonly prefix: 'WithdrawalRequest_status_idx';
+                  readonly columns: readonly ['status'];
+                  readonly unique: false;
+                },
+                {
+                  readonly name: 'WithdrawalRequest_walletId_idx_2e003173';
+                  readonly prefix: 'WithdrawalRequest_walletId_idx';
+                  readonly columns: readonly ['walletId'];
+                  readonly unique: false;
+                },
+              ];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'WithdrawalRequest';
+                    readonly columns: readonly ['walletId'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'ProducerWallet';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'WithdrawalRequest';
+                    readonly columns: readonly ['requestedById'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'User';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'WithdrawalRequest';
+                    readonly columns: readonly ['reviewedById'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'User';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
+            };
           };
           readonly valueSet: {
             readonly BatchStatus: {
@@ -2707,6 +3215,18 @@ type ContractBase = Omit<
             readonly UserRole: {
               readonly kind: 'valueSet';
               readonly values: readonly ['ADMIN', 'PRODUCER', 'WAREHOUSE', 'CONSUMER', 'BUSINESS'];
+            };
+            readonly WalletTransactionSource: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['ORDER', 'WITHDRAWAL', 'ADJUSTMENT'];
+            };
+            readonly WalletTransactionType: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['CREDIT', 'DEBIT'];
+            };
+            readonly WithdrawalStatus: {
+              readonly kind: 'valueSet';
+              readonly values: readonly ['PENDING', 'APPROVED', 'REJECTED'];
             };
           };
         };
@@ -2746,6 +3266,10 @@ type ContractBase = Omit<
       readonly model: 'PriceBreakdown';
     };
     readonly Producer: { readonly namespace: 'public' & NamespaceId; readonly model: 'Producer' };
+    readonly ProducerWallet: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'ProducerWallet';
+    };
     readonly Product: { readonly namespace: 'public' & NamespaceId; readonly model: 'Product' };
     readonly RescueDeal: {
       readonly namespace: 'public' & NamespaceId;
@@ -2760,7 +3284,15 @@ type ContractBase = Omit<
       readonly model: 'ResidueListing';
     };
     readonly User: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+    readonly WalletTransaction: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'WalletTransaction';
+    };
     readonly Warehouse: { readonly namespace: 'public' & NamespaceId; readonly model: 'Warehouse' };
+    readonly WithdrawalRequest: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'WithdrawalRequest';
+    };
   };
   readonly domain: {
     readonly namespaces: {
@@ -3402,6 +3934,22 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
+              readonly deliveryDistanceKm: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/float8@1' };
+              };
+              readonly deliveryDurationMinutes: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly deliveryLatitude: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/float8@1' };
+              };
+              readonly deliveryLongitude: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/float8@1' };
+              };
               readonly deliveryMethod: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -3451,6 +3999,10 @@ type ContractBase = Omit<
               readonly scheduledFor: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/date-string@1' };
+              };
+              readonly shippingCost: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
               readonly status: {
                 readonly nullable: false;
@@ -3530,6 +4082,10 @@ type ContractBase = Omit<
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly deliveryAddress: { readonly column: 'deliveryAddress' };
                 readonly deliveryCity: { readonly column: 'deliveryCity' };
+                readonly deliveryDistanceKm: { readonly column: 'deliveryDistanceKm' };
+                readonly deliveryDurationMinutes: { readonly column: 'deliveryDurationMinutes' };
+                readonly deliveryLatitude: { readonly column: 'deliveryLatitude' };
+                readonly deliveryLongitude: { readonly column: 'deliveryLongitude' };
                 readonly deliveryMethod: { readonly column: 'deliveryMethod' };
                 readonly discount: { readonly column: 'discount' };
                 readonly estimatedDeliveryAt: { readonly column: 'estimatedDeliveryAt' };
@@ -3541,6 +4097,7 @@ type ContractBase = Omit<
                 readonly paymentRef: { readonly column: 'paymentRef' };
                 readonly paymentUrl: { readonly column: 'paymentUrl' };
                 readonly scheduledFor: { readonly column: 'scheduledFor' };
+                readonly shippingCost: { readonly column: 'shippingCost' };
                 readonly status: { readonly column: 'status' };
                 readonly subtotal: { readonly column: 'subtotal' };
                 readonly tierAtPurchase: { readonly column: 'tierAtPurchase' };
@@ -3888,6 +4445,14 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
+              readonly latitude: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/float8@1' };
+              };
+              readonly longitude: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/float8@1' };
+              };
               readonly phone: {
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -3925,6 +4490,18 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['id'];
                 };
               };
+              readonly wallet: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'ProducerWallet';
+                };
+                readonly cardinality: '1:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['producerId'];
+                };
+              };
             };
             readonly storage: {
               readonly table: 'Producer';
@@ -3934,9 +4511,93 @@ type ContractBase = Omit<
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly farmName: { readonly column: 'farmName' };
                 readonly id: { readonly column: 'id' };
+                readonly latitude: { readonly column: 'latitude' };
+                readonly longitude: { readonly column: 'longitude' };
                 readonly phone: { readonly column: 'phone' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
                 readonly userId: { readonly column: 'userId' };
+              };
+            };
+          };
+          readonly ProducerWallet: {
+            readonly fields: {
+              readonly balance: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly producerId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly withdrawnTotal: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: {
+              readonly producer: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Producer';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['producerId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly transactions: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'WalletTransaction';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['walletId'];
+                };
+              };
+              readonly withdrawals: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'WithdrawalRequest';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['walletId'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'ProducerWallet';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly balance: { readonly column: 'balance' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly id: { readonly column: 'id' };
+                readonly producerId: { readonly column: 'producerId' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+                readonly withdrawnTotal: { readonly column: 'withdrawnTotal' };
               };
             };
           };
@@ -4389,6 +5050,17 @@ type ContractBase = Omit<
                   readonly targetFields: readonly ['userId'];
                 };
               };
+              readonly walletTransactions: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'WalletTransaction';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['actorId'];
+                };
+              };
               readonly warehouses: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -4398,6 +5070,28 @@ type ContractBase = Omit<
                 readonly on: {
                   readonly localFields: readonly ['id'];
                   readonly targetFields: readonly ['managerId'];
+                };
+              };
+              readonly withdrawalsRequested: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'WithdrawalRequest';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['requestedById'];
+                };
+              };
+              readonly withdrawalsReviewed: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'WithdrawalRequest';
+                };
+                readonly cardinality: '1:N';
+                readonly on: {
+                  readonly localFields: readonly ['id'];
+                  readonly targetFields: readonly ['reviewedById'];
                 };
               };
             };
@@ -4416,6 +5110,92 @@ type ContractBase = Omit<
                 readonly role: { readonly column: 'role' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
                 readonly username: { readonly column: 'username' };
+              };
+            };
+          };
+          readonly WalletTransaction: {
+            readonly fields: {
+              readonly actorId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly amount: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly balanceAfter: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly description: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly reference: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly source: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly type: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly walletId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: {
+              readonly actor: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['actorId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly wallet: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'ProducerWallet';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['walletId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'WalletTransaction';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly actorId: { readonly column: 'actorId' };
+                readonly amount: { readonly column: 'amount' };
+                readonly balanceAfter: { readonly column: 'balanceAfter' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly description: { readonly column: 'description' };
+                readonly id: { readonly column: 'id' };
+                readonly reference: { readonly column: 'reference' };
+                readonly source: { readonly column: 'source' };
+                readonly type: { readonly column: 'type' };
+                readonly walletId: { readonly column: 'walletId' };
               };
             };
           };
@@ -4443,6 +5223,14 @@ type ContractBase = Omit<
               readonly id: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly latitude: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/float8@1' };
+              };
+              readonly longitude: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/float8@1' };
               };
               readonly managerId: {
                 readonly nullable: true;
@@ -4491,9 +5279,137 @@ type ContractBase = Omit<
                 readonly city: { readonly column: 'city' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly id: { readonly column: 'id' };
+                readonly latitude: { readonly column: 'latitude' };
+                readonly longitude: { readonly column: 'longitude' };
                 readonly managerId: { readonly column: 'managerId' };
                 readonly name: { readonly column: 'name' };
                 readonly updatedAt: { readonly column: 'updatedAt' };
+              };
+            };
+          };
+          readonly WithdrawalRequest: {
+            readonly fields: {
+              readonly amount: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly bankAccountName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly bankAccountNumber: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly bankName: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly createdAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly decisionNote: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly id: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly note: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly requestedById: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly reviewedAt: {
+                readonly nullable: true;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly reviewedById: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly status: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
+              readonly transactionId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+              readonly updatedAt: {
+                readonly nullable: false;
+                readonly type: {
+                  readonly kind: 'scalar';
+                  readonly codecId: 'pg/timestamptz-string@1';
+                };
+              };
+              readonly walletId: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
+              };
+            };
+            readonly relations: {
+              readonly requestedBy: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['requestedById'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly reviewedBy: {
+                readonly to: { readonly namespace: 'public' & NamespaceId; readonly model: 'User' };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['reviewedById'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+              readonly wallet: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'ProducerWallet';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: false;
+                readonly on: {
+                  readonly localFields: readonly ['walletId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
+            };
+            readonly storage: {
+              readonly table: 'WithdrawalRequest';
+              readonly namespaceId: 'public';
+              readonly fields: {
+                readonly amount: { readonly column: 'amount' };
+                readonly bankAccountName: { readonly column: 'bankAccountName' };
+                readonly bankAccountNumber: { readonly column: 'bankAccountNumber' };
+                readonly bankName: { readonly column: 'bankName' };
+                readonly createdAt: { readonly column: 'createdAt' };
+                readonly decisionNote: { readonly column: 'decisionNote' };
+                readonly id: { readonly column: 'id' };
+                readonly note: { readonly column: 'note' };
+                readonly requestedById: { readonly column: 'requestedById' };
+                readonly reviewedAt: { readonly column: 'reviewedAt' };
+                readonly reviewedById: { readonly column: 'reviewedById' };
+                readonly status: { readonly column: 'status' };
+                readonly transactionId: { readonly column: 'transactionId' };
+                readonly updatedAt: { readonly column: 'updatedAt' };
+                readonly walletId: { readonly column: 'walletId' };
               };
             };
           };
@@ -4564,6 +5480,29 @@ type ContractBase = Omit<
               { readonly name: 'BUSINESS'; readonly value: 'BUSINESS' },
             ];
           };
+          readonly WalletTransactionSource: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'ORDER'; readonly value: 'ORDER' },
+              { readonly name: 'WITHDRAWAL'; readonly value: 'WITHDRAWAL' },
+              { readonly name: 'ADJUSTMENT'; readonly value: 'ADJUSTMENT' },
+            ];
+          };
+          readonly WalletTransactionType: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'CREDIT'; readonly value: 'CREDIT' },
+              { readonly name: 'DEBIT'; readonly value: 'DEBIT' },
+            ];
+          };
+          readonly WithdrawalStatus: {
+            readonly codecId: 'pg/text@1';
+            readonly members: readonly [
+              { readonly name: 'PENDING'; readonly value: 'PENDING' },
+              { readonly name: 'APPROVED'; readonly value: 'APPROVED' },
+              { readonly name: 'REJECTED'; readonly value: 'REJECTED' },
+            ];
+          };
         };
         readonly enumMemberTypes?: {
           readonly BatchStatus: readonly [
@@ -4609,6 +5548,20 @@ type ContractBase = Omit<
             { readonly name: 'WAREHOUSE'; readonly value: 'WAREHOUSE' },
             { readonly name: 'CONSUMER'; readonly value: 'CONSUMER' },
             { readonly name: 'BUSINESS'; readonly value: 'BUSINESS' },
+          ];
+          readonly WalletTransactionSource: readonly [
+            { readonly name: 'ORDER'; readonly value: 'ORDER' },
+            { readonly name: 'WITHDRAWAL'; readonly value: 'WITHDRAWAL' },
+            { readonly name: 'ADJUSTMENT'; readonly value: 'ADJUSTMENT' },
+          ];
+          readonly WalletTransactionType: readonly [
+            { readonly name: 'CREDIT'; readonly value: 'CREDIT' },
+            { readonly name: 'DEBIT'; readonly value: 'DEBIT' },
+          ];
+          readonly WithdrawalStatus: readonly [
+            { readonly name: 'PENDING'; readonly value: 'PENDING' },
+            { readonly name: 'APPROVED'; readonly value: 'APPROVED' },
+            { readonly name: 'REJECTED'; readonly value: 'REJECTED' },
           ];
         };
       };
@@ -4722,6 +5675,15 @@ type ContractBase = Omit<
           readonly onCreate: { readonly id: 'timestamptzStringNow'; readonly kind: 'generator' };
           readonly onUpdate: { readonly id: 'timestamptzStringNow'; readonly kind: 'generator' };
           readonly ref: {
+            readonly entry: 'ProducerWallet';
+            readonly field: 'updatedAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'timestamptzStringNow'; readonly kind: 'generator' };
+          readonly onUpdate: { readonly id: 'timestamptzStringNow'; readonly kind: 'generator' };
+          readonly ref: {
             readonly entry: 'Product';
             readonly field: 'updatedAt';
             readonly namespace: 'public';
@@ -4768,6 +5730,15 @@ type ContractBase = Omit<
           readonly onUpdate: { readonly id: 'timestamptzStringNow'; readonly kind: 'generator' };
           readonly ref: {
             readonly entry: 'Warehouse';
+            readonly field: 'updatedAt';
+            readonly namespace: 'public';
+          };
+        },
+        {
+          readonly onCreate: { readonly id: 'timestamptzStringNow'; readonly kind: 'generator' };
+          readonly onUpdate: { readonly id: 'timestamptzStringNow'; readonly kind: 'generator' };
+          readonly ref: {
+            readonly entry: 'WithdrawalRequest';
             readonly field: 'updatedAt';
             readonly namespace: 'public';
           };

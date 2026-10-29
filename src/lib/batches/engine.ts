@@ -74,6 +74,10 @@ export interface FreshnessInput {
   idealTempC: number;
   shelfLifeDays: number;
   category: string;
+  /** Ambient temperature at the warehouse, when a weather lookup succeeded. */
+  ambientTempC?: number | null;
+  /** Ambient relative humidity (0-100) at the warehouse. */
+  ambientHumidityPct?: number | null;
   now?: Date;
 }
 
@@ -82,6 +86,32 @@ export interface FreshnessResult {
   status: "FRESH" | "RESCUE" | "FEED" | "RESIDUE" | "DISPOSED";
   daysRemaining: number;
   degradationRate: number;
+  /** Extra heat load added to the recorded storage temperature. */
+  ambientPenaltyC: number;
+  effectiveStorageTempC: number;
+}
+
+/**
+ * Hot and humid ambient conditions add a small heat load to stored produce.
+ * The effect is deliberately bounded so a weather outage never dominates the
+ * warehouse's own temperature reading.
+ */
+export function ambientHeatPenaltyC(
+  ambientTempC: number | null | undefined,
+  ambientHumidityPct: number | null | undefined,
+): number {
+  const heat =
+    Number.isFinite(ambientTempC) && ambientTempC !== null && ambientTempC !== undefined
+      ? Math.min(4, Math.max(0, ambientTempC - 24) * 0.25)
+      : 0;
+  const humidity =
+    Number.isFinite(ambientHumidityPct) &&
+    ambientHumidityPct !== null &&
+    ambientHumidityPct !== undefined
+      ? Math.min(1, Math.max(0, ambientHumidityPct - 85) * 0.05)
+      : 0;
+
+  return Math.round((heat + humidity) * 10) / 10;
 }
 
 export function calculateFreshnessScore(input: FreshnessInput): FreshnessResult {
@@ -92,6 +122,8 @@ export function calculateFreshnessScore(input: FreshnessInput): FreshnessResult 
     idealTempC,
     shelfLifeDays,
     category,
+    ambientTempC,
+    ambientHumidityPct,
     now = new Date(),
   } = input;
 
@@ -110,6 +142,8 @@ export function calculateFreshnessScore(input: FreshnessInput): FreshnessResult 
       status: "DISPOSED",
       daysRemaining: 0,
       degradationRate: 0,
+      ambientPenaltyC: 0,
+      effectiveStorageTempC: storageTempC,
     };
   }
 
@@ -118,7 +152,11 @@ export function calculateFreshnessScore(input: FreshnessInput): FreshnessResult 
   const storageDays = Math.max(0, (now.getTime() - received.getTime()) / DAY_MS);
   const transitDays = Math.max(0, (received.getTime() - harvest.getTime()) / DAY_MS);
 
-  const tempDiff = Math.abs(storageTempC - idealTempC);
+  const ambientPenaltyC = ambientHeatPenaltyC(ambientTempC, ambientHumidityPct);
+  const effectiveStorageTempC =
+    Math.round((storageTempC + ambientPenaltyC) * 10) / 10;
+
+  const tempDiff = Math.abs(effectiveStorageTempC - idealTempC);
   const tempPenalty = Math.max(0, tempDiff - profile.tempToleranceC) * profile.tempSensitivity;
   const temperatureFactor = 1 + tempPenalty;
 
@@ -142,6 +180,8 @@ export function calculateFreshnessScore(input: FreshnessInput): FreshnessResult 
     status,
     daysRemaining,
     degradationRate: effectiveDegradation,
+    ambientPenaltyC,
+    effectiveStorageTempC,
   };
 }
 

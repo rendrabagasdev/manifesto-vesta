@@ -1,9 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { connection } from "next/server";
-import { Thermometer, Warehouse as WarehouseIcon } from "lucide-react";
+import {
+  CloudSun,
+  Droplets,
+  Thermometer,
+  Warehouse as WarehouseIcon,
+} from "lucide-react";
 import { requireRole } from "@/src/lib/auth/session";
+import { db } from "@/src/prisma/db";
 import { getBatchesForUser } from "@/src/lib/batches/queries";
+import {
+  getWeatherForWarehouse,
+  weatherLabel,
+} from "@/src/lib/weather/service";
 import { summarizeBatches } from "@/src/lib/batches/metrics";
 import {
   BATCH_STATUSES,
@@ -31,6 +41,20 @@ export default async function WarehouseDashboardPage() {
   const user = await requireRole(["WAREHOUSE", "ADMIN"]);
   const batches = await getBatchesForUser(user);
   const summary = summarizeBatches(batches);
+
+  const warehouseRows = await db.orm.public.Warehouse
+    .select("id", "name", "city", "managerId", "latitude", "longitude")
+    .all();
+  const managedWarehouses = warehouseRows.filter(
+    (warehouse) =>
+      user.role === "ADMIN" || warehouse.managerId === Number(user.id),
+  );
+  const warehouseWeather = await Promise.all(
+    managedWarehouses.map(async (warehouse) => ({
+      warehouse,
+      weather: await getWeatherForWarehouse(warehouse),
+    })),
+  );
 
   const active = batches.filter((batch) => batch.status !== "DISPOSED");
 
@@ -77,8 +101,59 @@ export default async function WarehouseDashboardPage() {
         </div>
       </section>
 
+      {managedWarehouses.length > 0 ? (
+        <section
+          aria-labelledby="warehouse-weather-heading"
+          className="mt-4 rounded-xl border border-line bg-surface p-4"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2
+              id="warehouse-weather-heading"
+              className="flex items-center gap-2 text-sm font-semibold text-ink"
+            >
+              <CloudSun className="size-4" aria-hidden="true" />
+              Cuaca gudang
+            </h2>
+            <p className="text-xs text-ink-muted">
+              Suhu dan kelembapan menjadi faktor tambahan skor kesegaran.
+            </p>
+          </div>
+          <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+            {warehouseWeather.map(({ warehouse, weather }) => (
+              <li
+                key={warehouse.id}
+                className="rounded-lg border border-line bg-surface-muted/60 px-3 py-2.5"
+              >
+                <p className="text-sm font-semibold text-ink">
+                  {warehouse.name}
+                </p>
+                {weather ? (
+                  <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-ink-muted">
+                    <span className="inline-flex items-center gap-1 tabular-nums text-ink">
+                      <Thermometer className="size-3.5" aria-hidden="true" />
+                      {formatNumber(weather.temperatureC)}°C
+                    </span>
+                    {weather.humidityPct !== null ? (
+                      <span className="inline-flex items-center gap-1 tabular-nums">
+                        <Droplets className="size-3.5" aria-hidden="true" />
+                        {formatNumber(weather.humidityPct)}%
+                      </span>
+                    ) : null}
+                    <span>{weatherLabel(weather.source)}</span>
+                  </div>
+                ) : (
+                  <p className="mt-1 text-xs text-ink-muted">
+                    Cuaca belum tersedia. Skor tetap memakai suhu gudang.
+                  </p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ) : null}
+
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
-        <section aria-labelledby="monitor-heading" className="rounded-xl border border-line bg-surface lg:col-span-2">
+        <section aria-labelledby="monitor-heading" className="min-w-0 rounded-xl border border-line bg-surface lg:col-span-2">
           <div className="flex items-center justify-between gap-3 border-b border-line px-4 py-3">
             <h2 id="monitor-heading" className="flex items-center gap-2 text-sm font-semibold text-ink">
               <Thermometer className="size-4" aria-hidden="true" />
@@ -129,7 +204,7 @@ export default async function WarehouseDashboardPage() {
           )}
         </section>
 
-        <section aria-labelledby="stage-heading" className="rounded-xl border border-line bg-surface p-4">
+        <section aria-labelledby="stage-heading" className="min-w-0 rounded-xl border border-line bg-surface p-4">
           <h2 id="stage-heading" className="flex items-center gap-2 text-sm font-semibold text-ink">
             <WarehouseIcon className="size-4" aria-hidden="true" />
             Sebaran tahap

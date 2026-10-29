@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { Leaf, LogOut, Store } from "lucide-react";
 import { signOutAction } from "@/app/dashboard/actions";
 import {
   BUYER_ROLES,
@@ -25,40 +24,39 @@ export function ShopShell({
 
   return (
     <div
-      className={`min-h-dvh bg-surface-muted${isBuyer ? " theme-buyer" : ""}`}
+      className={`flex min-h-dvh flex-col bg-surface-muted${isBuyer ? " theme-buyer" : ""}`}
     >
       <header className="sticky top-0 z-40 border-b border-line bg-surface">
-        <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4 sm:px-6">
+        <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4 sm:px-6">
           <Link
             href="/marketplace"
-            className="inline-flex shrink-0 items-center gap-2 font-semibold tracking-tight text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+            className="inline-flex shrink-0 items-baseline gap-1 font-heading text-lg font-extrabold tracking-tight text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
           >
-            <span className="flex size-8 items-center justify-center rounded-lg bg-brand-strong text-on-brand">
-              <Leaf className="size-4" aria-hidden="true" />
-            </span>
             Vesta
+            <span
+              className="size-1.5 rounded-full bg-brand-strong"
+              aria-hidden="true"
+            />
           </Link>
 
-          <div className="ml-4 min-w-0">
+          <div className="min-w-0">
             <MarketplaceNav variant="desktop" />
           </div>
 
-          <div className="ml-auto flex items-center gap-1.5">
+          <div className="ml-auto flex items-center gap-1">
             <div className="hidden md:block">
               <CartBadge />
             </div>
             <Link
               href="/dashboard"
-              className="inline-flex size-10 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
-              aria-label="Ke dashboard"
-              title="Dashboard"
+              className="hidden h-9 items-center rounded-md px-2.5 text-sm font-medium text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand sm:inline-flex"
             >
-              <Store className="size-[18px]" aria-hidden="true" />
+              Dashboard
             </Link>
-            <div className="hidden items-center gap-1 rounded-lg py-1 pl-1 pr-1 sm:flex">
+            <div className="hidden items-center gap-1 sm:flex">
               <Link
                 href="/dashboard/profile"
-                className="flex items-center gap-2.5 rounded-lg py-1 pl-1 pr-1 transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                className="flex items-center gap-2.5 rounded-md px-1.5 py-1 transition-colors hover:bg-surface-muted focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
               >
                 <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand-soft text-xs font-bold text-brand-ink">
                   {initials(displayName)}
@@ -75,11 +73,9 @@ export function ShopShell({
               <form action={signOutAction}>
                 <button
                   type="submit"
-                  aria-label="Keluar"
-                  title="Keluar"
-                  className="inline-flex size-8 items-center justify-center rounded-lg text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+                  className="inline-flex h-9 items-center rounded-md px-2.5 text-sm font-medium text-ink-muted transition-colors hover:bg-surface-muted hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
                 >
-                  <LogOut className="size-4" aria-hidden="true" />
+                  Keluar
                 </button>
               </form>
             </div>
@@ -87,18 +83,16 @@ export function ShopShell({
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 lg:py-8">
+      <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 sm:px-6 lg:py-8">
         {children}
       </main>
 
       <footer className="border-t border-line bg-surface pb-[calc(env(safe-area-inset-bottom)+5rem)] md:pb-0">
-        <div className="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-6 text-sm text-ink-muted sm:flex-row sm:items-center sm:justify-between sm:px-6">
-          <p className="font-semibold text-ink">
-            Vesta &middot; Platform Kaskade Kesegaran
+        <div className="mx-auto flex max-w-6xl flex-col gap-1.5 px-4 py-6 text-xs text-ink-muted sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <p className="font-heading text-sm font-bold tracking-tight text-ink">
+            Vesta
           </p>
-          <p>
-            &copy; 2026 Vesta &middot; UNIC Web Development &middot; Mode demo
-          </p>
+          <p>&copy; 2026 Vesta &middot; Mode demo</p>
         </div>
       </footer>
 
@@ -113,12 +107,13 @@ export function PublicHeader() {
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 font-semibold tracking-tight text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          className="inline-flex items-baseline gap-1 font-heading text-lg font-extrabold tracking-tight text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
         >
-          <span className="flex size-8 items-center justify-center rounded-lg bg-brand-strong text-on-brand">
-            <Leaf className="size-4" aria-hidden="true" />
-          </span>
           Vesta
+          <span
+            className="size-1.5 rounded-full bg-brand-strong"
+            aria-hidden="true"
+          />
         </Link>
         <nav
           aria-label="Navigasi publik"
