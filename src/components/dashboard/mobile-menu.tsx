@@ -3,12 +3,13 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Leaf, LogOut, Menu, X } from "lucide-react";
+import { LogOut, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { signOutAction } from "@/app/dashboard/actions";
 import { getDashboardNavItems } from "@/src/components/dashboard-nav";
 import { ROLE_LABELS, type UserRole } from "@/src/lib/auth/roles";
 import { initials } from "@/src/lib/batches/format";
+import { VestaLogo } from "@/src/components/vesta-logo";
 
 type MobileMenuProps = {
   role: UserRole;
@@ -79,10 +80,7 @@ export function MobileMenu({
           <div className="min-h-dvh px-4 py-3">
             <header className="flex h-11 items-center justify-between">
               <span className="inline-flex items-center gap-2.5 font-semibold tracking-tight text-ink">
-                <span className="flex size-8 items-center justify-center rounded-lg bg-brand-strong text-on-brand">
-                  <Leaf className="size-4" aria-hidden="true" />
-                </span>
-                Vesta
+                <VestaLogo className="size-9" />
               </span>
               <button
                 type="button"

@@ -3,9 +3,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
-import { Leaf } from "lucide-react";
 import { auth } from "@/auth";
 import { RegisterForm } from "./register-form";
+import { VestaLogo } from "@/src/components/vesta-logo";
 
 export const instant = false;
 
@@ -32,11 +32,9 @@ export default async function RegisterPage() {
           <Link
             href="/"
             className="inline-flex items-center gap-2.5 text-lg font-semibold tracking-tight text-on-brand"
+            aria-label="Vesta — beranda"
           >
-            <span className="flex size-9 items-center justify-center rounded-lg bg-on-brand/15">
-              <Leaf className="size-5" aria-hidden="true" />
-            </span>
-            Vesta
+            <VestaLogo className="size-9" />
           </Link>
 
           <div className="mt-7 max-w-md lg:mt-14">

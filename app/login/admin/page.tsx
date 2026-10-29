@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
-import { ArrowRight, Leaf } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { auth } from "@/auth";
+import { VestaLogo } from "@/src/components/vesta-logo";
 import { DEMO_ACCOUNTS, DEMO_PASSWORD } from "@/src/lib/auth/demo-accounts";
 import { ROLE_LABELS } from "@/src/lib/auth/roles";
 import { AdminLoginForm } from "./login-form";
@@ -42,11 +43,9 @@ export default async function AdminLoginPage() {
           <Link
             href="/login/admin"
             className="mb-10 inline-flex items-center gap-2.5 text-lg font-semibold tracking-tight text-ink lg:hidden"
+            aria-label="Vesta — masuk admin"
           >
-            <span className="flex size-9 items-center justify-center rounded-lg bg-brand-strong text-on-brand">
-              <Leaf className="size-5" aria-hidden="true" />
-            </span>
-            Vesta
+            <VestaLogo className="size-9" />
           </Link>
 
           <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-brand-strong">
