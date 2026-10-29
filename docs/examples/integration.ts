@@ -95,7 +95,16 @@ class VestaAPIClient {
   }
 
   // Products
-  async getProductBreakdown(productId: number) {
+  async getProductBreakdown(productId: number): Promise<
+    ApiResponse<{
+      product: { id: number; name: string; category: string };
+      cascadePricing: Array<{
+        status: string;
+        pricePerKg: number;
+        discountPct: number;
+      }>;
+    }>
+  > {
     return this.request(`/api/products/${productId}/breakdown`);
   }
 
@@ -166,7 +175,9 @@ class VestaAPIClient {
   }
 
   // Cascade
-  async simulateTick(hours: number = 24) {
+  async simulateTick(hours: number = 24): Promise<
+    ApiResponse<{ newRescueDeals: number; statusTransitions: number }>
+  > {
     return this.request('/api/demo/simulate-tick', {
       method: 'POST',
       body: JSON.stringify({ hours }),
@@ -300,7 +311,7 @@ async function examples() {
   if (breakdown.success && breakdown.data) {
     console.log('Product:', breakdown.data.product.name);
     console.log('Cascade pricing:');
-    breakdown.data.cascadePricing.forEach((stage: any) => {
+    breakdown.data.cascadePricing.forEach((stage) => {
       console.log(
         `  ${stage.status}: Rp ${stage.pricePerKg} (${stage.discountPct}% off)`
       );
