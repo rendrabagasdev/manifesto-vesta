@@ -134,6 +134,7 @@ export function AddToCart({ product }: { product: AddToCartProduct }) {
         <p
           className="min-w-0 truncate text-[10px] text-ink-muted"
           aria-live="polite"
+          suppressHydrationWarning
         >
           {feedback ? (
             <span
