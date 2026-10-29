@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as L from "leaflet";
 import {
   MapContainer,
@@ -62,6 +62,8 @@ function MapResizeHandler() {
 }
 
 export function DeliveryMap({ value, onChange }: DeliveryMapProps) {
+  const mapRef = useRef<L.Map | null>(null);
+  
   const pinIcon = useMemo(
     () =>
       L.divIcon({
@@ -75,6 +77,9 @@ export function DeliveryMap({ value, onChange }: DeliveryMapProps) {
 
   return (
     <MapContainer
+      ref={(instance) => {
+        mapRef.current = instance;
+      }}
       center={[value.latitude, value.longitude]}
       zoom={13}
       scrollWheelZoom={false}

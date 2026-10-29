@@ -98,6 +98,7 @@ export interface RescueDealView {
   id: number;
   batchId: number;
   batchCode: string;
+  productId: number;
   productName: string;
   category: string;
   unit: string;
@@ -192,6 +193,7 @@ export async function getRescueDeals(
         id: deal.id,
         batchId: batch.id,
         batchCode: batch.code,
+        productId: batch.product.id,
         productName: batch.product.name,
         category: batch.product.category,
         unit: batch.product.unit,
@@ -226,6 +228,7 @@ export interface SimpleListing {
   id: number;
   batchId: number;
   batchCode: string;
+  productId: number;
   productName: string;
   category: string;
   unit: string;
@@ -274,6 +277,7 @@ export async function getFeedListings(
       id: listing.id,
       batchId: listing.batch.id,
       batchCode: listing.batch.code,
+      productId: listing.batch.product.id,
       productName: listing.batch.product.name,
       category: listing.batch.product.category,
       unit: listing.batch.product.unit,
@@ -330,6 +334,7 @@ export async function getResidueListings(
       id: listing.id,
       batchId: listing.batch.id,
       batchCode: listing.batch.code,
+      productId: listing.batch.product.id,
       productName: listing.batch.product.name,
       category: listing.batch.product.category,
       unit: listing.batch.product.unit,

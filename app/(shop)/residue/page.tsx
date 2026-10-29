@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { connection } from "next/server";
 import { requireSession } from "@/src/lib/auth/session";
 import { getResidueListings } from "@/src/lib/marketplace/queries";
-import { ListingCard } from "@/src/components/marketplace/listing-card";
+import { AddToCart } from "@/src/components/marketplace/add-to-cart";
 import { EmptyState } from "@/src/components/shop/empty-state";
-import { buyListingAction } from "@/app/(shop)/actions";
+import { formatIdr, formatKg } from "@/src/lib/batches/format";
 
 export const instant = false;
 
@@ -41,7 +42,7 @@ export default async function ResiduePage({
         </h1>
         <p className="mt-2 text-sm leading-relaxed text-ink-muted">
           Bahan baku kompos, biogas, dan media maggot dari stok yang tidak lagi
-          layak jual.
+          layak jual. Masukkan ke keranjang lalu checkout dengan COD.
         </p>
       </header>
 
@@ -103,12 +104,65 @@ export default async function ResiduePage({
         <ul className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
           {listings.map((listing) => (
             <li key={listing.id} className="h-full">
-              <ListingCard
-                listing={listing}
-                source="RESIDUE"
-                action={buyListingAction}
-                buyLabel="Beli residu"
-              />
+              <article className="flex h-full flex-col overflow-hidden rounded-xl border border-line bg-surface">
+                <div className="relative flex h-28 items-center justify-center overflow-hidden bg-surface-muted sm:h-40">
+                  {listing.imageUrl ? (
+                    <Image
+                      src={listing.imageUrl}
+                      alt=""
+                      fill
+                      sizes="(min-width: 1024px) 33vw, 50vw"
+                      className="object-cover"
+                    />
+                  ) : null}
+                </div>
+
+                <div className="flex flex-1 flex-col p-3.5">
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-ink-muted">
+                    {listing.tag ?? "Residu"}
+                  </p>
+                  <h2 className="mt-1 truncate text-sm font-semibold text-ink">
+                    {listing.productName}
+                  </h2>
+
+                  <p className="mt-0.5 truncate text-xs text-ink-muted">
+                    {listing.warehouseName}
+                    {listing.warehouseCity ? `, ${listing.warehouseCity}` : ""}
+                  </p>
+
+                  {listing.description ? (
+                    <p className="mt-1 hidden line-clamp-2 text-xs leading-relaxed text-ink-muted sm:block">
+                      {listing.description}
+                    </p>
+                  ) : null}
+
+                  <p className="mt-2 flex items-baseline gap-1">
+                    <span className="font-heading text-base font-bold tabular-nums tracking-tight text-ink">
+                      {formatIdr(listing.pricePerKg)}
+                    </span>
+                    <span className="text-xs text-ink-muted">/kg</span>
+                  </p>
+                  <p className="mt-0.5 truncate text-xs text-ink-muted">
+                    {formatKg(listing.availableKg)} tersedia
+                  </p>
+
+                  <div className="mt-auto pt-3">
+                    <AddToCart
+                      product={{
+                        batchId: listing.batchId,
+                        batchCode: listing.batchCode,
+                        productId: listing.productId,
+                        productName: listing.productName,
+                        unit: listing.unit,
+                        pricePerKg: listing.pricePerKg,
+                        maxKg: listing.availableKg,
+                        warehouseName: listing.warehouseName,
+                        warehouseCity: listing.warehouseCity,
+                      }}
+                    />
+                  </div>
+                </div>
+              </article>
             </li>
           ))}
         </ul>

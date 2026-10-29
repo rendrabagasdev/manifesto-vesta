@@ -306,7 +306,7 @@ export function CartView({ defaults }: CartViewProps) {
           </div>
 
           <div className="delivery-map mt-3 h-[260px] overflow-hidden rounded-lg border border-line sm:h-[300px]">
-            <DeliveryMap value={pin} onChange={setPin} />
+            {ready && <DeliveryMap key={`map-${cityId}`} value={pin} onChange={setPin} />}
           </div>
 
           <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
