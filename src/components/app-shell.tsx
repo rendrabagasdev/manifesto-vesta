@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
-import { ChevronRight, Leaf, LogOut } from "lucide-react";
+import { ChevronRight, LogOut } from "lucide-react";
 import { signOutAction } from "@/app/dashboard/actions";
 import {
   BATCH_VIEW_ROLES,
@@ -13,6 +13,7 @@ import { initials } from "@/src/lib/batches/format";
 import { DashboardNav } from "@/src/components/dashboard-nav";
 import { MobileMenu } from "@/src/components/dashboard/mobile-menu";
 import { BottomNav } from "@/src/components/shop/bottom-nav";
+import { VestaLogo } from "@/src/components/vesta-logo";
 
 export function AppShell({
   user,
@@ -33,17 +34,10 @@ export function AppShell({
         <aside className="hidden w-56 shrink-0 flex-col px-2 py-3 lg:flex lg:h-full lg:min-h-0">
           <Link
             href="/dashboard"
-            className="inline-flex items-center gap-2.5 rounded-lg px-2 py-1 font-semibold tracking-tight text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+            className="inline-flex items-center rounded-lg px-2 py-1 font-semibold tracking-tight text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+            aria-label="Vesta — beranda dashboard"
           >
-            <span className="flex size-8 items-center justify-center rounded-lg bg-brand-strong text-on-brand">
-              <Leaf className="size-4" aria-hidden="true" />
-            </span>
-            <span>
-              Vesta
-              <span className="block text-[11px] font-medium text-ink-muted">
-                Freshness cascade
-              </span>
-            </span>
+            <VestaLogo className="size-9" />
           </Link>
 
           <p className="mt-8 px-3 text-xs font-medium text-ink-muted">
@@ -94,14 +88,9 @@ export function AppShell({
               <Link
                 href="/dashboard"
                 aria-label="Beranda dashboard"
-                className="inline-flex items-center gap-2.5 rounded-lg font-semibold tracking-tight text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand lg:px-2 lg:py-1"
+                className="inline-flex items-center rounded-lg font-semibold tracking-tight text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand lg:px-2 lg:py-1"
               >
-                <span className="flex size-9 items-center justify-center rounded-lg bg-brand-strong text-on-brand">
-                  <Leaf className="size-4" aria-hidden="true" />
-                </span>
-                <span className="lg:hidden text-[15px]">
-                  Vesta
-                </span>
+                <VestaLogo className="size-9" />
               </Link>
               <span className="hidden items-center gap-1.5 text-xs text-ink-muted lg:flex">
                 Ruang kerja

@@ -61,6 +61,15 @@ export const PRODUCT_MANAGE_ROLES: readonly UserRole[] = ["ADMIN", "PRODUCER"];
 
 export const ORDER_FULFILL_ROLES: readonly UserRole[] = ["ADMIN", "WAREHOUSE"];
 
+/**
+ * Landing page right after a successful login. Buyers land on the
+ * marketplace; staff roles go straight to their operational dashboard.
+ */
+export function loginDestinationForRole(role: UserRole | null | undefined): string {
+  if (role && BUYER_ROLES.includes(role)) return "/marketplace";
+  return "/dashboard";
+}
+
 export function hasRole(
   role: UserRole,
   roles: readonly UserRole[],

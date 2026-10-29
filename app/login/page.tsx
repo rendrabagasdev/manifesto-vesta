@@ -4,7 +4,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { connection } from "next/server";
 import { auth } from "@/auth";
+import { loginDestinationForRole } from "@/src/lib/auth/roles";
 import { LoginForm } from "./login-form";
+import { VestaLogo } from "@/src/components/vesta-logo";
 
 export const instant = false;
 
@@ -16,7 +18,7 @@ export const metadata: Metadata = {
 export default async function LoginPage() {
   await connection();
   const session = await auth();
-  if (session) redirect("/dashboard");
+  if (session) redirect(loginDestinationForRole(session.user?.role));
 
   return (
     <main className="flex min-h-dvh flex-col background-orange text-ink lg:grid lg:grid-cols-[1.05fr_0.95fr]">

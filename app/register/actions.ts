@@ -14,6 +14,7 @@ export async function registerAction(
   formData: FormData,
 ): Promise<RegisterState> {
   const parsed = registerSchema.safeParse({
+    accountType: formData.get("accountType"),
     name: formData.get("name"),
     email: formData.get("email"),
     password: formData.get("password"),
@@ -39,7 +40,7 @@ export async function registerAction(
       name: parsed.data.name,
       email: parsed.data.email,
       passwordHash,
-      role: "CONSUMER",
+      role: parsed.data.accountType,
     });
   } catch {
     return { error: "Pendaftaran gagal. Silakan coba lagi." };

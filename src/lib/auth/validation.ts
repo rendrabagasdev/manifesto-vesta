@@ -5,8 +5,16 @@ export const loginSchema = z.object({
   password: z.string().min(1, "Kata sandi wajib diisi."),
 });
 
+/** The only roles open for self-registration; admin/staff accounts are seeded. */
+export const ACCOUNT_TYPES = ["CONSUMER", "BUSINESS"] as const;
+
+export const accountTypeSchema = z.enum(ACCOUNT_TYPES);
+
+export type AccountType = (typeof ACCOUNT_TYPES)[number];
+
 export const registerSchema = z
   .object({
+    accountType: accountTypeSchema,
     name: z
       .string()
       .trim()

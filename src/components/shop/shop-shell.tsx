@@ -11,6 +11,7 @@ import { initials } from "@/src/lib/batches/format";
 import { CartBadge } from "./cart-badge";
 import { BottomNav } from "./bottom-nav";
 import { MarketplaceNav } from "@/src/components/marketplace/marketplace-nav";
+import { VestaLogo } from "@/src/components/vesta-logo";
 
 export function ShopShell({
   user,
@@ -30,13 +31,10 @@ export function ShopShell({
         <div className="mx-auto flex h-14 max-w-6xl items-center gap-4 px-4 sm:px-6">
           <Link
             href="/marketplace"
-            className="inline-flex shrink-0 items-baseline gap-1 font-heading text-lg font-extrabold tracking-tight text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+            className="inline-flex shrink-0 items-center rounded-lg font-heading text-lg font-extrabold tracking-tight text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+            aria-label="Vesta — beranda marketplace"
           >
-            Vesta
-            <span
-              className="size-1.5 rounded-full bg-brand-strong"
-              aria-hidden="true"
-            />
+            <VestaLogo className="size-9" />
           </Link>
 
           <div className="min-w-0">
@@ -107,13 +105,10 @@ export function PublicHeader() {
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
         <Link
           href="/"
-          className="inline-flex items-baseline gap-1 font-heading text-lg font-extrabold tracking-tight text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          className="inline-flex items-center rounded-lg font-heading text-lg font-extrabold tracking-tight text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand"
+          aria-label="Vesta — beranda"
         >
-          Vesta
-          <span
-            className="size-1.5 rounded-full bg-brand-strong"
-            aria-hidden="true"
-          />
+          <VestaLogo className="size-9" />
         </Link>
         <nav
           aria-label="Navigasi publik"
