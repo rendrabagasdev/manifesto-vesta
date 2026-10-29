@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as L from "leaflet";
 import {
   MapContainer,
@@ -62,8 +62,14 @@ function MapResizeHandler() {
 }
 
 export function DeliveryMap({ value, onChange }: DeliveryMapProps) {
-  const mapRef = useRef<L.Map | null>(null);
-  
+  const [mapKey, setMapKey] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Force remount when city changes
+  useEffect(() => {
+    setMapKey((prev) => prev + 1);
+  }, [value.latitude, value.longitude]);
+
   const pinIcon = useMemo(
     () =>
       L.divIcon({
@@ -76,38 +82,38 @@ export function DeliveryMap({ value, onChange }: DeliveryMapProps) {
   );
 
   return (
-    <MapContainer
-      ref={(instance) => {
-        mapRef.current = instance;
-      }}
-      center={[value.latitude, value.longitude]}
-      zoom={13}
-      scrollWheelZoom={false}
-      className="h-full w-full"
-    >
-      <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-      />
-      <MapFocus point={value} />
-      <MapClickHandler onChange={onChange} />
-      <MapResizeHandler />
-      <Marker
-        position={[value.latitude, value.longitude]}
-        icon={pinIcon}
-        draggable
-        title="Titik pengiriman"
-        eventHandlers={{
-          dragend(event) {
-            const marker = event.target as L.Marker;
-            const position = marker.getLatLng();
-            onChange({
-              latitude: position.lat,
-              longitude: position.lng,
-            });
-          },
-        }}
-      />
-    </MapContainer>
+    <div ref={containerRef} className="h-full w-full">
+      <MapContainer
+        key={mapKey}
+        center={[value.latitude, value.longitude]}
+        zoom={13}
+        scrollWheelZoom={false}
+        className="h-full w-full"
+      >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        <MapFocus point={value} />
+        <MapClickHandler onChange={onChange} />
+        <MapResizeHandler />
+        <Marker
+          position={[value.latitude, value.longitude]}
+          icon={pinIcon}
+          draggable
+          title="Titik pengiriman"
+          eventHandlers={{
+            dragend(event) {
+              const marker = event.target as L.Marker;
+              const position = marker.getLatLng();
+              onChange({
+                latitude: position.lat,
+                longitude: position.lng,
+              });
+            },
+          }}
+        />
+      </MapContainer>
+    </div>
   );
 }
