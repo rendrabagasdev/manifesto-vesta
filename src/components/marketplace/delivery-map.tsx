@@ -1,14 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import * as L from "leaflet";
-import {
-  MapContainer,
-  Marker,
-  TileLayer,
-  useMap,
-  useMapEvents,
-} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 
 export interface DeliveryPoint {
@@ -21,54 +14,30 @@ interface DeliveryMapProps {
   onChange: (point: DeliveryPoint) => void;
 }
 
-function MapFocus({ point }: { point: DeliveryPoint }) {
-  const map = useMap();
+type LeafletContainer = HTMLDivElement & { _leaflet_id?: number };
 
-  useEffect(() => {
-    map.flyTo([point.latitude, point.longitude], map.getZoom(), {
-      animate: true,
-      duration: 0.4,
-    });
-  }, [map, point.latitude, point.longitude]);
+const ATTRIBUTION =
+  '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>';
 
-  return null;
-}
-
-function MapClickHandler({
-  onChange,
-}: {
-  onChange: (point: DeliveryPoint) => void;
-}) {
-  useMapEvents({
-    click(event) {
-      onChange({ latitude: event.latlng.lat, longitude: event.latlng.lng });
-    },
-  });
-
-  return null;
-}
-
-function MapResizeHandler() {
-  const map = useMap();
-
-  useEffect(() => {
-    const container = map.getContainer();
-    const observer = new ResizeObserver(() => map.invalidateSize());
-    observer.observe(container);
-    return () => observer.disconnect();
-  }, [map]);
-
-  return null;
-}
-
+/**
+ * Leaflet is driven imperatively so the map is recreated whenever the effect
+ * runs. Next.js Activity hides a route without unmounting it, which removes
+ * the map but does not recreate react-leaflet's MapContainer on show.
+ */
 export function DeliveryMap({ value, onChange }: DeliveryMapProps) {
-  const [mapKey, setMapKey] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  const mapRef = useRef<L.Map | null>(null);
+  const markerRef = useRef<L.Marker | null>(null);
+  const onChangeRef = useRef(onChange);
+  const initialPointRef = useRef(value);
 
-  // Force remount when city changes
   useEffect(() => {
-    setMapKey((prev) => prev + 1);
-  }, [value.latitude, value.longitude]);
+    onChangeRef.current = onChange;
+  }, [onChange]);
+
+  useEffect(() => {
+    initialPointRef.current = value;
+  }, [value]);
 
   const pinIcon = useMemo(
     () =>
@@ -81,39 +50,67 @@ export function DeliveryMap({ value, onChange }: DeliveryMapProps) {
     [],
   );
 
-  return (
-    <div ref={containerRef} className="h-full w-full">
-      <MapContainer
-        key={mapKey}
-        center={[value.latitude, value.longitude]}
-        zoom={13}
-        scrollWheelZoom={false}
-        className="h-full w-full"
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        <MapFocus point={value} />
-        <MapClickHandler onChange={onChange} />
-        <MapResizeHandler />
-        <Marker
-          position={[value.latitude, value.longitude]}
-          icon={pinIcon}
-          draggable
-          title="Titik pengiriman"
-          eventHandlers={{
-            dragend(event) {
-              const marker = event.target as L.Marker;
-              const position = marker.getLatLng();
-              onChange({
-                latitude: position.lat,
-                longitude: position.lng,
-              });
-            },
-          }}
-        />
-      </MapContainer>
-    </div>
-  );
+  useEffect(() => {
+    const container = containerRef.current as LeafletContainer | null;
+    if (!container) return;
+
+    // A hidden route keeps its DOM; clear any stale binding before mounting again.
+    container._leaflet_id = undefined;
+
+    const start = initialPointRef.current;
+    const map = L.map(container, {
+      center: [start.latitude, start.longitude],
+      zoom: 13,
+      scrollWheelZoom: false,
+    });
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: ATTRIBUTION,
+    }).addTo(map);
+
+    const marker = L.marker([start.latitude, start.longitude], {
+      icon: pinIcon,
+      draggable: true,
+      title: "Titik pengiriman",
+    }).addTo(map);
+
+    marker.on("dragend", () => {
+      const point = marker.getLatLng();
+      onChangeRef.current({ latitude: point.lat, longitude: point.lng });
+    });
+
+    map.on("click", (event) => {
+      onChangeRef.current({
+        latitude: event.latlng.lat,
+        longitude: event.latlng.lng,
+      });
+    });
+
+    const observer = new ResizeObserver(() => map.invalidateSize());
+    observer.observe(container);
+
+    mapRef.current = map;
+    markerRef.current = marker;
+
+    return () => {
+      observer.disconnect();
+      mapRef.current = null;
+      markerRef.current = null;
+      map.remove();
+    };
+  }, [pinIcon]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    const marker = markerRef.current;
+    if (!map || !marker) return;
+
+    marker.setLatLng([value.latitude, value.longitude]);
+    map.flyTo([value.latitude, value.longitude], map.getZoom(), {
+      animate: true,
+      duration: 0.4,
+    });
+  }, [value.latitude, value.longitude]);
+
+  return <div ref={containerRef} className="h-full w-full" />;
 }

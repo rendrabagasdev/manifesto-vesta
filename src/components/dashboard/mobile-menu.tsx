@@ -40,6 +40,8 @@ export function MobileMenu({
     .sort((a, b) => b.length - a.length)[0];
 
   useEffect(() => {
+    // Sheet harus menutup sendiri saat rute berubah setelah link diketuk.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setOpen(false);
   }, [pathname]);
 
