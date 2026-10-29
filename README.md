@@ -2,6 +2,30 @@
 
 Marketplace bahan pokok segar yang menghubungkan produsen → gudang → konsumen tanpa tengkulak dengan sistem cascade 5 tahap (*FRESH → RESCUE → FEED → RESIDUE → DISPOSED*).
 
+## 📚 Dokumentasi API
+
+Vesta menyediakan REST API lengkap untuk integrasi eksternal:
+
+- **Swagger UI (Interactive)**: [http://localhost:3000/api-docs](http://localhost:3000/api-docs)
+- **OpenAPI Spec**: [http://localhost:3000/api/docs/openapi.json](http://localhost:3000/api/docs/openapi.json)
+- **Postman Collection**: [http://localhost:3000/api/docs/postman.json](http://localhost:3000/api/docs/postman.json)
+- **Dokumentasi Lengkap**: [docs/API_README.md](docs/API_README.md)
+- **Contoh Integrasi**: [docs/examples/integration.ts](docs/examples/integration.ts)
+
+### Quick API Access
+```bash
+# Health check
+curl http://localhost:3000/api/health
+
+# Get product breakdown
+curl http://localhost:3000/api/products/1/breakdown
+
+# Download Postman collection
+curl http://localhost:3000/api/docs/postman.json > vesta-api.json
+```
+
+Lihat [docs/README.md](docs/README.md) untuk panduan lengkap API.
+
 ---
 
 ## 🐳 Menjalankan dengan Docker
@@ -48,21 +72,144 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🏗️ Arsitektur & Fitur Utama
 
-## Learn More
+### Cascade Freshness System
+Produk otomatis berpindah status berdasarkan freshness score (0-100):
+- **FRESH** (70-100): Harga normal
+- **RESCUE** (40-69): Diskon 35% dengan time-limited deals
+- **FEED** (20-39): Diskon 80% untuk pakan ternak
+- **RESIDUE** (0-19): Diskon 95% untuk kompos/biogas
+- **DISPOSED**: Tracked untuk sustainability metrics
 
-To learn more about Next.js, take a look at the following resources:
+### Role-Based Access Control (RBAC)
+- **CONSUMER**: Pembeli retail
+- **BUSINESS**: Pembeli B2B (bulk orders, preorders)
+- **PRODUCER**: Petani/produsen (input batch)
+- **WAREHOUSE**: Manajer gudang (quality control)
+- **ADMIN**: Platform administrator
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Loyalty & Tier System
+Konsumen mendapatkan tier berdasarkan loyalty points:
+- **Bronze**: 2 rescue deals/minggu
+- **Silver**: 3 rescue deals/minggu
+- **Gold**: 5 deals/minggu + 2 jam early access
+- **Platinum**: Unlimited deals + 2 jam early access
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Key Features
+- ✅ Batch tracking dengan QR code
+- ✅ Dynamic pricing berdasarkan freshness
+- ✅ Time-limited rescue deals dengan tier-based access
+- ✅ WhatsApp notifications (Fonnte integration)
+- ✅ Payment gateway (Midtrans Snap)
+- ✅ Impact tracking (food waste prevention metrics)
+- ✅ Admin dashboard untuk konfigurasi cascade
+- ✅ Time simulation untuk demo/testing
+- ✅ REST API untuk integrasi eksternal
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🧪 Testing
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Test Credentials
+```
+ADMIN:     admin@vesta.com / admin123
+PRODUCER:  producer@vesta.com / producer123
+WAREHOUSE: warehouse@vesta.com / warehouse123
+CONSUMER:  consumer@vesta.com / consumer123
+BUSINESS:  business@vesta.com / business123
+```
+
+### API Testing dengan Postman
+1. Import collection dari: `http://localhost:3000/api/docs/postman.json`
+2. Set environment variables: `base_url`, `session_token`, `cron_secret`
+3. Login ke web app dan copy session token dari browser cookies
+4. Test endpoints dari Postman
+
+### Time Simulation (Demo Mode)
+```bash
+# Set di .env
+SIMULATE_TIME_ENABLED=true
+
+# Simulasi waktu maju 48 jam
+curl -X POST http://localhost:3000/api/demo/simulate-tick \
+  -H "Content-Type: application/json" \
+  -d '{"hours": 48}'
+```
+
+---
+
+## 📖 Dokumentasi Lengkap
+
+- **API Documentation**: [docs/API_README.md](docs/API_README.md)
+- **Quick Reference**: [docs/README.md](docs/README.md)
+- **Integration Examples**: [docs/examples/integration.ts](docs/examples/integration.ts)
+- **OpenAPI Spec**: [docs/openapi.yaml](docs/openapi.yaml)
+- **Postman Collection**: [docs/postman_collection.json](docs/postman_collection.json)
+
+---
+
+## 🚀 Deploy on Vercel
+
+1. Push repository ke GitHub
+2. Import project di [Vercel](https://vercel.com/new)
+3. Set environment variables (lihat `.env.example`)
+4. Deploy!
+
+### Cron Setup (Cascade Tick)
+Tambahkan di `vercel.json`:
+```json
+{
+  "crons": [{
+    "path": "/api/cron/cascade-tick",
+    "schedule": "0 * * * *"
+  }]
+}
+```
+
+---
+
+## 🤝 Contributing
+
+Contributions welcome! Lihat project structure di bawah untuk memahami kode.
+
+### Project Structure
+```
+├── app/                      # Next.js App Router
+│   ├── api/                  # REST API routes
+│   │   ├── batches/         # Batch management endpoints
+│   │   ├── orders/          # Order endpoints
+│   │   ├── rescue-deals/    # Rescue deal endpoints
+│   │   ├── admin/           # Admin config endpoints
+│   │   ├── demo/            # Time simulation
+│   │   └── cron/            # Cron jobs
+│   ├── actions/             # Server Actions
+│   └── dashboard/           # Dashboard pages
+├── src/
+│   ├── lib/                 # Business logic
+│   │   ├── cascade/         # Cascade engine
+│   │   ├── batches/         # Batch management
+│   │   ├── orders/          # Order processing
+│   │   ├── loyalty/         # Loyalty & tier system
+│   │   ├── pricing/         # Dynamic pricing
+│   │   └── notifications/   # WhatsApp integration
+│   └── prisma/              # Database ORM
+└── docs/                    # API Documentation
+    ├── API_README.md        # Full API guide
+    ├── openapi.yaml         # OpenAPI spec
+    └── examples/            # Integration examples
+```
+
+---
+
+## 📞 Support
+
+- **Email**: support@vesta-marketplace.com
+- **API Support**: api-support@vesta-marketplace.com
+- **Documentation**: [docs/README.md](docs/README.md)
+
+---
+
+**Vesta Marketplace** - Reducing food waste through intelligent cascade pricing 🌱
