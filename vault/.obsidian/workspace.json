@@ -13,16 +13,15 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "file:/Users/bagaskara/Development/vesta/DESIGN.md",
+                "file": "file:/Users/bagaskara/pentest-lab/README.md",
                 "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "DESIGN"
+              "title": "README"
             }
           }
-        ],
-        "currentTab": 2
+        ]
       }
     ],
     "direction": "vertical"
@@ -190,7 +189,7 @@
       "obsidian-kanban:Create new board": false
     }
   },
-  "active": "ac7e49b8c17ae422",
+  "active": "aefbd595902ba19d",
   "lastOpenFiles": [
     "02-Fitur/🌍 Impact Ledger.md",
     "02-Fitur/🔄 Cascade State Machine.md",
