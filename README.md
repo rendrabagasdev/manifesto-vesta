@@ -113,13 +113,51 @@ Konsumen mendapatkan tier berdasarkan loyalty points:
 
 ## 🧪 Testing
 
+### Demo Accounts
+Gunakan akun berikut untuk testing berbagai role:
+
+```
+ADMIN:     admin@vesta.id / Vesta123!
+           - Akses penuh ke dashboard admin
+           - Konfigurasi cascade pricing, tier system
+           - Simulasi waktu untuk demo
+
+PRODUCER:  produsen@vesta.id / Vesta123!
+           - Input batch/produk baru
+           - Monitor penjualan & pembayaran
+           - Generate QR code batch
+
+WAREHOUSE: gudang@vesta.id / Vesta123!
+           - Quality control & temperature tracking
+           - Update status batch
+           - Manage inventory
+
+CONSUMER:  b2c@vesta.id / Vesta123!
+           - Browse marketplace produk fresh
+           - Akses rescue deals (diskon)
+           - Beli pakan & residu via keranjang
+           - Loyalty tier benefits
+
+BUSINESS:  b2b@vesta.id / Vesta123!
+           - Bulk order & preorder
+           - Pricing khusus B2B
+           - Corporate account features
+```
+
+### Marketplace Flow
+Semua pembelian (marketplace, pakan, residu, rescue deals) menggunakan alur yang sama:
+1. Browse produk
+2. **Tambah ke Keranjang** 
+3. View cart → Atur lokasi pengiriman (map picker)
+4. **Checkout dengan COD** (bayar saat tiba)
+
 ### Test Credentials
 ```
-ADMIN:     admin@vesta.com / admin123
-PRODUCER:  producer@vesta.com / producer123
-WAREHOUSE: warehouse@vesta.com / warehouse123
-CONSUMER:  consumer@vesta.com / consumer123
-BUSINESS:  business@vesta.com / business123
+ADMIN:     admin@vesta.id / Vesta123!
+PRODUCER:  produsen@vesta.id / Vesta123!
+WAREHOUSE: gudang@vesta.id / Vesta123!
+CONSUMER:  b2c@vesta.id / Vesta123!
+BUSINESS:  b2b@vesta.id / Vesta123!
 ```
 
 ### API Testing dengan Postman
@@ -138,6 +176,33 @@ curl -X POST http://localhost:3000/api/demo/simulate-tick \
   -H "Content-Type: application/json" \
   -d '{"hours": 48}'
 ```
+
+---
+
+## ⚠️ Known Issues & Fixes
+
+### Map Container Errors (Fixed)
+**Status**: ✅ Fixed in latest version
+
+**Masalah yang pernah terjadi**:
+- `TypeError: undefined is not an object (evaluating 'this.getPane().appendChild')`
+- `Error: Map container is being reused by another instance`
+
+**Penyebab**: Leaflet map instance tidak di-cleanup dengan benar saat navigasi/city change di cart page.
+
+**Solusi**: 
+- MapContainer sekarang force remount saat koordinat berubah
+- Menggunakan state counter untuk track remount key
+- Map instance lama di-cleanup sebelum yang baru dibuat
+
+**Affected Pages**: Cart page (delivery location picker)
+
+### Hydration Mismatch (Fixed)
+**Status**: ✅ Fixed in latest version
+
+**Masalah**: Format currency IDR berbeda antara server render dan client render
+
+**Solusi**: Tambah `suppressHydrationWarning` pada element yang menggunakan `formatIdr()`
 
 ---
 
